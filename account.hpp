@@ -15,6 +15,20 @@
 	struct OfficerState;
 	struct Account;
 
+    struct PercentageChange{
+        int metPercent;
+        int crysPercent;
+        int deutPercent;
+        int fusionPercent;
+        int planetId;
+        int finishedLevel;
+        const char* finishedName;
+        std::int64_t oldDSE;
+        std::int64_t newDSE;
+        double oldMineProductionFactor;
+        double newMineProductionFactor;
+    };
+
 	struct PlanetState{
 		
 		static constexpr int solarplantPercent = 100;
@@ -52,8 +66,8 @@
 		OfficerState* officerStatePtr;
 		Account* accountPtr;
 		std::array<float, 3>* traderatePtr;
-        
-        std::function<void(const std::string&)> maxProductionLogFunc{};
+
+        std::vector<PercentageChange> percentageChanges;
         
         mutable ogamehelpers::Production dailyProduction;
         bool dailyProductionNeedsUpdate = true;
@@ -80,12 +94,7 @@
 		
 		ogamehelpers::Production getCurrentDailyProduction() const;
 
-		void setPercentToMaxProduction(const std::string& name, int level);
-		
-        template<class Func>
-        void setMaxProductionLogFunc(Func f){
-            maxProductionLogFunc = f;
-        }
+		void setPercentToMaxProduction(const char* name, int level);
 	};
 	
 	
@@ -239,7 +248,6 @@
 		std::ofstream* logfile;
 		
 		static std::unique_ptr<std::ofstream> nullfile;
-        std::function<void(const std::string&)> maxProductionLogFunc{};
                 
         AstroType astroPhysicsType = AstroType::Blocking;
         PostAstroAction postAstroPhysicsAction = PostAstroAction::SimpleCopyPreviousPlanet;
@@ -279,7 +287,9 @@
 		
 		ogamehelpers::Production getCurrentDailyProduction() const;
 		
-		void setPercentToMaxProduction(const std::string& name, int level);
+		void setPercentToMaxProduction(const char* name, int level);
+
+        std::vector<PercentageChange> getPercentageChanges() const;
 		
 		void startConstruction(int planet, float timeDays, const ogamehelpers::EntityInfo& entityInfo, const ogamehelpers::Resources& constructionCosts);
 			
@@ -304,14 +314,6 @@
 		UpgradeJobStats processResearchJob(const UpgradeJob& job);
 		
 		UpgradeJobStats processBuildingJob(const UpgradeJob& job);
-		
-		template<class Func>
-		void setMaxProductionLogFunc(Func f){
-            maxProductionLogFunc = f;
-            
-            for(auto& planetState : planetStates)
-                planetState.setMaxProductionLogFunc(f);
-        }
 	};
 
 

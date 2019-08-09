@@ -376,36 +376,6 @@ bool operator<(const PermutationGroup& l, const PermutationGroup& r){
 } 
 	
 
-void usage(int argc, char** argv){
-	std::cout << "Usage:" << argv[0] << " Options\n\n";
-		
-	std::cout << "Calculates how long it takes to perform a series of researches and upgrades in an account\n\n";
-	std::cout << "Options:\n";
-	std::cout << "--help: Show this message.\n\n";
-	std::cout << "--accountfile file: Load initial account data from file\n\n";
-	std::cout << "--upgradefile file: Load upgrade list from file\n\n";
-	std::cout << "--logfile file: Write program trace to file. Default log.txt.\n\n";
-	std::cout << "--speed ecospeedfactor: Economy speed factor of universe. Default 1.\n\n";
-    std::cout << "--threads num_threads: Number of CPU threads to use for permutations. Default 1.\n\n";
-	std::cout << "--permute mode: Default 0.\n\n";
-	std::cout << "  mode = 0: No permutation.\n";
-	std::cout << "  mode = 1: Find permutation with shortest completion time.\n";
-	std::cout << "  mode = 2: Find permutation with shortest time until last upgrade is started.\n";
-	std::cout << "  mode = 3: Find permutation with shortest save time.\n";
-	std::cout << "  mode = 4: Find permutation with shortest blocked queue time.\n";
-	std::cout << "--permutations n: Display n best permutations. Default 1.\n\n";
-	std::cout << "--printlist: Show detailed time table for upgrade\n\n";
-	std::cout << "--printalllists: Show detailed time table for every permutation\n\n";
-    std::cout << "--dhm: Print durations in days, hours, minutes format instead of fractional days\n\n";
-		
-	std::cout << "The initial account state is read from accountfile\n\n";
-	std::cout << "The list of upgrades to perform is read from upgradefile\n\n";
-	
-	std::cout << "Example: " << argv[0] << " --accountfile account.txt --upgradefile upgrades.txt --speed 2" << std::endl;
-}
-
-
-
 std::vector<std::string> split(const std::string& str, char c){
 	std::vector<std::string> result;
 
@@ -979,7 +949,34 @@ std::string convert_time(float daysfloat){
 
 
 
+void usage(int argc, char** argv){
+    std::cout << "Usage:" << argv[0] << " Options\n\n";
+	    
+    std::cout << "Calculates how long it takes to perform a series of researches and upgrades in an account\n\n";
+    std::cout << "Options:\n";
+    std::cout << "--help: Show this message.\n\n";
+    std::cout << "--accountfile file: Load initial account data from file\n\n";
+    std::cout << "--upgradefile file: Load upgrade list from file\n\n";
+    std::cout << "--logfile file: Write program trace to file. Default log.txt.\n\n";
+    std::cout << "--speed ecospeedfactor: Economy speed factor of universe. Default 1.\n\n";
+    std::cout << "--threads num_threads: Number of CPU threads to use for permutations. Default 1.\n\n";
+    std::cout << "--permute mode: Default 0.\n\n";
+    std::cout << "  mode = 0: No permutation.\n";
+    std::cout << "  mode = 1: Find permutation with shortest completion time.\n";
+    std::cout << "  mode = 2: Find permutation with shortest time until last upgrade is started.\n";
+    std::cout << "  mode = 3: Find permutation with shortest save time.\n";
+    std::cout << "  mode = 4: Find permutation with shortest blocked queue time.\n";
+    std::cout << "--permutations n: Display n best permutations. Default 1.\n\n";
+    std::cout << "--printlist: Show detailed time table for upgrade\n\n";
+    std::cout << "--printalllists: Show detailed time table for every permutation\n\n";
+    std::cout << "--showPercentageChanges: Show changes of production percentages per planet\n\n";
+    std::cout << "--dhm: Print durations in days, hours, minutes format instead of fractional days\n\n";
+	    
+    std::cout << "The initial account state is read from accountfile\n\n";
+    std::cout << "The list of upgrades to perform is read from upgradefile\n\n";
 
+    std::cout << "Example: " << argv[0] << " --accountfile account.txt --upgradefile upgrades.txt --speed 2" << std::endl;
+}
 
 int detailedmultiupgrade(int argc, char** argv){
     //constexpr bool debugprint = true;
@@ -1002,6 +999,7 @@ int detailedmultiupgrade(int argc, char** argv){
     int num_threads = 1;
     bool use_dhm_format = false;
     bool appendLog = false;
+    bool showPercentageChanges = false;
     
     for(int i = 1; i < argc; i++){
         if(std::string(argv[i]) == "--help"){
@@ -1016,6 +1014,11 @@ int detailedmultiupgrade(int argc, char** argv){
         
         if(std::string(argv[i]) == "--printalllists"){
             printAllLists = true;
+            continue;
+        }
+
+        if(std::string(argv[i]) == "--percentages"){
+            showPercentageChanges = true;
             continue;
         }
         
@@ -1084,6 +1087,7 @@ int detailedmultiupgrade(int argc, char** argv){
     std::cout << "Permutation mode: " << permutationMode << '\n';
     std::cout << "printList: " << printList << '\n';
     std::cout << "printAllLists: " << printAllLists << '\n';
+    std::cout << "showPercentageChanges: " << showPercentageChanges << '\n';
     std::cout << "Account file: " << accountFile << '\n';
     std::cout << "Upgrade file: " << upgradeFile << '\n';
     std::cout << "Log file: " << logFileName << '\n';
@@ -1105,7 +1109,6 @@ int detailedmultiupgrade(int argc, char** argv){
     auto planned_upgrades = parseUpgradeFile2(upgradeFile);
     account.speedfactor = speedfactor;
     account.setLogFile(&logFile);
-    //account.setMaxProductionLogFunc([](const auto&){ std::cout << "logtest\n";});
     
     /*for(const auto& upgrade : planned_upgrades){
      *	std::cout << (upgrade.location+1) << " " << upgrade.entityInfo.name << " " << upgrade.level << '\n';
@@ -1121,9 +1124,7 @@ int detailedmultiupgrade(int argc, char** argv){
     #endif	
     
     if(permutationMode == 0){
-        
-        account.setMaxProductionLogFunc([](const auto& s){ std::cout << s;});
-        
+          
         auto result = perform_upgrades(account, planned_upgrades);
         
         if(result.success){
@@ -1166,6 +1167,26 @@ int detailedmultiupgrade(int argc, char** argv){
                             << ", Save time: " << (stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';
                     }
                 }
+            }
+
+            if(showPercentageChanges){
+                auto percentageChanges = account.getPercentageChanges();
+
+                auto printChange = [](const auto& change){
+                    auto& stream = std::cout;
+                    stream << "Planet " << change.planetId << ": Changed percents to " 
+                    << "m " << change.metPercent << ", c " << change.crysPercent 
+                    << ", d " << change.deutPercent << ", f " << change.fusionPercent 
+                    << " after construction of " << change.finishedName << " " << change.finishedLevel
+                    << ". Production factor: " << change.oldMineProductionFactor 
+                    << "->" << change.newMineProductionFactor 
+                    << ". Production increased by " << (((double(change.newDSE)/change.oldDSE) - 1) * 100) 
+                    << " % DSE" << std::endl;
+                };
+
+                std::cout << '\n';
+
+                std::for_each(percentageChanges.begin(), percentageChanges.end(), printChange);
             }
         }else{
             std::cout << "Error: Upgrades could not be performed!" << std::endl;
@@ -1231,7 +1252,9 @@ int detailedmultiupgrade(int argc, char** argv){
             //create copy of original account
             auto permutationAccount = account;
             //set log file of thread
-            permutationAccount.setLogFile(&logFilesPerThread[threadId]);
+            if(setLogfile){
+                permutationAccount.setLogFile(&logFilesPerThread[threadId]);
+            }
             
             //perform permutation of upgrades on permutation account
             UpgradeResult nextResult = perform_upgrades(permutationAccount, upgradepermutation);

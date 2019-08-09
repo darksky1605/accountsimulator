@@ -52,8 +52,8 @@
 		accountPtr = rhs.accountPtr;
 		traderatePtr = rhs.traderatePtr;
 		buildingQueue = 0.0f;
-        maxProductionLogFunc = rhs.maxProductionLogFunc;
         dailyProductionNeedsUpdate = rhs.dailyProductionNeedsUpdate;
+        percentageChanges = rhs.percentageChanges;
 		
 		startConstruction(rhs.buildingQueue, rhs.entityInfoInQueue);
 		
@@ -153,7 +153,7 @@
 		return dailyProduction;
 	}
 	
-	void PlanetState::setPercentToMaxProduction(const std::string& name, int level){
+	void PlanetState::setPercentToMaxProduction(const char* name, int level){
         constexpr int metPercentBegin = 70;
         constexpr int crysPercentBegin = 70;
         constexpr int deutPercentBegin = 70;
@@ -243,9 +243,9 @@
                         result_deut *= accountPtr->speedfactor;
                         
                         Production newProd;
-                        newProd.met = round(result_met);
-                        newProd.crystal = round(result_crystal);
-                        newProd.deut = round(result_deut);
+                        newProd.met = std::round(result_met);
+                        newProd.crystal = std::round(result_crystal);
+                        newProd.deut = std::round(result_deut);
                         
                         newProd *= 24;
                         
@@ -285,6 +285,18 @@
                                                                                 fusionLevel, fusionPercent, researchStatePtr->etechLevel, 
                                                                                 sats, satsPercent, temperature,
                                                                                 officerStatePtr->hasEngineer(), officerStatePtr->hasStaff());
+
+            percentageChanges.emplace_back(PercentageChange{metPercent, 
+                                                            crysPercent, 
+                                                            deutPercent, 
+                                                            fusionPercent, 
+                                                            planetId, 
+                                                            level,
+                                                            name,
+                                                            oldDSE,
+                                                            bestDSE,
+                                                            oldmineproductionfactor, 
+                                                            newmineproductionfactor});
             
             std::stringstream sstream;
             sstream << "Planet " << planetId << ": Changed percents to " 
@@ -294,7 +306,6 @@
             << ". Production increased by " << (((double(bestDSE)/oldDSE) - 1) * 100) << " %" << '\n';
             
             accountPtr->trace(sstream.str());
-            maxProductionLogFunc(sstream.str());
         }
 	}
 	
@@ -429,8 +440,6 @@
 	{
 		researchState.accountPtr = this;
 		logfile = nullfile.get();
-        
-        setMaxProductionLogFunc([](const auto&){});
 	}
 	
 	Account::Account(const Account& rhs){
@@ -445,7 +454,6 @@
 		traderate = rhs.traderate;
 		speedfactor = rhs.speedfactor;
 		time = rhs.time;
-        setMaxProductionLogFunc(rhs.maxProductionLogFunc);
 		setLogFile(rhs.logfile);
         astroPhysicsType = rhs.astroPhysicsType;
         postAstroPhysicsAction = rhs.postAstroPhysicsAction;
@@ -463,8 +471,8 @@
 	};
 	
 	void Account::setLogFile(std::ofstream* ptr){
-		logfile = ptr;
-		logfile->flush();
+        logfile->flush();
+		logfile = ptr;		
 	}
 	
 	void Account::log(const std::string& msg){
@@ -482,7 +490,6 @@
 		planetStates.back().officerStatePtr = &officerState;
 		planetStates.back().accountPtr = this;
 		planetStates.back().traderatePtr = &traderate;
-        planetStates.back().setMaxProductionLogFunc(maxProductionLogFunc);
 	}
 	
 	//must not advance further than next finished event
@@ -608,7 +615,7 @@
 		return currentProduction;
 	}
 	
-	void Account::setPercentToMaxProduction(const std::string& name, int level){
+	void Account::setPercentToMaxProduction(const char* name, int level){
         auto setPercent = [&](auto& p){p.setPercentToMaxProduction(name, level);};
 
         std::for_each(planetStates.begin(), planetStates.end(), setPercent);
@@ -840,6 +847,20 @@
         advanceTime(saveTimeDays);	
         
         return saveTimeDaysForJob;
+    }
+
+    std::vector<PercentageChange> Account::getPercentageChanges() const{
+        std::vector<PercentageChange> result;
+
+        auto copyChangesToResult = [&](const auto& p){
+            result.insert(result.end(), 
+                            p.percentageChanges.begin(), 
+                            p.percentageChanges.end());
+        };
+
+        std::for_each(planetStates.begin(), planetStates.end(), copyChangesToResult);
+
+        return result;
     }
     
     Account::UpgradeJobStats Account::processResearchJob(const UpgradeJob& job){
