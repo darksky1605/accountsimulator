@@ -157,36 +157,35 @@ bool operator<(const PermutationGroup& l, const PermutationGroup& r){
 
 
 ogh::EntityInfo parseEntityName(const std::string& name){
-	static ogh::EntityMap entityMap;
 	
 	ogh::EntityInfo entity;
 
 	if(name == "metalmine" || name == "met"){
-		entity = entityMap.getInfo(ogh::Entity::Metalmine);
+		entity = ogh::Metalmine;
 	}else if(name == "crystalmine" || name == "kris" || name == "crys"){
-		entity = entityMap.getInfo(ogh::Entity::Crystalmine);
+		entity = ogh::Crystalmine;
 	}else if(name == "deutsynth" || name == "deut"){
-		entity = entityMap.getInfo(ogh::Entity::Deutsynth);
+		entity = ogh::Deutsynth;
 	}else if(name == "solarplant" || name == "skw"){
-		entity = entityMap.getInfo(ogh::Entity::Solar);
+		entity = ogh::Solar;
 	}else if(name == "fusionplanet" || name == "fkw"){
-		entity = entityMap.getInfo(ogh::Entity::Fusion);
+		entity = ogh::Fusion;
 	}else if(name == "robofactory" || name == "robo"){
-		entity = entityMap.getInfo(ogh::Entity::Robo);
+		entity = ogh::Robo;
 	}else if(name == "nanitefactory" || name == "nani"){
-		entity = entityMap.getInfo(ogh::Entity::Nanite);
+		entity = ogh::Nanite;
 	}else if(name == "researchlab" || name == "lab"){
-		entity = entityMap.getInfo(ogh::Entity::Lab);
+		entity = ogh::Lab;
 	}else if(name == "energytech" || name == "etech"){
-		entity = entityMap.getInfo(ogh::Entity::Energy);
+		entity = ogh::Energy;
 	}else if(name == "plasmatech" || name == "plasma"){
-		entity = entityMap.getInfo(ogh::Entity::Plasma);
+		entity = ogh::Plasma;
 	}else if(name == "astrophysics" || name == "astro"){
-		entity = entityMap.getInfo(ogh::Entity::Astro);
+		entity = ogh::Astro;
 	}else if(name == "researchnetwork" || name == "igfn" || name == "igrn"){
-		entity = entityMap.getInfo(ogh::Entity::Researchnetwork);
+		entity = ogh::Researchnetwork;
 	}else if(name == "none"){
-		entity = entityMap.getInfo(ogh::Entity::None);
+		entity = ogh::Noentity;
 	}else{
 		std::cout << "Invalid entity name:" << name << std::endl;
 		throw std::runtime_error("");
