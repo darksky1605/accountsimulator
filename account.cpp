@@ -580,8 +580,8 @@
 		
 		return ogh::getTotalLabLevel(labsPerPlanet, researchState.igrnLevel);
 	};
-	
-	ogh::Production Account::getCurrentDailyProduction() const{
+
+    ogh::Production Account::getCurrentDailyMineProduction() const{
         using ogh::Production;
 
         auto addProductions = [](const auto& l, const auto& r){
@@ -592,6 +592,18 @@
                                                             planetStates.end(),
                                                             Production{},
                                                             addProductions);
+		
+		return currentProduction;
+    }
+
+    ogh::Production Account::getCurrentDailyFarmIncome() const{
+        return ogh::Production{}; //no farm income for now
+    }
+	
+	ogh::Production Account::getCurrentDailyProduction() const{
+        using ogh::Production;
+
+        const Production currentProduction = getCurrentDailyMineProduction() + getCurrentDailyFarmIncome();
 		
 		return currentProduction;
 	}

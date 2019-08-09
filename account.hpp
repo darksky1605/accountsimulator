@@ -272,6 +272,10 @@
 		int getTotalLabLevel() const;
         
         void invalidatePlanetProductions();
+
+        ogamehelpers::Production getCurrentDailyMineProduction() const;
+
+        ogamehelpers::Production getCurrentDailyFarmIncome() const;
 		
 		ogamehelpers::Production getCurrentDailyProduction() const;
 		
