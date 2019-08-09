@@ -1,0 +1,58 @@
+
+15 # number of planets
+
+# if 'identical' (without ''), expects specification of one planet which is then used for all planets
+# if not 'identical' (without ''), expects specification of each planet one after another
+identical
+
+
+# Planet specification(s). requires 23 lines each
+# All durations are given in days
+45 # met mine
+39 # crys mine
+42 # deut mine
+0 # solar plant
+21 # fusion plant
+13 # lab
+12 # robo
+5 # nanite
+12 # shipyard
+-100 # temperature
+100 # met mine percent
+100 # crys mine percent
+100 # deut mine percent
+100 # fusion planet percent
+none # met booster item: none, bronze, silver, gold
+none # crystal booster item: none, bronze, silver, gold
+none # deut booster item: none, bronze, silver, gold
+0 # duration of met booster
+0 # duration of crys booster
+0 # duration of deut booster
+0 # satellites
+0.0 # remaining building construction duration
+none # building in construction: none, met, kris, deut, skw, fkw, robo, nani, lab
+
+# Research
+22 # energy tech
+20 # plasma tech
+14 # igrn
+27 # astro
+0 # remaining research duration
+none # research in progress: none, etech, plasma
+
+# Officers
+0 # commmander duration
+0 # engineer duration
+0 # technocrat duration
+10000 # geologist duration
+0 # admiral duration
+
+# Account resources
+0 # account resources met
+0 # account resources crys
+0 # account resources deut
+
+#Trade rate
+3 # traderate met/deut
+2 # traderate crys/deut
+1 # traderate deut/deut

@@ -1,0 +1,11 @@
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 met
+1 2 3 4 5 6 7 8 9 10 11 fkw
+1 deut
+2 deut
+12 fkw
+13 fkw
+3 deut
+14 fkw
+4 deut
+15 fkw
+5 6 7 8 9 10 11 12 13 14 15 deut

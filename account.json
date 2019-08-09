@@ -1,0 +1,70 @@
+{
+    "numPlanets" : 15,
+    "planetType" : "identical",
+    "planets" : [
+                    {
+                        "met" : 45,
+                        "crys" : 39,
+                        "deut" : 42,
+                        "solar" : 0,
+                        "fusion" : 21,
+                        "lab" : 13,
+                        "robo" : 12,
+                        "nani" : 5,
+                        "shipyard" : 12,
+                        "sats" : 0,
+                        "temperature" : -100,
+                        "percents" : {
+                                        "met" : 100,
+                                        "crys" : 100,
+                                        "deut" : 100,
+                                        "fusion" : 100
+                                     },
+                        "items" : {
+                                    "met" : {
+                                                "type" : "none",
+                                                "days" : 0.0
+                                            },
+                                    "crys" : {
+                                                "type" : "none",
+                                                "days" : 0.0
+                                            },
+                                    "deut" : {
+                                                "type" : "none",
+                                                "days" : 0.0
+                                            }
+                                  },
+                        "inConstruction" : {
+                                                "type" : "none",
+                                                "days" : 0.0
+                                           }
+                    }
+                ],
+    "research" : {
+                    "etech" : 22,
+                    "plasma" : 20,
+                    "igrn" : 14,
+                    "astro" : 0,
+                    "inConstruction" : {
+                                            "type" : "none",
+                                            "days" : 0.0
+                                       }
+                 },
+    "officers" : {
+                    "commanderdays" : 0.0,
+                    "engineerdays" : 0.0,
+                    "technocratdays" : 0.0,
+                    "geologistdays" : 10000.0,
+                    "admiraldays" : 0.0
+                 },
+    "resources" : {
+                    "met" : 0,
+                    "crys" : 0,
+                    "deut" : 0
+                  },
+    "traderate" : {
+                    "met" : 3.0,
+                    "crys" : 2.0,
+                    "deut" : 1.0
+                  }
+}
