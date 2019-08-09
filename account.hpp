@@ -56,7 +56,7 @@
         
         std::function<void(const std::string&)> maxProductionLogFunc{};
         
-        ogamehelpers::Production dailyProduction;
+        mutable ogamehelpers::Production dailyProduction;
         bool dailyProductionNeedsUpdate = true;
 		
 		PlanetState();
@@ -74,10 +74,12 @@
 		bool constructionInProgress() const;
 		
 		int getLevel(const ogamehelpers::EntityInfo& info) const;
+
+        //void buildingFinishedCallback(const ogamehelpers::EntityInfo& finishedBuilding);
 		
 		void startConstruction(float timeDays, const ogamehelpers::EntityInfo& entityInfo);
 		
-		ogamehelpers::Production getCurrentDailyProduction();
+		ogamehelpers::Production getCurrentDailyProduction() const;
 
 		void setPercentToMaxProduction(const std::string& name, int level);
 		
@@ -271,7 +273,7 @@
         
         void invalidatePlanetProductions();
 		
-		ogamehelpers::Production getCurrentDailyProduction();
+		ogamehelpers::Production getCurrentDailyProduction() const;
 		
 		void setPercentToMaxProduction(const std::string& name, int level);
 		

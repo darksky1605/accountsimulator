@@ -11,6 +11,8 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <algorithm>
+#include <numeric>
 
 	namespace ogh = ogamehelpers;
 
@@ -111,6 +113,10 @@
 
 		return level;
 	}
+
+    //void PlanetState::buildingFinishedCallback(const ogh::EntityInfo& finishedBuilding){
+        
+    //}
 	
 	void PlanetState::startConstruction(float timeDays, const ogh::EntityInfo& entityInfo){
 		assert(timeDays >= 0.0f);
@@ -139,7 +145,7 @@
 		};
 	}
 		
-	ogh::Production PlanetState::getCurrentDailyProduction(){
+	ogh::Production PlanetState::getCurrentDailyProduction() const{
         if(dailyProductionNeedsUpdate){
             dailyProduction = ogh::getDailyProduction(metLevel, getMetItem(), metPercent, 
 																	crysLevel, getCrysItem(), crysPercent, 
@@ -564,11 +570,10 @@
 	}
 	
 	bool Account::hasUnfinishedConstructionEvent() const{
-		bool result = false;
-		for(const auto& planet : planetStates){
-			result |= planet.constructionInProgress();
-		}
-		result |= researchState.researchInProgress();
+        auto hasOngoingConstruction = [](const auto& p){return p.constructionInProgress();};
+
+        bool result = researchState.researchInProgress() || 
+                        std::any_of(planetStates.begin(), planetStates.end(), hasOngoingConstruction);
 		
 		return result;
 	}
@@ -582,21 +587,25 @@
 		return ogh::getTotalLabLevel(labsPerPlanet, researchState.igrnLevel);
 	};
 	
-	ogh::Production Account::getCurrentDailyProduction(){
-		ogh::Production currentProduction;
-		
-		for(auto& planetState : planetStates){
-							
-			currentProduction += planetState.getCurrentDailyProduction();
-		}
+	ogh::Production Account::getCurrentDailyProduction() const{
+        using ogh::Production;
+
+        auto addProductions = [](const auto& l, const auto& r){
+            return l + r.getCurrentDailyProduction();
+        };
+
+        const Production currentProduction = std::accumulate(planetStates.begin(), 
+                                                            planetStates.end(),
+                                                            Production{},
+                                                            addProductions);
 		
 		return currentProduction;
 	}
 	
 	void Account::setPercentToMaxProduction(const std::string& name, int level){
-		for(auto& planetState : planetStates){								
-			planetState.setPercentToMaxProduction(name, level);
-		}
+        auto setPercent = [&](auto& p){p.setPercentToMaxProduction(name, level);};
+
+        std::for_each(planetStates.begin(), planetStates.end(), setPercent);
 	}
 	
 	void Account::startConstruction(int planet, float timeDays, const ogh::EntityInfo& entityInfo, const ogh::Resources& constructionCosts){
