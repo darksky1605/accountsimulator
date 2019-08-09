@@ -1223,6 +1223,8 @@ int detailedmultiupgrade(int argc, char** argv){
                 std::lock_guard<std::mutex> lg(m);
                 if(uniqueProcessedPermutations.count(upgradepermutation) > 0){
                     return;
+                }else{
+                    uniqueProcessedPermutations.insert(upgradepermutation);
                 }
             }
             
@@ -1266,9 +1268,6 @@ int detailedmultiupgrade(int argc, char** argv){
                 longestCompletionTime = std::max(longestCompletionTime, permutationAccount.time);
                 
             }
-            
-            std::lock_guard<std::mutex> lg(m);
-            uniqueProcessedPermutations.insert(upgradepermutation);
             
             //permcount++;
             
