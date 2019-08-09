@@ -45,7 +45,6 @@
 		int sats = 0;
 		
 		float buildingQueue = 0.0f;
-		std::function<void()> buildingFinishedCallback{};
 		ogamehelpers::EntityInfo entityInfoInQueue{};
 		//int levelInQueue{};
 		
@@ -75,7 +74,7 @@
 		
 		int getLevel(const ogamehelpers::EntityInfo& info) const;
 
-        //void buildingFinishedCallback(const ogamehelpers::EntityInfo& finishedBuilding);
+        void buildingFinishedCallback();
 		
 		void startConstruction(float timeDays, const ogamehelpers::EntityInfo& entityInfo);
 		
@@ -99,7 +98,6 @@
 		
 		float researchQueue = 0.0f;
 		ogamehelpers::EntityInfo entityInfoInQueue{};
-		std::function<void()> researchFinishedCallback{};
 		int levelInQueue{};
 		
 		Account* accountPtr;
@@ -115,6 +113,8 @@
 		void advanceTime(float days);
 		
 		int getLevel(const ogamehelpers::EntityInfo& info) const;
+
+        void researchFinishedCallback();
 		
 		void startResearch(float timeDays, const ogamehelpers::EntityInfo& entityInfo);
 	};

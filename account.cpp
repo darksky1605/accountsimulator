@@ -114,9 +114,22 @@
 		return level;
 	}
 
-    //void PlanetState::buildingFinishedCallback(const ogh::EntityInfo& finishedBuilding){
-        
-    //}
+    void PlanetState::buildingFinishedCallback(){
+        switch(entityInfoInQueue.entity){
+            case ogh::Entity::Metalmine: metLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, metLevel); break;
+            case ogh::Entity::Crystalmine: crysLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, crysLevel); break;
+            case ogh::Entity::Deutsynth: deutLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, deutLevel); break;
+            case ogh::Entity::Solar: solarLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, solarLevel); break;
+            case ogh::Entity::Fusion: fusionLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, fusionLevel); break;
+            case ogh::Entity::Lab: labLevel++; break;
+            case ogh::Entity::Robo: roboLevel++; break;
+            case ogh::Entity::Nanite: naniteLevel++; break;
+            case ogh::Entity::Shipyard: shipyardLevel++; break;
+            default: throw std::runtime_error("No building finished callback for this building " + std::string{entityInfoInQueue.name});
+        }
+
+        entityInfoInQueue = ogh::EntityInfo{};
+    }
 	
 	void PlanetState::startConstruction(float timeDays, const ogh::EntityInfo& entityInfo){
 		assert(timeDays >= 0.0f);
@@ -124,25 +137,6 @@
 		
 		buildingQueue = timeDays;
 		entityInfoInQueue = entityInfo;
-
-		buildingFinishedCallback = [&, this](){
-			//update state of planet after building is finished
-			
-			switch(entityInfoInQueue.entity){
-                case ogh::Entity::Metalmine: metLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, metLevel); break;
-                case ogh::Entity::Crystalmine: crysLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, crysLevel); break;
-                case ogh::Entity::Deutsynth: deutLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, deutLevel); break;
-                case ogh::Entity::Solar: solarLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, solarLevel); break;
-                case ogh::Entity::Fusion: fusionLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, fusionLevel); break;
-				case ogh::Entity::Lab: labLevel++; break;
-				case ogh::Entity::Robo: roboLevel++; break;
-				case ogh::Entity::Nanite: naniteLevel++; break;
-                case ogh::Entity::Shipyard: shipyardLevel++; break;
-                default: throw std::runtime_error("No building finished callback for this building " + std::string{entityInfoInQueue.name});
-			}
-			
-			entityInfoInQueue = ogh::EntityInfo{};
-		};
 	}
 		
 	ogh::Production PlanetState::getCurrentDailyProduction() const{
@@ -349,6 +343,21 @@
 			default: throw std::runtime_error("researchstate getLevel error");
 		}
 	}
+
+    void ResearchState::researchFinishedCallback(){
+        //update state after research is finished
+        switch(entityInfoInQueue.entity){
+        case ogh::Entity::Energy: etechLevel++; accountPtr->invalidatePlanetProductions();
+					          accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, etechLevel); break;
+        case ogh::Entity::Plasma: plasmaLevel++; accountPtr->invalidatePlanetProductions();
+					          accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, plasmaLevel); break;
+        case ogh::Entity::Researchnetwork: igrnLevel++; break;
+        case ogh::Entity::Astro: astroLevel++; accountPtr->astroPhysicsResearchCompleted(); break;
+        default: std::cerr << "Warning. No callback for this research\n";
+        }
+
+        entityInfoInQueue = ogh::EntityInfo{};
+	}
 	
 	void ResearchState::startResearch(float timeDays, const ogh::EntityInfo& entityInfo){
 		assert(timeDays >= 0.0f);
@@ -356,21 +365,6 @@
 		
 		researchQueue = timeDays;
 		entityInfoInQueue = entityInfo;
-
-		researchFinishedCallback = [&](){
-			//update state after research is finished
-			switch(entityInfoInQueue.entity){
-                case ogh::Entity::Energy: etechLevel++; accountPtr->invalidatePlanetProductions();
-										  accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, etechLevel); break;
-				case ogh::Entity::Plasma: plasmaLevel++; accountPtr->invalidatePlanetProductions();
-										  accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, plasmaLevel); break;
-				case ogh::Entity::Researchnetwork: igrnLevel++; break;
-				case ogh::Entity::Astro: astroLevel++; accountPtr->astroPhysicsResearchCompleted(); break;
-				default: std::cerr << "Warning. No callback for this research\n";
-			}
-			
-			entityInfoInQueue = ogh::EntityInfo{};
-		};
 	}
 	
 	void Account::invalidatePlanetProductions(){
@@ -657,7 +651,6 @@
                     //fix dest
                     dest.planetId = src.planetId + 1;
                     dest.buildingQueue = 0.0f;
-                    dest.buildingFinishedCallback = [](){};
                     dest.entityInfoInQueue = ogh::EntityInfo{};
                     
                 }break;
