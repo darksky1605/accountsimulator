@@ -801,21 +801,29 @@ std::vector<UpgradeJobList> parseUpgradeFile2(const std::string& filename){
 			for(std::size_t i = 0; i < tokens.size(); i++){
 				
 				if(!is_number(tokens[i])){
-					Account::UpgradeJob job;
-					job.entityInfo = parseEntityName(tokens[i]);
-				
-					// token is upgrade name. if locations is empty, upgrade is performed on all planets, 
+                    // token is upgrade name. if locations is empty, upgrade is performed on all planets, 
 					// else it is performed on the planets given in locations
-					if(locations.empty()){
+
+                    const auto entityInfo = parseEntityName(tokens[i]);
+
+                    if(locations.empty()){
+                        Account::UpgradeJob job;
+                        job.entityInfo = entityInfo;
 						if(job.isResearch()){
 							job.location = Account::UpgradeJob::researchLocation;
 						}else{
 							job.location = Account::UpgradeJob::allCurrentPlanetsLocation;
 						}
-					}
-					jobList.emplace_back(job);
-					
-					locations.clear();
+                        jobList.emplace_back(job);
+					}else{
+                        for(const auto& location : locations){
+                            Account::UpgradeJob job;
+                            job.entityInfo = entityInfo;
+                            job.location = location;
+                            jobList.emplace_back(job);
+                        }
+                        locations.clear();
+                    }
 				}else{
 					int loc = std::stoi(tokens[i]) - 1;
 					assert(loc >= 0);
