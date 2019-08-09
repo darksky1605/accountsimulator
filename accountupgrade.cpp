@@ -1370,7 +1370,7 @@ int detailedmultiupgrade(int argc, char** argv){
             
             std::cout << '\n';
             
-            if(printList){
+            if((printList && i == 0) || printAllLists){
                 std::cout << "Detailed statistics:\n";
                 
                 for(int jobid = 0; jobid < int(bestResult.upgradeJobStatistics.size()); jobid++){
