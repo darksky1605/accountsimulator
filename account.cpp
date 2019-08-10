@@ -988,7 +988,7 @@
             stats.waitingPeriodDaysBegin = time;
  
             if(researchState.entityInfoInQueue.entity == Entity::Astro
-                && getNumPlanets() < ogamehelpers::getMaxPossiblePlanets(researchState.levelInQueue)){
+                && getNumPlanets() < ogamehelpers::getMaxPossiblePlanets(researchState.astroLevel + 1)){
                 
                 //wait until astro is completed
                 while(researchState.researchInProgress()){

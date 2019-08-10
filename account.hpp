@@ -60,7 +60,6 @@
 		
 		float buildingQueue = 0.0f;
 		ogamehelpers::EntityInfo entityInfoInQueue{};
-		//int levelInQueue{};
 		
 		ResearchState* researchStatePtr;
 		OfficerState* officerStatePtr;
@@ -106,7 +105,6 @@
 		
 		float researchQueue = 0.0f;
 		ogamehelpers::EntityInfo entityInfoInQueue{};
-		int levelInQueue{};
 		
 		Account* accountPtr;
 		
