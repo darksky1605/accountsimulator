@@ -8,14 +8,17 @@ formulartests: formulartests.cpp ogame.hpp ogame.o
 dplistcalculator: dplistcalculator.cpp ogame.hpp ogame.o util.hpp
 	g++ -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) -fopenmp dplistcalculator.cpp ogame.o -o dplistcalculator
 
-accountupgrade: accountupgrade.cpp ogame.hpp ogame.o account.hpp account.o parallel_permutation.hpp util.hpp
-	g++ -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) accountupgrade.cpp ogame.o account.o -fopenmp -o accountupgrade
+accountupgrade: accountupgrade.cpp ogame.hpp ogame.o account.hpp account.o parallel_permutation.hpp util.hpp serialization.o
+	g++ -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) accountupgrade.cpp ogame.o account.o serialization.o -fopenmp -o accountupgrade
 	
 ogame.o: ogame.cpp ogame.hpp
 	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) ogame.cpp -o ogame.o
 	
 account.o: account.cpp account.hpp ogame.hpp
 	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) account.cpp -o account.o
+
+serialization.o: serialization.hpp serialization.cpp account.hpp ogame.hpp
+	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) serialization.cpp -o serialization.o
 	
 clean:
 	rm -rf dplistcalculator accountupgrade ogame.o account.o formulartest

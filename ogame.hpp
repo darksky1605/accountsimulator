@@ -316,7 +316,9 @@ int getMinPossibleAstro(int num_planets);
 
 EntityInfo parseEntityName(const std::string& name);
 
+ItemRarity parseItemRarityName(const std::string& rarityname);
 
+std::string itemRarityToName(const ItemRarity& r);
 
 
 

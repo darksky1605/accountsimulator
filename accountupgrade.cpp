@@ -3,6 +3,8 @@
 #include "parallel_permutation.hpp"
 #include "util.hpp"
 #include "hpc_helpers.cuh"
+#include "serialization.hpp"
+#include "json.hpp"
 
 #include <string>
 #include <iostream>
@@ -20,6 +22,7 @@
 #include <set>
 
 	namespace ogh = ogamehelpers;
+    using json = nlohmann::json;
 
 
 	struct UpgradeResult{
@@ -502,34 +505,13 @@ Account parseAccountFile(const std::string& filename){
 			planet.fusionPercent = std::stoi(line);
 		}
 		if(nextline()){
-			if(lowerline == "b" || lowerline == "bronze")
-				planet.metItem = ogh::ItemRarity::Bronze;
-			else if(lowerline == "s" || lowerline == "silver")
-				planet.metItem = ogh::ItemRarity::Silver;
-			else if(lowerline == "g" || lowerline == "gold")
-				planet.metItem = ogh::ItemRarity::Gold;
-			else
-				planet.metItem = ogh::ItemRarity::None;
+            planet.metItem = ogh::parseItemRarityName(lowerline);
 		}
 		if(nextline()){
-			if(lowerline == "b" || lowerline == "bronze")
-				planet.crysItem = ogh::ItemRarity::Bronze;
-			else if(lowerline == "s" || lowerline == "silver")
-				planet.crysItem = ogh::ItemRarity::Silver;
-			else if(lowerline == "g" || lowerline == "gold")
-				planet.crysItem = ogh::ItemRarity::Gold;
-			else
-				planet.crysItem = ogh::ItemRarity::None;
+			planet.crysItem = ogh::parseItemRarityName(lowerline);
 		}
 		if(nextline()){
-			if(lowerline == "b" || lowerline == "bronze")
-				planet.deutItem = ogh::ItemRarity::Bronze;
-			else if(lowerline == "s" || lowerline == "silver")
-				planet.deutItem = ogh::ItemRarity::Silver;
-			else if(lowerline == "g" || lowerline == "gold")
-				planet.deutItem = ogh::ItemRarity::Gold;
-			else
-				planet.deutItem = ogh::ItemRarity::None;
+			planet.deutItem = ogh::parseItemRarityName(lowerline);
 		}
 		if(nextline()){
 			planet.metItemDurationDays = std::stof(line);
@@ -560,6 +542,19 @@ Account parseAccountFile(const std::string& filename){
 			account.planetStates[i].planetId = i+1;
 		}
 	}
+
+    /*json j = account.planetStates[0];
+    std::cout << std::setw(4) << j << std::endl;
+
+    std::stringstream ss;
+    ss << std::setw(4) << j;
+    json j2;
+    ss >> j2;
+    PlanetState ptemp = j2.get<PlanetState>();
+
+    std::cout << std::setw(4) << j2 << std::endl;*/
+
+    
 	
 	//parse research
 	

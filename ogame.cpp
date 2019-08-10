@@ -663,7 +663,7 @@ namespace ogamehelpers{
 		    entity = Astro;
 	    }else if(name == "researchnetwork" || name == "igfn" || name == "igrn"){
 		    entity = Researchnetwork;
-	    }else if(name == "none"){
+	    }else if(name == "none" || name == ""){
             entity = Noentity;
 	    }else{
 		    std::cout << "Invalid entity name:" << name << std::endl;
@@ -671,4 +671,28 @@ namespace ogamehelpers{
 	    }
 	    return entity;
     }
+
+    ItemRarity parseItemRarityName(const std::string& rarityname){
+        std::string s(rarityname);
+        std::transform(s.begin(), s.end(), s.begin(), [](auto c){ return std::tolower(c);});
+
+        if(s == "b" || s == "bronze")
+			return ItemRarity::Bronze;
+		else if(s == "s" || s == "silver")
+			return  ItemRarity::Silver;
+		else if(s == "g" || s == "gold")
+			return  ItemRarity::Gold;
+		else
+			return  ItemRarity::None;    
+    }
+
+    std::string itemRarityToName(const ItemRarity& r){
+        switch(r){
+        case ItemRarity::Bronze: return "bronze";
+        case ItemRarity::Silver: return "silver";
+        case ItemRarity::Gold: return "gold";
+        default: return "none";
+        }
+    }
 }
+
