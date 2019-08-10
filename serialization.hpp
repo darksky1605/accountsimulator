@@ -7,6 +7,9 @@ namespace ogamehelpers{
     void to_json(nlohmann::json& j, const Resources& r);
     void from_json(const nlohmann::json& j, Resources& r);
 
+    void to_json(nlohmann::json& j, const Production& p);
+    void from_json(const nlohmann::json& j, Production& p);
+
 }
 
 void to_json(nlohmann::json& j, const PlanetState& s);

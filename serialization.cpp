@@ -23,6 +23,18 @@ namespace ogamehelpers{
         j.at("deuterium").get_to(r.deut);
     }
 
+    void to_json(nlohmann::json& j, const Production& p){
+        j = json{{"metal", p.met}, 
+                {"crystal", p.crystal},
+                {"deuterium", p.deut}};
+    }
+
+    void from_json(const nlohmann::json& j, Production& p){
+        j.at("metal").get_to(p.met);
+        j.at("crystal").get_to(p.crystal);
+        j.at("deuterium").get_to(p.deut);
+    }
+
 }
 
 void to_json(json& j, const PlanetState& p){
@@ -119,6 +131,8 @@ void to_json(nlohmann::json& j, const Account& a){
             {"research", a.researchState},
             {"officers", a.officerState},
             {"resources", a.resources},
+            {"dailyFarmIncome", a.dailyFarmIncome},
+            {"dailyExpeditionIncome", a.dailyExpeditionIncome},
             {"traderate", a.traderate},
             {"ecospeed", a.speedfactor},
             {"numPlanets", a.planetStates.size()},
@@ -130,6 +144,8 @@ void from_json(const nlohmann::json& j, Account& a){
     j.at("research").get_to(a.researchState);
     j.at("officers").get_to(a.officerState);
     j.at("resources").get_to(a.resources);
+    j.at("dailyFarmIncome").get_to(a.dailyFarmIncome);
+    j.at("dailyExpeditionIncome").get_to(a.dailyExpeditionIncome);
     j.at("traderate").get_to(a.traderate);
     j.at("ecospeed").get_to(a.speedfactor);
 

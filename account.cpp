@@ -450,6 +450,10 @@
 		researchState = rhs.researchState;
 		officerState = rhs.officerState;
 		resources = rhs.resources;
+		dailyFarmIncome = rhs.dailyFarmIncome;
+		dailyExpeditionIncome = rhs.dailyExpeditionIncome;
+		farmIncomeNeedsUpdate = rhs.farmIncomeNeedsUpdate;
+		expoIncomeNeedsUpdate = rhs.expoIncomeNeedsUpdate;
 		traderate = rhs.traderate;
 		speedfactor = rhs.speedfactor;
 		time = rhs.time;
@@ -601,13 +605,25 @@
     }
 
     ogh::Production Account::getCurrentDailyFarmIncome() const{
-        return ogh::Production{}; //no farm income for now
+        if(farmIncomeNeedsUpdate){
+
+        }
+        return dailyFarmIncome;
+    }
+
+    ogh::Production Account::getCurrentDailyExpeditionIncome() const{
+        if(expoIncomeNeedsUpdate){
+
+        }
+        return dailyExpeditionIncome;
     }
 	
 	ogh::Production Account::getCurrentDailyProduction() const{
         using ogh::Production;
 
-        const Production currentProduction = getCurrentDailyMineProduction() + getCurrentDailyFarmIncome();
+        const Production currentProduction = getCurrentDailyMineProduction() 
+                                            + getCurrentDailyFarmIncome()
+                                            + getCurrentDailyExpeditionIncome();
 		
 		return currentProduction;
 	}

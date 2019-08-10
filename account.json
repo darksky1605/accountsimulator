@@ -50,6 +50,16 @@
         "deuterium": 0,
         "metal": 0
     },
+    "dailyFarmIncome": {
+        "crystal": 0,
+        "deuterium": 0,
+        "metal": 0
+    },
+    "dailyExpeditionIncome": {
+        "crystal": 0,
+        "deuterium": 0,
+        "metal": 0
+    },
     "traderate": [
         3.0,
         2.0,

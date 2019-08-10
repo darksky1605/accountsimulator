@@ -231,14 +231,20 @@
          */
         enum class PostAstroAction {SimpleCopyPreviousPlanet, SimpleUpgradeToPreviousPlanet, None};
 	
-		std::vector<PlanetState> planetStates;
-		ResearchState researchState;
-		OfficerState officerState;
+		std::vector<PlanetState> planetStates{};
+		ResearchState researchState{};
+		OfficerState officerState{};
 		
-		ogamehelpers::Resources resources;        
-		std::array<float, 3> traderate;
+		ogamehelpers::Resources resources{};        
 		
-		int speedfactor = 1;
+        mutable ogamehelpers::Production dailyFarmIncome{};
+        mutable ogamehelpers::Production dailyExpeditionIncome{};
+        bool farmIncomeNeedsUpdate = false;
+        bool expoIncomeNeedsUpdate = false;
+
+        std::array<float, 3> traderate;		
+		
+        int speedfactor = 1;
 		
 		float time = 0.0f;
 		
@@ -281,6 +287,8 @@
         ogamehelpers::Production getCurrentDailyMineProduction() const;
 
         ogamehelpers::Production getCurrentDailyFarmIncome() const;
+
+        ogamehelpers::Production getCurrentDailyExpeditionIncome() const;
 		
 		ogamehelpers::Production getCurrentDailyProduction() const;
 		
