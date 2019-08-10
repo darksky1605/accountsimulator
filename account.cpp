@@ -50,7 +50,6 @@
 		researchStatePtr = rhs.researchStatePtr;
 		officerStatePtr = rhs.officerStatePtr;
 		accountPtr = rhs.accountPtr;
-		traderatePtr = rhs.traderatePtr;
 		buildingQueue = 0.0f;
         dailyProductionNeedsUpdate = rhs.dailyProductionNeedsUpdate;
         percentageChanges = rhs.percentageChanges;
@@ -167,7 +166,7 @@
         const int oldFusionPercent = fusionPercent;
         
         const auto oldProd = getCurrentDailyProduction();
-        const std::int64_t oldDSE = oldProd.met / (*traderatePtr)[0] * (*traderatePtr)[2] + oldProd.crystal / (*traderatePtr)[1] * (*traderatePtr)[2] + oldProd.deut;
+        const std::int64_t oldDSE = oldProd.met / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + oldProd.crystal / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + oldProd.deut;
         
         int bestMetPercent = metPercent;
         int bestCrysPercent = crysPercent;
@@ -249,7 +248,7 @@
                         
                         newProd *= 24;
                         
-                        const std::int64_t newDSE = newProd.met / (*traderatePtr)[0] * (*traderatePtr)[2] + newProd.crystal / (*traderatePtr)[1] * (*traderatePtr)[2] + newProd.deut;
+                        const std::int64_t newDSE = newProd.met / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + newProd.crystal / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + newProd.deut;
                         if(newDSE > bestDSE){
                             bestDSE = newDSE;
                             bestMetPercent = newMetPercent;
@@ -462,7 +461,6 @@
 			planetState.researchStatePtr = &researchState;
 			planetState.officerStatePtr = &officerState;
 			planetState.accountPtr = this;
-			planetState.traderatePtr = &traderate;
 		}
 		
 		researchState.accountPtr = this;
@@ -489,7 +487,6 @@
 		planetStates.back().researchStatePtr = &researchState;
 		planetStates.back().officerStatePtr = &officerState;
 		planetStates.back().accountPtr = this;
-		planetStates.back().traderatePtr = &traderate;
 	}
 	
 	//must not advance further than next finished event

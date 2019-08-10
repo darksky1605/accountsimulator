@@ -65,7 +65,6 @@
 		ResearchState* researchStatePtr;
 		OfficerState* officerStatePtr;
 		Account* accountPtr;
-		std::array<float, 3>* traderatePtr;
 
         std::vector<PercentageChange> percentageChanges;
         
