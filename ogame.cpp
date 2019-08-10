@@ -634,35 +634,82 @@ namespace ogamehelpers{
         return astro;
     }
 
-
     EntityInfo parseEntityName(const std::string& name){
 	    
 	    EntityInfo entity;
 
-	    if(name == "metalmine" || name == "met"){
+	    if(name == "Metal Mine"){
 		    entity = Metalmine;
-	    }else if(name == "crystalmine" || name == "kris" || name == "crys"){
+	    }else if(name == "Crystal Mine"){
 		    entity = Crystalmine;
-	    }else if(name == "deutsynth" || name == "deut"){
+	    }else if(name == "Deuterium Synthesizer"){
 		    entity = Deutsynth;
-	    }else if(name == "solarplant" || name == "skw"){
+	    }else if(name == "Solar Plant"){
 		    entity = Solar;
-	    }else if(name == "fusionplanet" || name == "fkw"){
+	    }else if(name == "Fusion Reactor"){
 		    entity = Fusion;
-	    }else if(name == "robofactory" || name == "robo"){
+	    }else if(name == "Robotics Factory"){
 		    entity = Robo;
-	    }else if(name == "nanitefactory" || name == "nani"){
+	    }else if(name == "Nanite Factory"){
 		    entity = Nanite;
-	    }else if(name == "researchlab" || name == "lab"){
+	    }else if(name == "Shipyard"){
+		    entity = Shipyard;
+	    }else if(name == "Metal Storage"){
+		    entity = Metalstorage;
+	    }else if(name == "Crystal Storage"){
+		    entity = Crystalstorage;
+	    }else if(name == "Deuterium Tank"){
+		    entity = Deutstorage;
+	    }else if(name == "Research Lab"){
 		    entity = Lab;
-	    }else if(name == "energytech" || name == "etech"){
+	    }else if(name == "Terraformer"){
+		    entity = Terra;
+	    }else if(name == "Alliance Depot"){
+		    entity = Alliancedepot;
+	    }else if(name == "Space Dock"){
+		    entity = Spacedock;
+	    }else if(name == "Lunar Base"){
+		    entity = Lunarbase;
+	    }else if(name == "Sensor Phalanx"){
+		    entity = Phalanx;
+	    }else if(name == "Jump Gate"){
+		    entity = Jumpgate;
+	    }else if(name == "Missile Silo"){
+		    entity = Silo;
+	    }else if(name == "Espionage Technology"){
+		    entity = Espionage;
+	    }else if(name == "Computer Technology"){
+		    entity = Computer;
+	    }else if(name == "Weapons Technology"){
+		    entity = Weapons;
+	    }else if(name == "Shielding Technology"){
+		    entity = Shielding;
+	    }else if(name == "Armor Technology"){
+		    entity = Armour;
+	    }else if(name == "Energy Technology"){
 		    entity = Energy;
-	    }else if(name == "plasmatech" || name == "plasma"){
+	    }else if(name == "Hyperspace Technology"){
+		    entity = Hyperspacetech;
+	    }else if(name == "Combustion Drive"){
+		    entity = Combustion;
+	    }else if(name == "Impulse Drive"){
+		    entity = Impulse;
+	    }else if(name == "Hyperspace Drive"){
+		    entity = Hyperspacedrive;
+	    }else if(name == "Laser Technology"){
+		    entity = Laser;
+	    }else if(name == "Ion Technology"){
+		    entity = Ion;
+	    }else if(name == "Plasma Technology"){
 		    entity = Plasma;
-	    }else if(name == "astrophysics" || name == "astro"){
-		    entity = Astro;
-	    }else if(name == "researchnetwork" || name == "igfn" || name == "igrn"){
+	    }else if(name == "Intergalactic Research Network"){
 		    entity = Researchnetwork;
+	    }else if(name == "Astrophysics"){
+		    entity = Astro;
+	    }else if(name == "Graviton Technology"){
+		    entity = Graviton;
+	    }else if(name == "Colonization Ship"){
+            entity = Coloship;
 	    }else if(name == "none" || name == ""){
             entity = Noentity;
 	    }else{

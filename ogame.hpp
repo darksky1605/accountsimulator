@@ -150,11 +150,6 @@ constexpr EntityInfo Noentity = EntityInfo();
 
 
 
-
-
-
-
-
 struct Resources{
 	std::int64_t met = 0;
 	std::int64_t crystal = 0;

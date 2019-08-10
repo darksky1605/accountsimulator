@@ -410,6 +410,46 @@ bool is_number(const std::string& s){
 
 
 
+
+ogh::EntityInfo parseUpgradeName(const std::string& name){
+    
+    ogh::EntityInfo entity;
+
+    if(name == "metalmine" || name == "met"){
+	    entity = ogh::Metalmine;
+    }else if(name == "crystalmine" || name == "kris" || name == "crys"){
+	    entity = ogh::Crystalmine;
+    }else if(name == "deutsynth" || name == "deut"){
+	    entity = ogh::Deutsynth;
+    }else if(name == "solarplant" || name == "skw"){
+	    entity = ogh::Solar;
+    }else if(name == "fusionplanet" || name == "fkw"){
+	    entity = ogh::Fusion;
+    }else if(name == "robofactory" || name == "robo"){
+	    entity = ogh::Robo;
+    }else if(name == "nanitefactory" || name == "nani"){
+	    entity = ogh::Nanite;
+    }else if(name == "researchlab" || name == "lab"){
+	    entity = ogh::Lab;
+    }else if(name == "energytech" || name == "etech"){
+	    entity = ogh::Energy;
+    }else if(name == "plasmatech" || name == "plasma"){
+	    entity = ogh::Plasma;
+    }else if(name == "astrophysics" || name == "astro"){
+	    entity = ogh::Astro;
+    }else if(name == "researchnetwork" || name == "igfn" || name == "igrn"){
+	    entity = ogh::Researchnetwork;
+    }else if(name == "none" || name == ""){
+        entity = ogh::Noentity;
+    }else{
+	    std::cout << "Invalid upgrade name:" << name << std::endl;
+	    throw std::runtime_error("");
+    }
+    return entity;
+}
+
+
+
 Account parseAccountJsonFile(const std::string& filename){
     Account account;
     std::ifstream is(filename);
@@ -671,7 +711,7 @@ std::vector<Account::UpgradeJob> parseUpgradeFile(const std::string& filename){
 		
 		if(tokens.size() == 1){
 			Account::UpgradeJob job;
-			job.entityInfo = ogh::parseEntityName(tokens[0]);
+			job.entityInfo = parseUpgradeName(tokens[0]);
 			
 			if(job.isResearch()){
 				job.location = Account::UpgradeJob::researchLocation;
@@ -684,7 +724,7 @@ std::vector<Account::UpgradeJob> parseUpgradeFile(const std::string& filename){
 		
 		if(tokens.size() >= 2){
 			Account::UpgradeJob job;
-			job.entityInfo = ogh::parseEntityName(tokens[1]);
+			job.entityInfo = parseUpgradeName(tokens[1]);
 			assert(!job.isResearch());			
 			for(int i = 0; i < int(tokens.size()) - 1; i++){
 				job.location = std::stoi(tokens[i]) - 1;
@@ -729,7 +769,7 @@ std::vector<UpgradeJobList> parseUpgradeFile2(const std::string& filename){
 		
 		if(tokens.size() == 1){
 			Account::UpgradeJob job;
-			job.entityInfo = ogh::parseEntityName(tokens[0]);
+			job.entityInfo = parseUpgradeName(tokens[0]);
 			
 			if(job.isResearch()){
 				job.location = Account::UpgradeJob::researchLocation;
@@ -751,7 +791,7 @@ std::vector<UpgradeJobList> parseUpgradeFile2(const std::string& filename){
                     // token is upgrade name. if locations is empty, upgrade is performed on all planets, 
 					// else it is performed on the planets given in locations
 
-                    const auto entityInfo = ogh::parseEntityName(tokens[i]);
+                    const auto entityInfo = parseUpgradeName(tokens[i]);
 
                     if(locations.empty()){
                         Account::UpgradeJob job;
@@ -826,7 +866,7 @@ std::vector<PermutationGroup> parseUpgradeFile3(const std::string& filename){
 			
 			if(tokens.size() == 1){
 				UpgradeTask job;
-				job.entityInfo = ogh::parseEntityName(tokens[0]);
+				job.entityInfo = parseUpgradeName(tokens[0]);
 				
 				if(job.isResearch()){
 					job.locations.emplace_back(UpgradeTask::researchLocation);
@@ -871,7 +911,7 @@ std::vector<PermutationGroup> parseUpgradeFile3(const std::string& filename){
 						locations.emplace_back(loc);
 					}else{
 						UpgradeTask job;
-						job.entityInfo = ogh::parseEntityName(tokens[i]);
+						job.entityInfo = parseUpgradeName(tokens[i]);
 					
 						// token is upgrade name. if locations is empty, upgrade is performed on all planets, 
 						// else it is performed on the planets given in locations
@@ -935,7 +975,7 @@ void usage(int argc, char** argv){
     std::cout << "--accountfile file: Load initial account data from file\n\n";
     std::cout << "--upgradefile file: Load upgrade list from file\n\n";
     std::cout << "--logfile file: Write program trace to file. Default log.txt.\n\n";
-    std::cout << "--speed ecospeedfactor: Economy speed factor of universe. Default 1.\n\n";
+    std::cout << "--speed ecospeedfactor: Economy speed factor of universe. Overwrites account setting.\n\n";
     std::cout << "--threads num_threads: Number of CPU threads to use for permutations. Default 1.\n\n";
     std::cout << "--permute mode: Default 0.\n\n";
     std::cout << "  mode = 0: No permutation.\n";
@@ -965,6 +1005,7 @@ int detailedmultiupgrade(int argc, char** argv){
     }
     
     int speedfactor = 1;
+    bool overwriteSpeed = false;
     std::string accountFile("");
     std::string upgradeFile("");
     std::string logFileName("/dev/null");
@@ -1003,6 +1044,7 @@ int detailedmultiupgrade(int argc, char** argv){
             assert(i+1 < argc);
             speedfactor = std::atoi(argv[i+1]);
             i++;
+            overwriteSpeed = true;
             continue;
         }
         
@@ -1060,7 +1102,9 @@ int detailedmultiupgrade(int argc, char** argv){
         }
     }
     
-    std::cout << "Speed factor: " << speedfactor << '\n';
+    if(overwriteSpeed){
+        std::cout << "Speed factor: " << speedfactor << '\n';
+    }
     std::cout << "Permutation mode: " << permutationMode << '\n';
     std::cout << "printList: " << printList << '\n';
     std::cout << "printAllLists: " << printAllLists << '\n';
@@ -1087,6 +1131,10 @@ int detailedmultiupgrade(int argc, char** argv){
         account = parseAccountJsonFile(accountFile);
     }else{
         account = parseAccountFile(accountFile);
+    }
+
+    if(overwriteSpeed){
+        account.speedfactor = speedfactor;
     }
 
     auto planned_upgrades = parseUpgradeFile2(upgradeFile);
