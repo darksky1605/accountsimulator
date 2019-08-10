@@ -79,8 +79,22 @@ void from_json(const nlohmann::json& j, ResearchState& s){
     s.entityInfoInQueue = ogh::parseEntityName(j.at("inQueue"));
 }
 
-void to_json(nlohmann::json& j, const OfficerState& s);
-void from_json(const nlohmann::json& j, OfficerState& s);
+void to_json(nlohmann::json& j, const OfficerState& s){
+    j = json{{"commanderDurationDays", s.commanderDurationDays}, 
+            {"engineerDurationDays", s.engineerDurationDays},
+            {"technocratDurationDays", s.technocratDurationDays},
+            {"geologistDurationDays", s.geologistDurationDays},
+            {"admiralDurationDays", s.admiralDurationDays}};
+}
+
+void from_json(const nlohmann::json& j, OfficerState& s){
+    j.at("commanderDurationDays").get_to(s.commanderDurationDays);
+    j.at("engineerDurationDays").get_to(s.engineerDurationDays);
+    j.at("technocratDurationDays").get_to(s.technocratDurationDays);
+    j.at("geologistDurationDays").get_to(s.geologistDurationDays);
+    j.at("admiralDurationDays").get_to(s.admiralDurationDays);
+}
 
 void to_json(nlohmann::json& j, const Account& s);
 void from_json(const nlohmann::json& j, Account& s);
+
