@@ -246,7 +246,8 @@
 		OfficerState officerState{};
 		
 		ogamehelpers::Resources resources{};        
-		
+		ogamehelpers::Production dailyFarmIncomePerSlot{};
+        ogamehelpers::Production dailyExpeditionIncomePerSlot{};
         ogamehelpers::Production dailyFarmIncome{};
         ogamehelpers::Production dailyExpeditionIncome{};
 

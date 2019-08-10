@@ -164,8 +164,8 @@ void to_json(nlohmann::json& j, const Account& a){
             {"research", a.researchState},
             {"officers", a.officerState},
             {"resources", a.resources},
-            {"dailyFarmIncome", a.dailyFarmIncome},
-            {"dailyExpeditionIncome", a.dailyExpeditionIncome},
+            {"dailyFarmIncomePerSlot", a.dailyFarmIncomePerSlot},
+            {"dailyExpeditionIncomePerSlot", a.dailyExpeditionIncomePerSlot},
             {"traderate", a.traderate},
             {"ecospeed", a.speedfactor},
             {"numPlanets", a.planetStates.size()},
@@ -177,8 +177,8 @@ void from_json(const nlohmann::json& j, Account& a){
     j.at("research").get_to(a.researchState);
     j.at("officers").get_to(a.officerState);
     j.at("resources").get_to(a.resources);
-    j.at("dailyFarmIncome").get_to(a.dailyFarmIncome);
-    j.at("dailyExpeditionIncome").get_to(a.dailyExpeditionIncome);
+    j.at("dailyFarmIncomePerSlot").get_to(a.dailyFarmIncomePerSlot);
+    j.at("dailyExpeditionIncomePerSlot").get_to(a.dailyExpeditionIncomePerSlot);
     j.at("traderate").get_to(a.traderate);
     j.at("ecospeed").get_to(a.speedfactor);
 
@@ -210,5 +210,8 @@ void from_json(const nlohmann::json& j, Account& a){
     };
 
     std::for_each(a.planetStates.begin(), a.planetStates.end(), fixPointers);
+
+    a.updateDailyFarmIncome();
+    a.updateDailyExpeditionIncome();
 }
 

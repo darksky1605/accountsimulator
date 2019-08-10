@@ -314,8 +314,10 @@
         case ogh::Entity::Researchnetwork: igrnLevel++; break;
         case ogh::Entity::Astro: astroLevel++; 
                                 accountPtr->astroPhysicsResearchCompleted(); 
+                                accountPtr->updateDailyFarmIncome();
                                 accountPtr->updateDailyExpeditionIncome(); break;
         case ogh::Entity::Computer: computerLevel++;
+                                accountPtr->updateDailyFarmIncome();
                                 accountPtr->updateDailyExpeditionIncome(); break;
         default: std::cerr << "Warning. No callback for this research\n";
         }
@@ -406,6 +408,8 @@
 		resources = rhs.resources;
 		dailyFarmIncome = rhs.dailyFarmIncome;
 		dailyExpeditionIncome = rhs.dailyExpeditionIncome;
+        dailyFarmIncomePerSlot = rhs.dailyFarmIncomePerSlot;
+		dailyExpeditionIncomePerSlot = rhs.dailyExpeditionIncomePerSlot;
 		traderate = rhs.traderate;
 		speedfactor = rhs.speedfactor;
 		time = rhs.time;
@@ -575,11 +579,19 @@
 	}
 
     void Account::updateDailyFarmIncome(){
+        const int fleetSlots = ogh::getNumberOfFleetSlots(researchState.computerLevel);
+        const int expoSlots = ogh::getNumberOfExpeditionSlots(researchState.astroLevel);
+        const int slots = std::max(0, fleetSlots - expoSlots);
 
+        dailyFarmIncome = dailyFarmIncomePerSlot * slots;
     }
         
     void Account::updateDailyExpeditionIncome(){
+        const int fleetSlots = ogh::getNumberOfFleetSlots(researchState.computerLevel);
+        const int expoSlots = ogh::getNumberOfExpeditionSlots(researchState.astroLevel);
+        const int slots = std::min(fleetSlots, expoSlots);
 
+        dailyExpeditionIncomePerSlot = dailyExpeditionIncome * slots;
     }
 	
 	void Account::setPercentToMaxProduction(const char* name, int level){
