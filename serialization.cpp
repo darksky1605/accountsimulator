@@ -61,8 +61,23 @@ void from_json(const json& j, PlanetState& p){
 }
 
 
-void to_json(nlohmann::json& j, const ResearchState& s);
-void from_json(const nlohmann::json& j, ResearchState& s);
+void to_json(json& j, const ResearchState& s){
+    j = json{{"etechLevel", s.etechLevel}, 
+            {"plasmaLevel", s.plasmaLevel},
+            {"igrnLevel", s.igrnLevel},
+            {"astroLevel", s.astroLevel},
+            {"researchQueueDays", s.researchQueue},
+            {"inQueue", s.entityInfoInQueue.name}};
+}
+
+void from_json(const nlohmann::json& j, ResearchState& s){
+    j.at("etechLevel").get_to(s.etechLevel);
+    j.at("plasmaLevel").get_to(s.plasmaLevel);
+    j.at("igrnLevel").get_to(s.igrnLevel);
+    j.at("astroLevel").get_to(s.astroLevel);
+    j.at("researchQueueDays").get_to(s.researchQueue);
+    s.entityInfoInQueue = ogh::parseEntityName(j.at("inQueue"));
+}
 
 void to_json(nlohmann::json& j, const OfficerState& s);
 void from_json(const nlohmann::json& j, OfficerState& s);
