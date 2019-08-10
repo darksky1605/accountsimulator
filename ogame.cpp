@@ -634,6 +634,14 @@ namespace ogamehelpers{
         return astro;
     }
 
+    int getNumberOfFleetSlots(int computerLevel){
+        return computerLevel + 1;
+    }
+
+    int getNumberOfExpeditionSlots(int astroLevel){
+        return int(std::sqrt(astroLevel));
+    }
+
     EntityInfo parseEntityName(const std::string& name){
 	    
 	    EntityInfo entity;
