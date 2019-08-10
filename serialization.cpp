@@ -48,6 +48,11 @@ void to_json(json& j, const PlanetState& p){
             {"roboLevel", p.roboLevel},
             {"naniteLevel", p.naniteLevel},
             {"shipyardLevel", p.shipyardLevel},
+            {"metalStorageLevel", p.metalStorageLevel},
+            {"crystalStorageLevel", p.crystalStorageLevel},
+            {"deutStorageLevel", p.deutStorageLevel},
+            {"allianceDepotLevel", p.allianceDepotLevel},
+            {"missileSiloLevel", p.missileSiloLevel},
             {"temperature", p.temperature},
             {"metPercent", p.metPercent},
             {"crysPercent", p.crysPercent},
@@ -75,6 +80,11 @@ void from_json(const json& j, PlanetState& p){
     j.at("roboLevel").get_to(p.roboLevel);
     j.at("naniteLevel").get_to(p.naniteLevel);
     j.at("shipyardLevel").get_to(p.shipyardLevel);
+    j.at("metalStorageLevel").get_to(p.metalStorageLevel);
+    j.at("crystalStorageLevel").get_to(p.crystalStorageLevel);
+    j.at("deutStorageLevel").get_to(p.deutStorageLevel);
+    j.at("allianceDepotLevel").get_to(p.allianceDepotLevel);
+    j.at("missileSiloLevel").get_to(p.missileSiloLevel);
     j.at("temperature").get_to(p.temperature);
     j.at("metPercent").get_to(p.metPercent);
     j.at("crysPercent").get_to(p.crysPercent);
@@ -93,7 +103,19 @@ void from_json(const json& j, PlanetState& p){
 
 
 void to_json(json& j, const ResearchState& s){
-    j = json{{"etechLevel", s.etechLevel}, 
+
+    j = json{{"espionageLevel", s.espionageLevel},
+            {"computerLevel", s.computerLevel},
+            {"weaponsLevel", s.weaponsLevel},
+            {"shieldingLevel", s.shieldingLevel},
+            {"armourLevel", s.armourLevel},
+            {"etechLevel", s.etechLevel},
+            {"hyperspacetechLevel", s.hyperspacetechLevel},
+            {"combustionLevel", s.combustionLevel},
+            {"impulseLevel", s.impulseLevel},
+            {"hyperspacedriveLevel", s.hyperspacedriveLevel},
+            {"laserLevel", s.laserLevel},
+            {"ionLevel", s.ionLevel},
             {"plasmaLevel", s.plasmaLevel},
             {"igrnLevel", s.igrnLevel},
             {"astroLevel", s.astroLevel},
@@ -102,7 +124,18 @@ void to_json(json& j, const ResearchState& s){
 }
 
 void from_json(const nlohmann::json& j, ResearchState& s){
+    j.at("espionageLevel").get_to(s.espionageLevel);
+    j.at("computerLevel").get_to(s.computerLevel);
+    j.at("weaponsLevel").get_to(s.weaponsLevel);
+    j.at("shieldingLevel").get_to(s.shieldingLevel);
+    j.at("armourLevel").get_to(s.armourLevel);
     j.at("etechLevel").get_to(s.etechLevel);
+    j.at("hyperspacetechLevel").get_to(s.hyperspacetechLevel);
+    j.at("combustionLevel").get_to(s.combustionLevel);
+    j.at("impulseLevel").get_to(s.impulseLevel);
+    j.at("hyperspacedriveLevel").get_to(s.hyperspacedriveLevel);
+    j.at("laserLevel").get_to(s.laserLevel);
+    j.at("ionLevel").get_to(s.ionLevel);
     j.at("plasmaLevel").get_to(s.plasmaLevel);
     j.at("igrnLevel").get_to(s.igrnLevel);
     j.at("astroLevel").get_to(s.astroLevel);

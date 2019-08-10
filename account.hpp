@@ -45,6 +45,11 @@
 		int roboLevel = 0;
 		int naniteLevel = 0;
 		int shipyardLevel = 0;
+        int metalStorageLevel = 0;
+        int crystalStorageLevel = 0;
+        int deutStorageLevel = 0;
+        int allianceDepotLevel = 0;
+        int missileSiloLevel = 0;
 		int temperature = 0;
 		int metPercent = 0;
 		int crysPercent = 0;
@@ -70,11 +75,9 @@
         mutable ogamehelpers::Production dailyProduction;
         bool dailyProductionNeedsUpdate = true;
 		
-		PlanetState();
-		
-		PlanetState(const PlanetState& rhs);
-		
-		PlanetState& operator=(const PlanetState& rhs);
+		PlanetState() = default;		
+		PlanetState(const PlanetState& rhs) = default;		
+		PlanetState& operator=(const PlanetState& rhs) = default;
 		
 		ogamehelpers::ItemRarity getMetItem() const;
 		ogamehelpers::ItemRarity getCrysItem() const;
@@ -95,10 +98,19 @@
 		void setPercentToMaxProduction(const char* name, int level);
 	};
 	
-	
 	struct ResearchState{
-		
-		int etechLevel = 0;
+		int espionageLevel = 0;
+        int computerLevel = 0;
+        int weaponsLevel = 0;
+        int shieldingLevel = 0;
+        int armourLevel = 0;
+        int etechLevel = 0;
+        int hyperspacetechLevel = 0;
+        int combustionLevel = 0;
+        int impulseLevel = 0;
+        int hyperspacedriveLevel = 0;
+        int laserLevel = 0;
+        int ionLevel = 0;
 		int plasmaLevel = 0;
 		int igrnLevel = 0;
 		int astroLevel = 0;
@@ -108,11 +120,9 @@
 		
 		Account* accountPtr;
 		
-		ResearchState();
-		
-		ResearchState(const ResearchState& rhs);
-		
-		ResearchState& operator=(const ResearchState& rhs);
+		ResearchState() = default;		
+		ResearchState(const ResearchState& rhs) = default;		
+		ResearchState& operator=(const ResearchState& rhs) = default;
 		
 		bool researchInProgress() const;
 		
@@ -242,7 +252,7 @@
         bool farmIncomeNeedsUpdate = false;
         bool expoIncomeNeedsUpdate = false;
 
-        std::array<float, 3> traderate;		
+        std::array<float, 3> traderate{3.0f,2.0f,1.0f};		
 		
         int speedfactor = 1;
 		

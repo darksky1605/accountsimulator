@@ -18,47 +18,6 @@
 
 	std::unique_ptr<std::ofstream> Account::nullfile = std::make_unique<std::ofstream>("/dev/null");
 	
-	PlanetState::PlanetState(){}
-	
-	PlanetState::PlanetState(const PlanetState& rhs){
-		operator=(rhs);
-	}
-	
-	PlanetState& PlanetState::operator=(const PlanetState& rhs){
-		planetId = rhs.planetId;
-		metLevel = rhs.metLevel;
-		crysLevel = rhs.crysLevel;
-		deutLevel = rhs.deutLevel;
-		solarLevel = rhs.solarLevel;
-		fusionLevel = rhs.fusionLevel;
-		labLevel = rhs.labLevel;
-		roboLevel = rhs.roboLevel;
-		naniteLevel = rhs.naniteLevel;
-		shipyardLevel = rhs.shipyardLevel;
-		temperature = rhs.temperature;
-		metPercent = rhs.metPercent;
-		crysPercent = rhs.crysPercent;
-		deutPercent = rhs.deutPercent;
-		fusionPercent = rhs.fusionPercent;
-		metItem = rhs.metItem;
-		crysItem = rhs.crysItem;
-		deutItem = rhs.deutItem;
-		metItemDurationDays = rhs.metItemDurationDays;
-		crysItemDurationDays = rhs.crysItemDurationDays;
-		deutItemDurationDays = rhs.deutItemDurationDays;
-		sats = rhs.sats;
-		researchStatePtr = rhs.researchStatePtr;
-		officerStatePtr = rhs.officerStatePtr;
-		accountPtr = rhs.accountPtr;
-		buildingQueue = 0.0f;
-        dailyProductionNeedsUpdate = rhs.dailyProductionNeedsUpdate;
-        percentageChanges = rhs.percentageChanges;
-		
-		startConstruction(rhs.buildingQueue, rhs.entityInfoInQueue);
-		
-		return *this;
-	}
-	
 	ogh::ItemRarity PlanetState::getMetItem() const{
 		if(metItemDurationDays > 0)
 			return metItem;
@@ -306,28 +265,6 @@
             
             accountPtr->trace(sstream.str());
         }
-	}
-	
-	
-	
-	ResearchState::ResearchState(){}
-		
-	ResearchState::ResearchState(const ResearchState& rhs){
-		operator=(rhs);
-	}
-	
-	ResearchState& ResearchState::operator=(const ResearchState& rhs){
-		etechLevel = rhs.etechLevel;
-		plasmaLevel = rhs.plasmaLevel;
-		igrnLevel = rhs.igrnLevel;
-        astroLevel = rhs.astroLevel;
-		accountPtr = rhs.accountPtr;
-		
-		researchQueue = 0.0f;
-		
-		startResearch(rhs.researchQueue, rhs.entityInfoInQueue);
-		
-		return *this;
 	}
 	
 	bool ResearchState::researchInProgress() const{

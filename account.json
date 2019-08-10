@@ -1,4 +1,14 @@
 {
+    "dailyExpeditionIncome": {
+        "crystal": 0,
+        "deuterium": 0,
+        "metal": 0
+    },
+    "dailyFarmIncome": {
+        "crystal": 0,
+        "deuterium": 0,
+        "metal": 0
+    },
     "ecospeed": 1,
     "numPlanets": 15,
     "officers": {
@@ -11,15 +21,18 @@
     "planetType": "identical",
     "planets": [
         {
+            "allianceDepotLevel": 0,
             "buildingQueueDays": 0.0,
             "crysItem": "none",
             "crysItemDurationDays": 0.0,
             "crysLevel": 39,
             "crysPercent": 100,
+            "crystalStorageLevel": 0,
             "deutItem": "none",
             "deutItemDurationDays": 0.0,
             "deutLevel": 42,
             "deutPercent": 100,
+            "deutStorageLevel": 0,
             "fusionLevel": 21,
             "fusionPercent": 100,
             "inQueue": "",
@@ -28,6 +41,8 @@
             "metItemDurationDays": 0.0,
             "metLevel": 45,
             "metPercent": 100,
+            "metalStorageLevel": 0,
+            "missileSiloLevel": 0,
             "naniteLevel": 5,
             "planetId": 1,
             "roboLevel": 12,
@@ -38,24 +53,25 @@
         }
     ],
     "research": {
+        "armourLevel": 0,
         "astroLevel": 27,
+        "combustionLevel": 0,
+        "computerLevel": 0,
+        "espionageLevel": 0,
         "etechLevel": 22,
+        "hyperspacedriveLevel": 0,
+        "hyperspacetechLevel": 0,
         "igrnLevel": 14,
+        "impulseLevel": 0,
         "inQueue": "",
+        "ionLevel": 0,
+        "laserLevel": 0,
         "plasmaLevel": 20,
-        "researchQueueDays": 0.0
+        "researchQueueDays": 0.0,
+        "shieldingLevel": 0,
+        "weaponsLevel": 0
     },
     "resources": {
-        "crystal": 0,
-        "deuterium": 0,
-        "metal": 0
-    },
-    "dailyFarmIncome": {
-        "crystal": 0,
-        "deuterium": 0,
-        "metal": 0
-    },
-    "dailyExpeditionIncome": {
         "crystal": 0,
         "deuterium": 0,
         "metal": 0
