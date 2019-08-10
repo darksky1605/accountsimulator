@@ -52,24 +52,25 @@
 	bool PlanetState::constructionInProgress() const{
 		return buildingQueue > 0.0f;
 	}
-	
+
 	int PlanetState::getLevel(const ogh::EntityInfo& info) const{
-        int level = 0;
-        
 		switch(info.entity){
-            case ogh::Entity::Metalmine: level = metLevel; break;
-            case ogh::Entity::Crystalmine: level = crysLevel; break;
-            case ogh::Entity::Deutsynth: level = deutLevel; break;
-            case ogh::Entity::Solar: level = solarLevel; break;
-            case ogh::Entity::Fusion: level = fusionLevel; break;
-            case ogh::Entity::Lab: level = labLevel; break;
-            case ogh::Entity::Robo: level = roboLevel; break;
-            case ogh::Entity::Nanite: level = naniteLevel; break;
-            case ogh::Entity::Shipyard: level = naniteLevel; break;
+            case ogh::Entity::Metalmine: return metLevel;
+            case ogh::Entity::Crystalmine: return crysLevel;
+            case ogh::Entity::Deutsynth: return deutLevel;
+            case ogh::Entity::Solar: return solarLevel;
+            case ogh::Entity::Fusion: return fusionLevel;
+            case ogh::Entity::Lab: return labLevel;
+            case ogh::Entity::Robo: return roboLevel;
+            case ogh::Entity::Nanite: return naniteLevel;
+            case ogh::Entity::Shipyard: return shipyardLevel;
+            case ogh::Entity::Metalstorage: return metalStorageLevel;
+            case ogh::Entity::Crystalstorage: return crystalStorageLevel;
+            case ogh::Entity::Deutstorage: return deutStorageLevel;
+            case ogh::Entity::Alliancedepot: return allianceDepotLevel;
+            case ogh::Entity::Silo: return missileSiloLevel;
             default: throw std::runtime_error("planetstate getLevel error " + std::string{info.name});
 		}
-
-		return level;
 	}
 
     void PlanetState::buildingFinishedCallback(){
@@ -83,6 +84,11 @@
             case ogh::Entity::Robo: roboLevel++; break;
             case ogh::Entity::Nanite: naniteLevel++; break;
             case ogh::Entity::Shipyard: shipyardLevel++; break;
+            case ogh::Entity::Metalstorage: metalStorageLevel++; break;
+            case ogh::Entity::Crystalstorage: crystalStorageLevel++; break;
+            case ogh::Entity::Deutstorage: deutStorageLevel++; break;
+            case ogh::Entity::Alliancedepot: allianceDepotLevel++; break;
+            case ogh::Entity::Silo: missileSiloLevel++; break;
             default: throw std::runtime_error("No building finished callback for this building " + std::string{entityInfoInQueue.name});
         }
 
