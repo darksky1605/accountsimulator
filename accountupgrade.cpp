@@ -410,7 +410,19 @@ bool is_number(const std::string& s){
 
 
 
+Account parseAccountJsonFile(const std::string& filename){
+    Account account;
+    std::ifstream is(filename);
 
+    if(!is)
+        throw std::runtime_error("Cannot open file " + filename);
+    
+    json j;
+    is >> j;
+    account = j.get<Account>();
+
+    return account;  
+}
 
 Account parseAccountFile(const std::string& filename){
 	Account account;
@@ -608,6 +620,8 @@ Account parseAccountFile(const std::string& filename){
 	if(nextline()){
 		account.resources.deut = std::stoi(line);
 	}
+
+    json j3 = account.resources;
 	
 	//parse traderate	
 	if(nextline()){
@@ -619,6 +633,9 @@ Account parseAccountFile(const std::string& filename){
 	if(nextline()){
 		account.traderate[2] = std::stoi(line);
 	}
+
+   // json j4 = account;
+   // std::cout << std::setw(4) << j4 << std::endl;
 	
 	return account;
 }
@@ -1065,9 +1082,15 @@ int detailedmultiupgrade(int argc, char** argv){
         throw std::runtime_error("Cannot open log file " + logFileName);
     }
     
-    auto account = parseAccountFile(accountFile);
+    Account account;
+    if(accountFile.find(".json") != std::string::npos){
+        account = parseAccountJsonFile(accountFile);
+    }else{
+        account = parseAccountFile(accountFile);
+    }
+
     auto planned_upgrades = parseUpgradeFile2(upgradeFile);
-    account.speedfactor = speedfactor;
+
     account.setLogFile(&logFile);
     
     /*for(const auto& upgrade : planned_upgrades){

@@ -1,6 +1,13 @@
 #include "account.hpp"
-
+#include "ogame.hpp"
 #include "json.hpp"
+
+namespace ogamehelpers{
+
+    void to_json(nlohmann::json& j, const Resources& r);
+    void from_json(const nlohmann::json& j, Resources& r);
+
+}
 
 void to_json(nlohmann::json& j, const PlanetState& s);
 void from_json(const nlohmann::json& j, PlanetState& s);

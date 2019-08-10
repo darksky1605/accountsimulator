@@ -1,10 +1,29 @@
 #include "account.hpp"
-
+#include "ogame.hpp"
 #include "json.hpp"
+
+#include <algorithm>
+#include <string>
 
 using json = nlohmann::json;
 
 namespace ogh = ogamehelpers;
+
+namespace ogamehelpers{
+
+    void to_json(nlohmann::json& j, const Resources& r){
+        j = json{{"metal", r.met}, 
+                {"crystal", r.crystal},
+                {"deuterium", r.deut}};
+    }
+
+    void from_json(const nlohmann::json& j, Resources& r){
+        j.at("metal").get_to(r.met);
+        j.at("crystal").get_to(r.crystal);
+        j.at("deuterium").get_to(r.deut);
+    }
+
+}
 
 void to_json(json& j, const PlanetState& p){
     j = json{{"planetId", p.planetId}, 
@@ -95,6 +114,52 @@ void from_json(const nlohmann::json& j, OfficerState& s){
     j.at("admiralDurationDays").get_to(s.admiralDurationDays);
 }
 
-void to_json(nlohmann::json& j, const Account& s);
-void from_json(const nlohmann::json& j, Account& s);
+void to_json(nlohmann::json& j, const Account& a){
+    j = json{{"planets", a.planetStates}, 
+            {"research", a.researchState},
+            {"officers", a.officerState},
+            {"resources", a.resources},
+            {"traderate", a.traderate},
+            {"ecospeed", a.speedfactor},
+            {"numPlanets", a.planetStates.size()},
+            {"planetType", "individual"}};
+}
+
+void from_json(const nlohmann::json& j, Account& a){
+    j.at("planets").get_to(a.planetStates);
+    j.at("research").get_to(a.researchState);
+    j.at("officers").get_to(a.officerState);
+    j.at("resources").get_to(a.resources);
+    j.at("traderate").get_to(a.traderate);
+    j.at("ecospeed").get_to(a.speedfactor);
+
+    int numPlanets = j.at("numPlanets");
+    std::string planetType = j.at("planetType");
+
+    if(numPlanets == 0 || a.planetStates.size() == 0){
+        throw std::runtime_error("Invalid account json data. Accounts must have at least 1 planet. Abort.");
+    }
+
+    if(numPlanets != int(a.planetStates.size())){
+        if(planetType == "individual"){
+            throw std::runtime_error("Invalid account json data. Abort.");
+        }else if(planetType == "identical"){
+            a.planetStates.resize(numPlanets);
+            std::fill(a.planetStates.begin()+1, a.planetStates.end(), a.planetStates[0]);
+		    for(int i = 1; i < numPlanets; i++){
+			    a.planetStates[i].planetId = i+1;
+		    }
+        }else{
+            throw std::runtime_error("Invalid account json data. planetType must be either \"individual\" or \"identical\"");
+        }
+    }
+
+    auto fixPointers = [&](auto& p){
+        p.researchStatePtr = &a.researchState;
+		p.officerStatePtr = &a.officerState;
+		p.accountPtr = &a;
+    };
+
+    std::for_each(a.planetStates.begin(), a.planetStates.end(), fixPointers);
+}
 
