@@ -280,26 +280,43 @@
 				researchFinishedCallback();
 		}			
 	}
-	
-	int ResearchState::getLevel(const ogh::EntityInfo& info) const{
-		switch(info.entity){
-			case ogh::Entity::Energy: return etechLevel; 
-			case ogh::Entity::Plasma: return plasmaLevel;
-			case ogh::Entity::Researchnetwork: return igrnLevel;
-			case ogh::Entity::Astro: return astroLevel;
-			default: throw std::runtime_error("researchstate getLevel error");
-		}
-	}
+
+    int ResearchState::getLevel(const ogh::EntityInfo& info) const{
+        switch(info.entity){
+        case ogh::Entity::Espionage: return espionageLevel; 
+        case ogh::Entity::Computer: return computerLevel; 
+        case ogh::Entity::Weapons: return weaponsLevel; 
+        case ogh::Entity::Shielding: return shieldingLevel; 
+        case ogh::Entity::Armour: return armourLevel; 
+        case ogh::Entity::Energy: return etechLevel; 
+        case ogh::Entity::Hyperspacetech: return hyperspacetechLevel; 
+        case ogh::Entity::Combustion: return combustionLevel; 
+        case ogh::Entity::Impulse: return impulseLevel; 
+        case ogh::Entity::Hyperspacedrive: return hyperspacedriveLevel; 
+        case ogh::Entity::Laser: return laserLevel; 
+        case ogh::Entity::Ion: return ionLevel; 
+        case ogh::Entity::Plasma: return plasmaLevel; 
+        case ogh::Entity::Researchnetwork: return igrnLevel; 
+        case ogh::Entity::Astro: return astroLevel;
+        default: throw std::runtime_error("researchstate getLevel error");
+        }
+    }
 
     void ResearchState::researchFinishedCallback(){
         //update state after research is finished
         switch(entityInfoInQueue.entity){
-        case ogh::Entity::Energy: etechLevel++; accountPtr->invalidatePlanetProductions();
-					          accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, etechLevel); break;
-        case ogh::Entity::Plasma: plasmaLevel++; accountPtr->invalidatePlanetProductions();
-					          accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, plasmaLevel); break;
+        case ogh::Entity::Energy: etechLevel++; 
+                                accountPtr->invalidatePlanetProductions();
+					            accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, etechLevel); break;
+        case ogh::Entity::Plasma: plasmaLevel++; 
+                                accountPtr->invalidatePlanetProductions();
+					            accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, plasmaLevel); break;
         case ogh::Entity::Researchnetwork: igrnLevel++; break;
-        case ogh::Entity::Astro: astroLevel++; accountPtr->astroPhysicsResearchCompleted(); break;
+        case ogh::Entity::Astro: astroLevel++; 
+                                accountPtr->astroPhysicsResearchCompleted(); 
+                                accountPtr->updateDailyExpeditionIncome(); break;
+        case ogh::Entity::Computer: computerLevel++;
+                                accountPtr->updateDailyExpeditionIncome(); break;
         default: std::cerr << "Warning. No callback for this research\n";
         }
 
@@ -389,8 +406,6 @@
 		resources = rhs.resources;
 		dailyFarmIncome = rhs.dailyFarmIncome;
 		dailyExpeditionIncome = rhs.dailyExpeditionIncome;
-		farmIncomeNeedsUpdate = rhs.farmIncomeNeedsUpdate;
-		expoIncomeNeedsUpdate = rhs.expoIncomeNeedsUpdate;
 		traderate = rhs.traderate;
 		speedfactor = rhs.speedfactor;
 		time = rhs.time;
@@ -542,16 +557,10 @@
     }
 
     ogh::Production Account::getCurrentDailyFarmIncome() const{
-        if(farmIncomeNeedsUpdate){
-
-        }
         return dailyFarmIncome;
     }
 
     ogh::Production Account::getCurrentDailyExpeditionIncome() const{
-        if(expoIncomeNeedsUpdate){
-
-        }
         return dailyExpeditionIncome;
     }
 	
@@ -564,6 +573,14 @@
 		
 		return currentProduction;
 	}
+
+    void Account::updateDailyFarmIncome(){
+
+    }
+        
+    void Account::updateDailyExpeditionIncome(){
+
+    }
 	
 	void Account::setPercentToMaxProduction(const char* name, int level){
         auto setPercent = [&](auto& p){p.setPercentToMaxProduction(name, level);};

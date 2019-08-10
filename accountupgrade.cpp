@@ -439,6 +439,8 @@ ogh::EntityInfo parseUpgradeName(const std::string& name){
 	    entity = ogh::Astro;
     }else if(name == "researchnetwork" || name == "igfn" || name == "igrn"){
 	    entity = ogh::Researchnetwork;
+    }else if(name == "computertech" || name == "comp"){
+	    entity = ogh::Computer;
     }else if(name == "none" || name == ""){
         entity = ogh::Noentity;
     }else{

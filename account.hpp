@@ -247,10 +247,8 @@
 		
 		ogamehelpers::Resources resources{};        
 		
-        mutable ogamehelpers::Production dailyFarmIncome{};
-        mutable ogamehelpers::Production dailyExpeditionIncome{};
-        bool farmIncomeNeedsUpdate = false;
-        bool expoIncomeNeedsUpdate = false;
+        ogamehelpers::Production dailyFarmIncome{};
+        ogamehelpers::Production dailyExpeditionIncome{};
 
         std::array<float, 3> traderate{3.0f,2.0f,1.0f};		
 		
@@ -301,6 +299,10 @@
         ogamehelpers::Production getCurrentDailyExpeditionIncome() const;
 		
 		ogamehelpers::Production getCurrentDailyProduction() const;
+
+        void updateDailyFarmIncome();
+        
+        void updateDailyExpeditionIncome();
 		
 		void setPercentToMaxProduction(const char* name, int level);
 
