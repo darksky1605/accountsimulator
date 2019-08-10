@@ -314,7 +314,7 @@ int getMaxPossiblePlanets(int astroLevel);
 int getMinPossibleAstro(int num_planets);
 
 
-
+EntityInfo parseEntityName(const std::string& name);
 
 
 

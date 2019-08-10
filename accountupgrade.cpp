@@ -406,42 +406,7 @@ bool is_number(const std::string& s){
 }
 
 
-ogh::EntityInfo parseEntityName(const std::string& name){
-	
-	ogh::EntityInfo entity;
 
-	if(name == "metalmine" || name == "met"){
-		entity = ogh::Metalmine;
-	}else if(name == "crystalmine" || name == "kris" || name == "crys"){
-		entity = ogh::Crystalmine;
-	}else if(name == "deutsynth" || name == "deut"){
-		entity = ogh::Deutsynth;
-	}else if(name == "solarplant" || name == "skw"){
-		entity = ogh::Solar;
-	}else if(name == "fusionplanet" || name == "fkw"){
-		entity = ogh::Fusion;
-	}else if(name == "robofactory" || name == "robo"){
-		entity = ogh::Robo;
-	}else if(name == "nanitefactory" || name == "nani"){
-		entity = ogh::Nanite;
-	}else if(name == "researchlab" || name == "lab"){
-		entity = ogh::Lab;
-	}else if(name == "energytech" || name == "etech"){
-		entity = ogh::Energy;
-	}else if(name == "plasmatech" || name == "plasma"){
-		entity = ogh::Plasma;
-	}else if(name == "astrophysics" || name == "astro"){
-		entity = ogh::Astro;
-	}else if(name == "researchnetwork" || name == "igfn" || name == "igrn"){
-		entity = ogh::Researchnetwork;
-	}else if(name == "none"){
-        entity = ogh::Noentity;
-	}else{
-		std::cout << "Invalid entity name:" << name << std::endl;
-		throw std::runtime_error("");
-	}
-	return entity;
-}
 
 
 Account parseAccountFile(const std::string& filename){
@@ -583,7 +548,7 @@ Account parseAccountFile(const std::string& filename){
 			buildingQueue = std::stof(line);
 		}
 		if(nextline()){
-			e = parseEntityName(line);
+			e = ogh::parseEntityName(line);
 			if(buildingQueue > 0.0f && e.entity != ogh::Entity::None)
 				account.startConstruction(planetid, buildingQueue, e, ogh::Resources{});
 		}
@@ -615,7 +580,7 @@ Account parseAccountFile(const std::string& filename){
 		researchQueue = std::stof(line);
 	}
 	if(nextline()){
-		e = parseEntityName(line);
+		e = ogh::parseEntityName(line);
 		if(researchQueue > 0.0f && e.entity != ogh::Entity::None)
 			account.startResearch(researchQueue, e, ogh::Resources{});
 	}
@@ -694,7 +659,7 @@ std::vector<Account::UpgradeJob> parseUpgradeFile(const std::string& filename){
 		
 		if(tokens.size() == 1){
 			Account::UpgradeJob job;
-			job.entityInfo = parseEntityName(tokens[0]);
+			job.entityInfo = ogh::parseEntityName(tokens[0]);
 			
 			if(job.isResearch()){
 				job.location = Account::UpgradeJob::researchLocation;
@@ -707,7 +672,7 @@ std::vector<Account::UpgradeJob> parseUpgradeFile(const std::string& filename){
 		
 		if(tokens.size() >= 2){
 			Account::UpgradeJob job;
-			job.entityInfo = parseEntityName(tokens[1]);
+			job.entityInfo = ogh::parseEntityName(tokens[1]);
 			assert(!job.isResearch());			
 			for(int i = 0; i < int(tokens.size()) - 1; i++){
 				job.location = std::stoi(tokens[i]) - 1;
@@ -752,7 +717,7 @@ std::vector<UpgradeJobList> parseUpgradeFile2(const std::string& filename){
 		
 		if(tokens.size() == 1){
 			Account::UpgradeJob job;
-			job.entityInfo = parseEntityName(tokens[0]);
+			job.entityInfo = ogh::parseEntityName(tokens[0]);
 			
 			if(job.isResearch()){
 				job.location = Account::UpgradeJob::researchLocation;
@@ -774,7 +739,7 @@ std::vector<UpgradeJobList> parseUpgradeFile2(const std::string& filename){
                     // token is upgrade name. if locations is empty, upgrade is performed on all planets, 
 					// else it is performed on the planets given in locations
 
-                    const auto entityInfo = parseEntityName(tokens[i]);
+                    const auto entityInfo = ogh::parseEntityName(tokens[i]);
 
                     if(locations.empty()){
                         Account::UpgradeJob job;
@@ -849,7 +814,7 @@ std::vector<PermutationGroup> parseUpgradeFile3(const std::string& filename){
 			
 			if(tokens.size() == 1){
 				UpgradeTask job;
-				job.entityInfo = parseEntityName(tokens[0]);
+				job.entityInfo = ogh::parseEntityName(tokens[0]);
 				
 				if(job.isResearch()){
 					job.locations.emplace_back(UpgradeTask::researchLocation);
@@ -894,7 +859,7 @@ std::vector<PermutationGroup> parseUpgradeFile3(const std::string& filename){
 						locations.emplace_back(loc);
 					}else{
 						UpgradeTask job;
-						job.entityInfo = parseEntityName(tokens[i]);
+						job.entityInfo = ogh::parseEntityName(tokens[i]);
 					
 						// token is upgrade name. if locations is empty, upgrade is performed on all planets, 
 						// else it is performed on the planets given in locations

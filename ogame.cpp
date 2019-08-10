@@ -633,4 +633,42 @@ namespace ogamehelpers{
             astro += 2;
         return astro;
     }
+
+
+    EntityInfo parseEntityName(const std::string& name){
+	    
+	    EntityInfo entity;
+
+	    if(name == "metalmine" || name == "met"){
+		    entity = Metalmine;
+	    }else if(name == "crystalmine" || name == "kris" || name == "crys"){
+		    entity = Crystalmine;
+	    }else if(name == "deutsynth" || name == "deut"){
+		    entity = Deutsynth;
+	    }else if(name == "solarplant" || name == "skw"){
+		    entity = Solar;
+	    }else if(name == "fusionplanet" || name == "fkw"){
+		    entity = Fusion;
+	    }else if(name == "robofactory" || name == "robo"){
+		    entity = Robo;
+	    }else if(name == "nanitefactory" || name == "nani"){
+		    entity = Nanite;
+	    }else if(name == "researchlab" || name == "lab"){
+		    entity = Lab;
+	    }else if(name == "energytech" || name == "etech"){
+		    entity = Energy;
+	    }else if(name == "plasmatech" || name == "plasma"){
+		    entity = Plasma;
+	    }else if(name == "astrophysics" || name == "astro"){
+		    entity = Astro;
+	    }else if(name == "researchnetwork" || name == "igfn" || name == "igrn"){
+		    entity = Researchnetwork;
+	    }else if(name == "none"){
+            entity = Noentity;
+	    }else{
+		    std::cout << "Invalid entity name:" << name << std::endl;
+		    throw std::runtime_error("");
+	    }
+	    return entity;
+    }
 }
