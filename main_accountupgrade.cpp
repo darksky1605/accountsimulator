@@ -188,62 +188,6 @@
 		
 	}
 	
-	UpgradeResult perform_upgrades(Account& account,
-									const std::vector<Account::UpgradeJob>& planned_upgrades){
-
-		using ogh::EntityType;
-				
-		UpgradeResult result;
-		result.upgradeJobStatistics.reserve(planned_upgrades.size());	
-		
-		for(int jobid = 0; jobid < int(planned_upgrades.size()); jobid++){
-			const auto& job = planned_upgrades[jobid];
-			const auto& entityInfo = job.entityInfo;
-			const int upgradeLocation = job.location;
-			
-			assert(entityInfo.type == EntityType::Building || entityInfo.type == EntityType::Research);
-			assert(entityInfo.type != EntityType::Research || job.location == Account::UpgradeJob::researchLocation);
-			assert(entityInfo.type != EntityType::Building || upgradeLocation == Account::UpgradeJob::allCurrentPlanetsLocation 
-					|| (upgradeLocation >= 0 && upgradeLocation < account.getNumPlanets()+1)); // +1 to account for possible astro physics in progress
-			
-			if(job.isResearch()){
-				result.upgradeJobStatistics.emplace_back(account.processResearchJob(job));
-			}else{
-				if(job.isBuilding() && job.location == Account::UpgradeJob::allCurrentPlanetsLocation){
-					Account::UpgradeJob partialJob = job;
-					for(int i = 0; i < account.getNumPlanets(); i++){
-						partialJob.location = i;
-						result.upgradeJobStatistics.emplace_back(account.processBuildingJob(partialJob));
-					}
-				}else{
-					result.upgradeJobStatistics.emplace_back(account.processBuildingJob(job));
-				}
-			}
-		}
-			
-		result.lastConstructionStartedAfterDays = account.time;
-		result.savingFinishedInDays = 0.0f;
-		result.previousUpgradeDelay = 0.0f;
-		
-		for(const auto& stat : result.upgradeJobStatistics){
-			result.savingFinishedInDays += stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin;
-			result.previousUpgradeDelay += stat.constructionBeginDays - stat.waitingPeriodDaysBegin;
-		}
-		
-		//wait until all planets finished building
-		
-		account.waitForAllConstructions();
-		
-		result.constructionFinishedInDays = account.time;
-		
-		std::cout << std::flush;
-		std::cerr << std::flush;
-		
-		return result;
-		
-	}
-	
-	
 	
 // ##########################################################
 
@@ -899,6 +843,12 @@ int detailedmultiupgrade(int argc, char** argv){
     }
 
     auto planned_upgrades = parseUpgradeFile2(upgradeFile);
+
+    {
+        auto tmp = parseUpgradeFile3(upgradeFile);
+        for(const auto& x : tmp)
+            std::cout << x << std::endl;
+    }
     
     /*for(const auto& upgrade : planned_upgrades){
      *	std::cout << (upgrade.location+1) << " " << upgrade.entityInfo.name << " " << upgrade.level << '\n';
