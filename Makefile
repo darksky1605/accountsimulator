@@ -1,5 +1,5 @@
 DEBUG_FLAG=-g
-OPTIMIZATION_FLAG=-O0
+OPTIMIZATION_FLAG=$(if $(OPT),$(OPT),-O0)
 WARNING_FLAG = -Wall
 
 formulartests: formulartests.cpp ogame.hpp ogame.o
@@ -8,8 +8,11 @@ formulartests: formulartests.cpp ogame.hpp ogame.o
 dplistcalculator: dplistcalculator.cpp ogame.hpp ogame.o util.hpp
 	g++ -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) -fopenmp dplistcalculator.cpp ogame.o -o dplistcalculator
 
-accountupgrade: accountupgrade.cpp ogame.hpp ogame.o account.hpp account.o parallel_permutation.hpp util.hpp serialization.o
-	g++ -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) accountupgrade.cpp ogame.o account.o serialization.o -fopenmp -o accountupgrade
+accountupgrade: main_accountupgrade.o ogame.o account.o serialization.o
+	g++ -std=c++14 main_accountupgrade.o ogame.o account.o serialization.o -fopenmp -o accountupgrade
+
+main_accountupgrade.o: main_accountupgrade.cpp ogame.hpp account.hpp parallel_permutation.hpp util.hpp serialization.hpp
+	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) main_accountupgrade.cpp -fopenmp -o main_accountupgrade.o
 	
 ogame.o: ogame.cpp ogame.hpp
 	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) ogame.cpp -o ogame.o
@@ -21,5 +24,5 @@ serialization.o: serialization.hpp serialization.cpp account.hpp ogame.hpp
 	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) serialization.cpp -o serialization.o
 	
 clean:
-	rm -rf dplistcalculator accountupgrade ogame.o account.o formulartest
+	rm -rf dplistcalculator accountupgrade main_accountupgrade.o ogame.o account.o serialization.o formulartest
 	
