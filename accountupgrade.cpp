@@ -697,12 +697,26 @@ std::string convert_time(float daysfloat){
 
 
 
+
+
+void createAccountFile(const std::string& filename){
+    Account account;
+    account.addNewPlanet();
+    json j = account;
+    std::ofstream out(filename);
+    if(!out){
+        throw std::runtime_error("Cannot open new account file " + filename);
+    }
+    out << std::setw(4) << j;
+}
+
 void usage(int argc, char** argv){
     std::cout << "Usage:" << argv[0] << " Options\n\n";
 	    
     std::cout << "Calculates how long it takes to perform a series of researches and upgrades in an account\n\n";
     std::cout << "Options:\n";
     std::cout << "--help: Show this message.\n\n";
+    std::cout << "--newAccount file. Creates an empty account json file with given name and exists\n\n";
     std::cout << "--accountfile file: Load initial account data from file\n\n";
     std::cout << "--upgradefile file: Load upgrade list from file\n\n";
     std::cout << "--logfile file: Write program trace to file. Default log.txt.\n\n";
@@ -734,6 +748,27 @@ int detailedmultiupgrade(int argc, char** argv){
         usage(argc, argv);
         return 0;
     }
+
+    //check for options which do not start a simulation
+    {
+
+        for(int i = 1; i < argc; i++){
+            if(std::string(argv[i]) == "--help"){
+                usage(argc, argv);
+                return 0;
+            }
+
+            if(std::string(argv[i]) == "--createAccount"){
+                assert(i+1 < argc);
+                //bool createAccount = true;
+                std::string newAccountFile = std::string(argv[i+1]);
+                i++;
+                createAccountFile(newAccountFile);
+                return 0;
+            }
+        }
+        
+    }
     
     int speedfactor = 1;
     bool overwriteSpeed = false;
@@ -750,12 +785,7 @@ int detailedmultiupgrade(int argc, char** argv){
     bool appendLog = false;
     bool showPercentageChanges = false;
     
-    for(int i = 1; i < argc; i++){
-        if(std::string(argv[i]) == "--help"){
-            usage(argc, argv);
-            return 0;
-        }
-        
+    for(int i = 1; i < argc; i++){        
         if(std::string(argv[i]) == "--printlist"){
             printList = true;
             continue;
