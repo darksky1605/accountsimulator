@@ -1,3 +1,6 @@
+#ifndef SERIALIZATION_HPP
+#define SERIALIZATION_HPP
+
 #include "account.hpp"
 #include "ogame.hpp"
 #include "json.hpp"
@@ -23,3 +26,6 @@ void from_json(const nlohmann::json& j, OfficerState& s);
 
 void to_json(nlohmann::json& j, const Account& s);
 void from_json(const nlohmann::json& j, Account& s);
+
+#endif
+
