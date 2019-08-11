@@ -144,6 +144,126 @@ UpgradeResult perform_upgrades(Account& account,
 	
 }
 
+
+UpgradeResult perform_upgrades_perm(Account& account,
+								const std::vector<PermutationGroup>& planned_upgrades){
+
+	using ogh::EntityType;
+			
+	UpgradeResult result;
+	result.upgradeJobStatistics.reserve(planned_upgrades.size());
+	
+	auto print_job = [](const auto& job){
+        (void)job;
+		//std::cout << job.entityInfo.name << " at planet " << job.location << std::endl;
+	};
+
+
+    auto submitJobAndCheckTime = [&](const auto& job){
+        if(job.isResearch()){
+            assert(job.entityInfo.type == EntityType::Research && job.location == Account::UpgradeJob::researchLocation);
+
+            print_job(job);
+
+            auto stats = account.processResearchJob(job);
+            result.upgradeJobStatistics.emplace_back(std::move(stats));
+    
+            if(account.time == std::numeric_limits<float>::max())
+                return false;
+            return true;                   
+        }else{
+            if(job.location == Account::UpgradeJob::allCurrentPlanetsLocation){
+                auto curJob = job;
+                bool ok = true;
+                for(int i = 0; i < account.getNumPlanets() && ok; i++){
+                    curJob.location = i;
+
+                    assert(curJob.entityInfo.type == EntityType::Building 
+                            && (curJob.location >= 0 
+                                   && curJob.location < account.getNumPlanets()+1)); // +1 to account for possible astro physics in progress
+
+                    print_job(curJob);
+
+                    auto stats = account.processBuildingJob(curJob);
+                    result.upgradeJobStatistics.emplace_back(std::move(stats));
+            
+                    if(account.time == std::numeric_limits<float>::max())
+                        ok = false;
+				}
+                return ok;
+            }else{
+                assert(job.entityInfo.type == EntityType::Building 
+                        && (job.location >= 0 
+                            && job.location < account.getNumPlanets()+1)); // +1 to account for possible astro physics in progress
+                print_job(job);
+                auto stats = account.processBuildingJob(job);
+                result.upgradeJobStatistics.emplace_back(std::move(stats));
+        
+                if(account.time == std::numeric_limits<float>::max())
+                    return false;
+                return true;
+            }
+        }
+        assert(false);
+        return false;
+    };
+
+    auto getNumPlanets = [&](){
+        int numPlanets = account.getNumPlanets();
+        if(account.researchState.entityInfoInQueue.entity == ogh::Entity::Astro
+               && numPlanets < ogh::getMaxPossiblePlanets(account.researchState.astroLevel + 1)){
+            numPlanets += 1;
+        }
+        return numPlanets;
+    };
+
+    auto submitUpgradeTask = [&](const auto& task){
+        const int numPlanets = getNumPlanets();
+        const auto upgradeJobs = task.getUpgradeJobs(numPlanets);
+        return std::all_of(upgradeJobs.begin(), upgradeJobs.end(), submitJobAndCheckTime);
+    };
+
+    auto submitUpgradeGroup = [&](const auto& upgradeGroup){
+        const int numPlanets = getNumPlanets();
+        const auto upgradeTasks = upgradeGroup.getTasks(numPlanets);
+        return std::all_of(upgradeTasks.begin(), upgradeTasks.end(), submitUpgradeTask);
+    };
+
+    auto submitPermutationGroup = [&](const auto& permGroup){
+        const auto upgradeGroups = permGroup.groups;
+        return std::all_of(upgradeGroups.begin(), upgradeGroups.end(), submitUpgradeGroup);
+    };
+
+    const bool ok = std::all_of(planned_upgrades.begin(), planned_upgrades.end(), submitPermutationGroup);
+	
+	result.success = ok;
+	
+	if(ok){
+        
+        result.lastConstructionStartedAfterDays = account.time;
+        result.savingFinishedInDays = 0.0f;
+        result.previousUpgradeDelay = 0.0f;
+        
+        for(const auto& stat : result.upgradeJobStatistics){
+            result.savingFinishedInDays += stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin;
+            result.previousUpgradeDelay += stat.constructionBeginDays - stat.waitingPeriodDaysBegin;
+        }
+        
+        //wait until all planets finished building
+        
+        account.waitForAllConstructions();
+        
+        result.constructionFinishedInDays = account.time;
+    }
+	
+	std::cout << std::flush;
+	std::cerr << std::flush;
+	
+	return result;
+	
+}
+
+
 std::string convert_time(float daysfloat){
 	std::stringstream ss;
 	std::uint64_t seconds = daysfloat * 24ULL * 60ULL * 60ULL;
@@ -382,9 +502,14 @@ int detailedmultiupgrade(int argc, char** argv){
     #endif	
     
     if(permutationMode == 0){
-          
+    #if 1
+        std::cout << "perm" << std::endl;
+        auto planned_upgrades_perm = parseUpgradeFile3(upgradeFile);
+        auto result = perform_upgrades_perm(account, planned_upgrades_perm);
+    #else
+        std::cout << "default" << std::endl;
         auto result = perform_upgrades(account, planned_upgrades);
-        
+    #endif    
         if(result.success){
 
             std::for_each(account.logRecords.begin(), account.logRecords.end(), printLog);

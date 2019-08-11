@@ -171,6 +171,10 @@
 			int location;
 			ogamehelpers::EntityInfo entityInfo;
 
+            UpgradeJob() = default;
+            UpgradeJob(int l, ogamehelpers::EntityInfo e)
+                : location(l), entityInfo(e){}
+
 			bool isResearch() const{
 				return entityInfo.type == ogamehelpers::EntityType::Research;
 			}

@@ -33,6 +33,25 @@ struct UpgradeTask{
 	const std::vector<int>& getLocations() const{
 		return locations;
 	}
+
+    std::vector<Account::UpgradeJob> getUpgradeJobs(int numPlanets) const{
+        std::vector<Account::UpgradeJob> result;
+        if(locations.empty()) return {};
+
+        auto makeJob = [&](auto location){
+            result.emplace_back(location, entityInfo);
+        };
+
+        if(locations[0] == allCurrentPlanetsLocation){
+            for(int i = 0; i < numPlanets; i++){
+                makeJob(i);
+            }
+        }else{
+            std::for_each(locations.begin(), locations.end(), makeJob);
+        }        
+
+        return result;
+    }
 };
 
 struct UpgradeGroup{
