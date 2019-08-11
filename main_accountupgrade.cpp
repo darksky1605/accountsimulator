@@ -181,10 +181,10 @@ void usage(int argc, char** argv){
     std::cout << "Calculates how long it takes to perform a series of researches and upgrades in an account\n\n";
     std::cout << "Options:\n";
     std::cout << "--help: Show this message.\n\n";
-    std::cout << "--newAccount file. Creates an empty account json file with given name and exists\n\n";
-    std::cout << "--accountfile file: Load initial account data from file\n\n";
-    std::cout << "--upgradefile file: Load upgrade list from file\n\n";
-    std::cout << "--logfile file: Write program trace to file. Default log.txt.\n\n";
+    std::cout << "--newAccount file. Creates an empty account json file with given name and exists.\n\n";
+    std::cout << "--accountfile file: Load initial account data from file.\n\n";
+    std::cout << "--upgradefile file: Load upgrade list from file.\n\n";
+    std::cout << "--logfile file: Write program trace to file.\n\n";
     std::cout << "--speed ecospeedfactor: Economy speed factor of universe. Overwrites account setting.\n\n";
     std::cout << "--threads num_threads: Number of CPU threads to use for permutations. Default 1.\n\n";
     std::cout << "--permute mode: Default 0.\n\n";
@@ -192,12 +192,12 @@ void usage(int argc, char** argv){
     std::cout << "  mode = 1: Find permutation with shortest completion time.\n";
     std::cout << "  mode = 2: Find permutation with shortest time until last upgrade is started.\n";
     std::cout << "  mode = 3: Find permutation with shortest save time.\n";
-    std::cout << "  mode = 4: Find permutation with shortest blocked queue time.\n";
+    std::cout << "  mode = 4: Find permutation with shortest blocked queue time.\n\n";
     std::cout << "--permutations n: Display n best permutations. Default 1.\n\n";
-    std::cout << "--printlist: Show detailed time table for upgrade\n\n";
+    std::cout << "--printlist: Show detailed time table for upgrade.\n\n";
     std::cout << "--printalllists: Show detailed time table for every permutation\n\n";
-    std::cout << "--showPercentageChanges: Show changes of production percentages per planet\n\n";
-    std::cout << "--dhm: Print durations in days, hours, minutes format instead of fractional days\n\n";
+    std::cout << "--showPercentageChanges: Show changes of production percentages per planet.\n\n";
+    std::cout << "--dhm: Print durations in days, hours, minutes format instead of fractional days.\n\n";
 	    
     std::cout << "The initial account state is read from accountfile\n\n";
     std::cout << "The list of upgrades to perform is read from upgradefile\n\n";
