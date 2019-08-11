@@ -53,15 +53,64 @@ struct UpgradeGroup{
             return tasks[0].getLocations() == t.getLocations();
         };
 
-        bool b = std::all_of(tasks.begin()+1, tasks.end(), equalsfirstloc);
-
-        return b;
+        if(isTransposed()){
+            return std::all_of(tasks.begin()+1, tasks.end(), equalsfirstloc);
+        }else{
+            return true;
+        }
     }
 	
-	const std::vector<UpgradeTask>& getTasks() const{
+    const std::vector<UpgradeTask>& getTasks() const{
+        assert(valid());
+        return tasks;
+    }
+
+	std::vector<UpgradeTask> getTasks(int numPlanets) const{
 		assert(valid());
 
-		return tasks;
+        if(tasks.empty() || tasks[0].getLocations().empty()){
+            return {};
+        }
+
+        if(isTransposed()){
+            std::vector<std::size_t> posInTask(tasks.size(), 0);
+            
+            if(tasks[0].getLocations()[0] == UpgradeTask::allCurrentPlanetsLocation){
+                std::vector<UpgradeTask> result;
+                int maxPos = numPlanets;
+                for(int pos = 0; pos < maxPos; pos++){
+                    for(const auto& task : tasks){
+                        result.emplace_back(task);
+                        result.back().locations = std::vector<int>{pos};
+                    }
+                }
+                return result;
+            }else{
+                std::vector<UpgradeTask> result;
+                int maxPos = int(tasks[0].getLocations().size());
+                for(int pos = 0; pos < maxPos; pos++){
+                    for(const auto& task : tasks){
+                        result.emplace_back(task);
+                        result.back().locations = std::vector<int>{task.getLocations()[pos]};
+                    }
+                }
+                return result;
+            }
+        }else{
+            if(tasks[0].getLocations()[0] == UpgradeTask::allCurrentPlanetsLocation){
+                std::vector<UpgradeTask> result;
+                int maxPos = numPlanets;                
+                for(const auto& task : tasks){
+                    for(int pos = 0; pos < maxPos; pos++){
+                        result.emplace_back(task);
+                        result.back().locations = std::vector<int>{pos};
+                    }
+                }
+                return result;
+            }else{
+		        return tasks;
+            }
+        }
 	}
 };
 

@@ -40,17 +40,72 @@ struct UpgradeGroup{
 	bool isTransposed() const{
 		return transposed;
 	}
+
+    bool valid() const{
+        if(tasks.empty()) return true;
+
+        auto equalsfirstloc = [&](const auto& t){
+            return tasks[0].getLocations() == t.getLocations();
+        };
+
+        if(isTransposed()){
+            return std::all_of(tasks.begin()+1, tasks.end(), equalsfirstloc);
+        }else{
+            return true;
+        }
+    }
 	
-	const std::vector<UpgradeTask>& getTasks() const{
-		if(isTransposed()){
-			auto first = tasks.begin();
-			auto last = first;
-			while(last != tasks.end()){
-				assert(first->getLocations() == last->getLocations());
-				++last;
-			}
-		}
-		return tasks;
+    const std::vector<UpgradeTask>& getTasks() const{
+        assert(valid());
+        return tasks;
+    }
+
+	std::vector<UpgradeTask> getTasks(int numPlanets) const{
+		assert(valid());
+
+        if(tasks.empty() || tasks[0].getLocations().empty()){
+            return {};
+        }
+
+        if(isTransposed()){
+            std::vector<std::size_t> posInTask(tasks.size(), 0);
+            
+            if(tasks[0].getLocations()[0] == UpgradeTask::allCurrentPlanetsLocation){
+                std::vector<UpgradeTask> result;
+                int maxPos = numPlanets;
+                for(int pos = 0; pos < maxPos; pos++){
+                    for(const auto& task : tasks){
+                        result.emplace_back(task);
+                        result.back().locations = std::vector<int>{pos};
+                    }
+                }
+                return result;
+            }else{
+                std::vector<UpgradeTask> result;
+                int maxPos = int(tasks[0].getLocations().size());
+                for(int pos = 0; pos < maxPos; pos++){
+                    for(const auto& task : tasks){
+                        result.emplace_back(task);
+                        result.back().locations = std::vector<int>{task.getLocations()[pos]};
+                    }
+                }
+                return result;
+            }
+        }else{
+            if(tasks[0].getLocations()[0] == UpgradeTask::allCurrentPlanetsLocation){
+                std::vector<UpgradeTask> result;
+                int maxPos = numPlanets;                
+                for(const auto& task : tasks){
+                    for(int pos = 0; pos < maxPos; pos++){
+                        result.emplace_back(task);
+                        result.back().locations = std::vector<int>{pos};
+                    }
+                }
+                return result;
+            }else{
+		        return tasks;
+            }
+        }
 	}
 };
 
@@ -71,7 +126,9 @@ std::ostream& operator<<(std::ostream& os, const UpgradeTask& r){
 }
 
 std::ostream& operator<<(std::ostream& os, const UpgradeGroup& r){
-	const auto& tasks = r.getTasks();
+	//const auto& tasks = r.getTasks();
+    const auto tasks = r.getTasks(4);
+    
 	if(r.isTransposed())
 		os << "( ";
 	for(int i = 0; i < int(tasks.size()); i++){
@@ -226,57 +283,6 @@ bool is_number(const std::string& s){
 
 
 
-/*
-struct UpgradeTask{
-	static constexpr int researchLocation = -1;
-	static constexpr int allCurrentPlanetsLocation = -2;
-		
-	ogh::EntityInfo entityInfo{};
-	std::vector<int> locations{};
-
-	UpgradeTask(){}
-	UpgradeTask(const ogh::EntityInfo e, const std::vector<int>& l) : entityInfo(e), locations(l){}
-
-	bool isResearch() const{
-		return entityInfo.type == ogh::EntityType::Research;
-	}
-
-	const std::vector<int>& getLocations() const{
-		return locations;
-	}
-};
-
-struct UpgradeGroup{
-	bool transposed;
-	std::vector<UpgradeTask> tasks;
-	
-	UpgradeGroup(){}
-	UpgradeGroup(bool t, const std::vector<UpgradeTask>& l) : transposed(t), tasks(l){}
-	
-	bool isTransposed() const{
-		return transposed;
-	}
-	
-	const std::vector<UpgradeTask>& getTasks() const{
-		if(isTransposed()){
-			auto first = tasks.begin();
-			auto last = first;
-			while(last != tasks.end()){
-				assert(first->getLocations() == last->getLocations());
-				++last;
-			}
-		}
-		return tasks;
-	}
-};
-
-struct PermutationGroup{
-	std::vector<UpgradeGroup> groups;
-	
-	PermutationGroup(){}
-	PermutationGroup(const std::vector<UpgradeGroup>& g) : groups(g){}
-};
-*/
 
 std::vector<PermutationGroup> parseGroups(std::istream& is){
 	
@@ -439,7 +445,7 @@ int main(){
 	ss.clear();
 	
 	ss << "1 2 3 nani\n";
-	ss << "( 4 5 6 fkw 4 5 6 met ) etech\n";
+	ss << "( 4 5 6 fkw 4 5 6 met 4 5 6 deut ) etech\n";
 	
 	groups = parseGroups(ss);
 	for(const auto& g : groups)
