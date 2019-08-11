@@ -64,7 +64,7 @@ UpgradeResult perform_upgrades(Account& account,
 
     auto submitJobAndCheckTime = [&](const auto& job){
         if(job.isResearch()){
-            assert(job.entityInfo.type == EntityType::Research && job.location == Account::UpgradeJob::researchLocation);
+            assert(job.entityInfo.type == EntityType::Research && job.location == UpgradeTask::researchLocation);
 
             print_job(job);
 
@@ -75,7 +75,7 @@ UpgradeResult perform_upgrades(Account& account,
                 return false;
             return true;                   
         }else{
-            if(job.location == Account::UpgradeJob::allCurrentPlanetsLocation){
+            if(job.location == UpgradeTask::allCurrentPlanetsLocation){
                 auto curJob = job;
                 bool ok = true;
                 for(int i = 0; i < account.getNumPlanets() && ok; i++){

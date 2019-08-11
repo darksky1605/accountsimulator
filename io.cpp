@@ -158,6 +158,18 @@ ogh::EntityInfo parseUpgradeName(const std::string& name){
 	    entity = ogh::Nanite;
     }else if(name == "researchlab" || name == "lab"){
 	    entity = ogh::Lab;
+    }else if(name == "shipyard" || name == "werft"){
+	    entity = ogh::Shipyard;
+    }else if(name == "metalstorage" || name == "mstorage"){
+	    entity = ogh::Metalstorage;
+    }else if(name == "crystalstorage" || name == "cstorage"){
+	    entity = ogh::Crystalstorage;
+    }else if(name == "deutstorage" || name == "dstorage"){
+	    entity = ogh::Deutstorage;
+    }else if(name == "alliancedepot" || name == "allydepot"){
+	    entity = ogh::Alliancedepot;
+    }else if(name == "missilesilo" || name == "silo"){
+	    entity = ogh::Silo;
     }else if(name == "energytech" || name == "etech"){
 	    entity = ogh::Energy;
     }else if(name == "plasmatech" || name == "plasma"){
@@ -168,6 +180,26 @@ ogh::EntityInfo parseUpgradeName(const std::string& name){
 	    entity = ogh::Researchnetwork;
     }else if(name == "computertech" || name == "comp"){
 	    entity = ogh::Computer;
+    }else if(name == "espionagetech" || name == "spiotech"){
+	    entity = ogh::Espionage;
+    }else if(name == "weaponstech" || name == "waffen"){
+	    entity = ogh::Weapons;
+    }else if(name == "shieldingtech" || name == "schild"){
+	    entity = ogh::Shielding;
+    }else if(name == "armourtech" || name == "panzer"){
+	    entity = ogh::Armour;
+    }else if(name == "hyperspacetech" || name == "hypertech"){
+	    entity = ogh::Hyperspacetech;
+    }else if(name == "combustiondrive" || name == "verbrenner"){
+	    entity = ogh::Combustion;
+    }else if(name == "impulsedrive" || name == "impuls"){
+	    entity = ogh::Impulse;
+    }else if(name == "hyperspacedrive" || name == "hyperantrieb"){
+	    entity = ogh::Hyperspacedrive;
+    }else if(name == "lasertech" || name == "laser"){
+	    entity = ogh::Laser;
+    }else if(name == "iontech" || name == "ion"){
+	    entity = ogh::Ion;
     }else if(name == "none" || name == ""){
         entity = ogh::Noentity;
     }else{

@@ -164,10 +164,7 @@
 	};
 	
 	struct Account{
-		struct UpgradeJob{
-			static constexpr int researchLocation = -1;
-			static constexpr int allCurrentPlanetsLocation = -2;
-			
+		struct UpgradeJob{			
 			int location;
 			ogamehelpers::EntityInfo entityInfo;
 

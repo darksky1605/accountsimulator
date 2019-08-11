@@ -323,6 +323,17 @@
         case ogh::Entity::Computer: computerLevel++;
                                 accountPtr->updateDailyFarmIncome();
                                 accountPtr->updateDailyExpeditionIncome(); break;
+        case ogh::Entity::Espionage: espionageLevel++; break;
+        case ogh::Entity::Weapons: weaponsLevel++; break;
+        case ogh::Entity::Shielding: shieldingLevel++; break;
+        case ogh::Entity::Armour: armourLevel++; break;
+        case ogh::Entity::Hyperspacetech: hyperspacetechLevel++; break;
+        case ogh::Entity::Combustion: combustionLevel++; break;
+        case ogh::Entity::Impulse: impulseLevel++; break;
+        case ogh::Entity::Hyperspacedrive: hyperspacedriveLevel++; break;
+        case ogh::Entity::Laser: laserLevel++; break;
+        case ogh::Entity::Ion: ionLevel++; break;
+
         default: std::cerr << "Warning. No callback for this research\n";
         }
 
