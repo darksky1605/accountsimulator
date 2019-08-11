@@ -436,7 +436,7 @@
 	};
 	
 	void Account::setLogFile(std::ofstream* ptr){
-        logfile->flush();
+        //logfile->flush();
 		logfile = ptr;		
 	}
 	
