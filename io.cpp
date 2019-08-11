@@ -43,23 +43,6 @@ bool is_number(const std::string& s){
 }
 
 
-bool operator==(const UpgradeJobList& l, const UpgradeJobList& r){
-    if(l.size() != r.size()) 
-        return false;
-    for(int i = 0; i < int(l.size()); i++){
-        if(l[i].entityInfo.name != r[i].entityInfo.name)
-            return false;
-    }
-    return true;
-}
-
-bool operator!=(const UpgradeJobList& l, const UpgradeJobList& r){
-    return !(l == r);
-}
-
-bool operator<(const UpgradeJobList& l, const UpgradeJobList& r){
-    return container_less_than_elementwise(l,r);
-}
 
 int UpgradeTask::researchLocation = -1;
 int UpgradeTask::allCurrentPlanetsLocation = -2;
@@ -194,98 +177,7 @@ ogh::EntityInfo parseUpgradeName(const std::string& name){
     return entity;
 }
 
-
-std::vector<UpgradeJobList> parseUpgradeFile2(const std::string& filename){
-	std::vector<UpgradeJobList> upgradeList;
-	
-	std::ifstream is(filename);
-	
-	if(!is)
-		throw std::runtime_error("Cannot open file " + filename);
-	
-	std::string line;
-	std::string lowerline;
-	
-	auto nextline = [&](){
-		bool b = false;
-		while((b = static_cast<bool>(std::getline(is, line)))){
-			if(line.size() == 0 || (line.size() > 0 && line[0] == '#'))
-				continue; //skip full line comments
-			line = line.substr(0, line.find('#')); //remove comments starting with #
-			line = trim(line); //remove trailing whitespace
-			lowerline.resize(line.size());
-			std::transform(line.begin(), line.end(), lowerline.begin(), ::tolower);
-			break;
-		}
-		return b;
-	};
-	
-	while(nextline()){
-		auto tokens = split(lowerline, ' ');
-		
-		if(tokens.size() == 1){
-			Account::UpgradeJob job;
-			job.entityInfo = parseUpgradeName(tokens[0]);
-			
-			if(job.isResearch()){
-				job.location = Account::UpgradeJob::researchLocation;
-			}else{
-				job.location = Account::UpgradeJob::allCurrentPlanetsLocation;
-			}
-			
-			upgradeList.emplace_back(UpgradeJobList{job});
-		}
-		
-		if(tokens.size() >= 2){
-			UpgradeJobList jobList;
-			
-			std::vector<int> locations;
-			
-			for(std::size_t i = 0; i < tokens.size(); i++){
-				
-				if(!is_number(tokens[i])){
-                    // token is upgrade name. if locations is empty, upgrade is performed on all planets, 
-					// else it is performed on the planets given in locations
-
-                    const auto entityInfo = parseUpgradeName(tokens[i]);
-
-                    if(locations.empty()){
-                        Account::UpgradeJob job;
-                        job.entityInfo = entityInfo;
-						if(job.isResearch()){
-							job.location = Account::UpgradeJob::researchLocation;
-						}else{
-							job.location = Account::UpgradeJob::allCurrentPlanetsLocation;
-						}
-                        jobList.emplace_back(job);
-					}else{
-                        for(const auto& location : locations){
-                            Account::UpgradeJob job;
-                            job.entityInfo = entityInfo;
-                            job.location = location;
-                            jobList.emplace_back(job);
-                        }
-                        locations.clear();
-                    }
-				}else{
-					int loc = std::stoi(tokens[i]) - 1;
-					assert(loc >= 0);
-					locations.emplace_back(loc);
-				}
-			}
-			
-			if(!locations.empty()){
-				std::cout << "Warning. Found upgrade locations without upgrade name! Ignoring this upgrade!" << std::endl;
-			}
-			
-			upgradeList.emplace_back(jobList);
-		}
-	}
-	
-	return upgradeList;
-}
-
-std::vector<PermutationGroup> parseUpgradeFile3(const std::string& filename){
+std::vector<PermutationGroup> parseUpgradeFile(const std::string& filename){
 	
 	std::vector<PermutationGroup> upgradeList;
 	

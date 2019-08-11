@@ -49,103 +49,6 @@ struct UpgradeResult{
 
 
 UpgradeResult perform_upgrades(Account& account,
-								const std::vector<UpgradeJobList>& planned_upgrades){
-
-	using ogh::EntityType;
-			
-	UpgradeResult result;
-	result.upgradeJobStatistics.reserve(planned_upgrades.size());
-	
-	auto print_job = [](const auto& job){
-        (void)job;
-		//std::cout << job.entityInfo.name << " at planet " << job.location << std::endl;
-	};
-
-
-    auto submitJobAndCheckTime = [&](const auto& job){
-        if(job.isResearch()){
-            assert(job.entityInfo.type == EntityType::Research && job.location == Account::UpgradeJob::researchLocation);
-
-            print_job(job);
-
-            auto stats = account.processResearchJob(job);
-            result.upgradeJobStatistics.emplace_back(std::move(stats));
-    
-            if(account.time == std::numeric_limits<float>::max())
-                return false;
-            return true;                   
-        }else{
-            if(job.location == Account::UpgradeJob::allCurrentPlanetsLocation){
-                auto curJob = job;
-                bool ok = true;
-                for(int i = 0; i < account.getNumPlanets() && ok; i++){
-                    curJob.location = i;
-
-                    assert(curJob.entityInfo.type == EntityType::Building 
-                            && (curJob.location >= 0 
-                                   && curJob.location < account.getNumPlanets()+1)); // +1 to account for possible astro physics in progress
-
-                    print_job(curJob);
-
-                    auto stats = account.processBuildingJob(curJob);
-                    result.upgradeJobStatistics.emplace_back(std::move(stats));
-            
-                    if(account.time == std::numeric_limits<float>::max())
-                        ok = false;
-				}
-                return ok;
-            }else{
-                assert(job.entityInfo.type == EntityType::Building 
-                        && (job.location >= 0 
-                            && job.location < account.getNumPlanets()+1)); // +1 to account for possible astro physics in progress
-                print_job(job);
-                auto stats = account.processBuildingJob(job);
-                result.upgradeJobStatistics.emplace_back(std::move(stats));
-        
-                if(account.time == std::numeric_limits<float>::max())
-                    return false;
-                return true;
-            }
-        }
-        assert(false);
-        return false;
-    };
-
-    auto submitJobList = [&](const auto& jobList){
-        return std::all_of(jobList.begin(), jobList.end(), submitJobAndCheckTime);
-    };
-
-    const bool ok = std::all_of(planned_upgrades.begin(), planned_upgrades.end(), submitJobList);
-	
-	result.success = ok;
-	
-	if(ok){
-        
-        result.lastConstructionStartedAfterDays = account.time;
-        result.savingFinishedInDays = 0.0f;
-        result.previousUpgradeDelay = 0.0f;
-        
-        for(const auto& stat : result.upgradeJobStatistics){
-            result.savingFinishedInDays += stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin;
-            result.previousUpgradeDelay += stat.constructionBeginDays - stat.waitingPeriodDaysBegin;
-        }
-        
-        //wait until all planets finished building
-        
-        account.waitForAllConstructions();
-        
-        result.constructionFinishedInDays = account.time;
-    }
-	
-	std::cout << std::flush;
-	std::cerr << std::flush;
-	
-	return result;
-	
-}
-
-
-UpgradeResult perform_upgrades_perm(Account& account,
 								const std::vector<PermutationGroup>& planned_upgrades){
 
 	using ogh::EntityType;
@@ -480,11 +383,10 @@ int detailedmultiupgrade(int argc, char** argv){
         account.speedfactor = speedfactor;
     }
 
-    auto planned_upgrades = parseUpgradeFile2(upgradeFile);
+    auto planned_upgrades = parseUpgradeFile(upgradeFile);
 
     {
-        auto tmp = parseUpgradeFile3(upgradeFile);
-        for(const auto& x : tmp)
+        for(const auto& x : planned_upgrades)
             std::cout << x << std::endl;
     }
     
@@ -493,23 +395,10 @@ int detailedmultiupgrade(int argc, char** argv){
 }*/
     
     std::cout << std::endl;
-    
-                               
-    #if 0
-    std::vector<UpgradeJobList> upgradejoblist = parseUpgradeFile2("buildlist1.txt");
-    auto result = perform_upgrades(account, upgradejoblist);
-    
-    #endif	
-    
+
     if(permutationMode == 0){
-    #if 1
-        std::cout << "perm" << std::endl;
-        auto planned_upgrades_perm = parseUpgradeFile3(upgradeFile);
-        auto result = perform_upgrades_perm(account, planned_upgrades_perm);
-    #else
-        std::cout << "default" << std::endl;
         auto result = perform_upgrades(account, planned_upgrades);
-    #endif    
+
         if(result.success){
 
             std::for_each(account.logRecords.begin(), account.logRecords.end(), printLog);
@@ -598,12 +487,12 @@ int detailedmultiupgrade(int argc, char** argv){
         }
         
         std::vector<std::vector<UpgradeResult>> bestResultsPerThread(num_threads);
-        std::vector<std::vector<std::vector<UpgradeJobList>>> bestUpgradePermutationsPerThread(num_threads);
+        std::vector<std::vector<std::vector<PermutationGroup>>> bestUpgradePermutationsPerThread(num_threads);
         std::vector<std::vector<Account>> bestAccountsPerThread(num_threads);        
         
         std::vector<float> longestCompletionTimePerThread(num_threads, 0.0f);
         
-        std::set<std::vector<UpgradeJobList>> uniqueProcessedPermutations;
+        std::set<std::vector<PermutationGroup>> uniqueProcessedPermutations;
         //std::atomic_int permcount{0};
         std::mutex m;
         
@@ -674,7 +563,7 @@ int detailedmultiupgrade(int argc, char** argv){
         //std::cout << permcount << std::endl;
         
         std::vector<UpgradeResult> bestResults;
-        std::vector<std::vector<UpgradeJobList>> bestUpgradePermutations;
+        std::vector<std::vector<PermutationGroup>> bestUpgradePermutations;
         std::vector<Account> bestAccounts;
         
         //combine results of threads
@@ -709,8 +598,7 @@ int detailedmultiupgrade(int argc, char** argv){
             
             for(const auto& jobList : bestUpgradePermutation){
                 std::cout << "[ ";
-                for(const auto& job : jobList)
-                    std::cout << job.entityInfo.name << ", ";
+                std::cout << jobList;
                 std::cout << " ]";
             }
             std::cout << '\n';

@@ -10,12 +10,6 @@
 #include <string>
 #include <vector>
 
-using UpgradeJobList = std::vector<Account::UpgradeJob>;
-
-bool operator==(const UpgradeJobList& l, const UpgradeJobList& r);
-bool operator!=(const UpgradeJobList& l, const UpgradeJobList& r);
-bool operator<(const UpgradeJobList& l, const UpgradeJobList& r);
-
 struct UpgradeTask{
 	static int researchLocation;
 	static int allCurrentPlanetsLocation;
@@ -158,7 +152,6 @@ bool operator<(const PermutationGroup& l, const PermutationGroup& r);
 
 Account parseAccountJsonFile(const std::string& filename);
 
-std::vector<UpgradeJobList> parseUpgradeFile2(const std::string& filename);
-std::vector<PermutationGroup> parseUpgradeFile3(const std::string& filename);
+std::vector<PermutationGroup> parseUpgradeFile(const std::string& filename);
 
 #endif
