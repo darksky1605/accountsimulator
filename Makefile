@@ -1,6 +1,8 @@
 DEBUG_FLAG=-g
-OPTIMIZATION_FLAG=$(if $(OPT),$(OPT),-O0)
+OPTIMIZATION_FLAG=$(if $(OPT),$(OPT),-O3)
 WARNING_FLAG = -Wall -Wextra -Wpedantic
+
+CFLAGS = $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) -fopenmp
 
 formulartests: formulartests.cpp ogame.hpp build/ogame.o
 	g++ -std=c++14 $(DEBUG_FLAG) $(WARNING_FLAG) formulartests.cpp build/ogame.o -o formulartests
@@ -8,21 +10,24 @@ formulartests: formulartests.cpp ogame.hpp build/ogame.o
 dplistcalculator: dplistcalculator.cpp ogame.hpp build/ogame.o util.hpp
 	g++ -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) -fopenmp dplistcalculator.cpp build/ogame.o -o dplistcalculator
 
-accountupgrade: build/main_accountupgrade.o build/ogame.o build/account.o build/serialization.o
-	g++ -std=c++14 build/main_accountupgrade.o build/ogame.o build/account.o build/serialization.o -fopenmp -o accountupgrade
+accountupgrade: dirs build/main_accountupgrade.o build/ogame.o build/account.o build/serialization.o build/io.o
+	g++ -std=c++14 build/main_accountupgrade.o build/ogame.o build/account.o build/serialization.o build/io.o -fopenmp -o accountupgrade
 
-build/main_accountupgrade.o: dirs main_accountupgrade.cpp ogame.hpp account.hpp parallel_permutation.hpp util.hpp serialization.hpp
-	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) main_accountupgrade.cpp -fopenmp -o build/main_accountupgrade.o
+build/main_accountupgrade.o: main_accountupgrade.cpp ogame.hpp account.hpp parallel_permutation.hpp util.hpp serialization.hpp io.hpp
+	g++ -c -std=c++14 $(CFLAGS) main_accountupgrade.cpp -fopenmp -o build/main_accountupgrade.o
 	
-build/ogame.o: dirs ogame.cpp ogame.hpp
-	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) ogame.cpp -o build/ogame.o
+build/ogame.o: ogame.cpp ogame.hpp
+	g++ -c -std=c++14 $(CFLAGS) ogame.cpp -o build/ogame.o
 	
-build/account.o: dirs account.cpp account.hpp ogame.hpp
-	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) account.cpp -o build/account.o
+build/account.o: account.cpp account.hpp ogame.hpp
+	g++ -c -std=c++14 $(CFLAGS) account.cpp -o build/account.o
 
-build/serialization.o: dirs serialization.hpp serialization.cpp account.hpp ogame.hpp
-	g++ -c -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) serialization.cpp -o build/serialization.o
-	
+build/serialization.o: serialization.hpp serialization.cpp account.hpp ogame.hpp
+	g++ -c -std=c++14 $(CFLAGS) serialization.cpp -o build/serialization.o
+
+build/io.o: io.hpp io.cpp account.hpp ogame.hpp
+	g++ -c -std=c++14 $(CFLAGS) io.cpp -o build/io.o
+
 clean:
 	rm -rf dplistcalculator accountupgrade build/ formulartest
 	
