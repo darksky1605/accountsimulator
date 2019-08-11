@@ -697,7 +697,9 @@ std::string convert_time(float daysfloat){
 
 
 
-
+void printLogRecord(std::ostream& os, const Account::LogRecord& record){
+    os << record.time << ": " << record.msg << '\n';
+}
 
 void createAccountFile(const std::string& filename){
     Account account;
@@ -776,7 +778,6 @@ int detailedmultiupgrade(int argc, char** argv){
     std::string accountFile("");
     std::string upgradeFile("");
     std::string logFileName("/dev/null");
-    bool setLogfile = false;
     int permutationMode = 0;
     bool printList = false;
     bool printAllLists = false;
@@ -834,7 +835,6 @@ int detailedmultiupgrade(int argc, char** argv){
         if(std::string(argv[i]) == "--logfile"){
             assert(i+1 < argc);
             logFileName = std::string(argv[i+1]);
-            setLogfile = true;
             i++;
             continue;
         }
@@ -887,6 +887,10 @@ int detailedmultiupgrade(int argc, char** argv){
     if(!logFile){
         throw std::runtime_error("Cannot open log file " + logFileName);
     }
+
+    auto printLog = [&](const auto& record){
+        printLogRecord(logFile, record);
+    };
    
     Account account = parseAccountJsonFile(accountFile);
 
@@ -895,8 +899,6 @@ int detailedmultiupgrade(int argc, char** argv){
     }
 
     auto planned_upgrades = parseUpgradeFile2(upgradeFile);
-
-    account.setLogFile(&logFile);
     
     /*for(const auto& upgrade : planned_upgrades){
      *	std::cout << (upgrade.location+1) << " " << upgrade.entityInfo.name << " " << upgrade.level << '\n';
@@ -916,12 +918,11 @@ int detailedmultiupgrade(int argc, char** argv){
         auto result = perform_upgrades(account, planned_upgrades);
         
         if(result.success){
-        
-            std::cout << '\n';
-            
-            
-            
-            
+
+            std::for_each(account.logRecords.begin(), account.logRecords.end(), printLog);
+            logFile.flush();
+            std::cout << std::endl;
+
             if(use_dhm_format){
                 std::cout << "The selected upgrades take " << convert_time(result.constructionFinishedInDays) << " days.\n";
                 std::cout << "Last upgrade started after " << convert_time(result.lastConstructionStartedAfterDays) << " days.\n";
@@ -1005,20 +1006,7 @@ int detailedmultiupgrade(int argc, char** argv){
         
         std::vector<std::vector<UpgradeResult>> bestResultsPerThread(num_threads);
         std::vector<std::vector<std::vector<UpgradeJobList>>> bestUpgradePermutationsPerThread(num_threads);
-        std::vector<std::vector<Account>> bestAccountsPerThread(num_threads);
-        
-        std::vector<std::ofstream> logFilesPerThread;
-        for(int i = 0; i< num_threads; i++){
-            if(setLogfile)
-                logFilesPerThread.emplace_back(logFileName + "_t"+std::to_string(1000+i), openmode);
-            else
-                logFilesPerThread.emplace_back(logFileName, openmode);
-            if(!logFilesPerThread[i]){
-                throw std::runtime_error("Cannot open log file " + logFileName);
-            }
-        }
-  
-        
+        std::vector<std::vector<Account>> bestAccountsPerThread(num_threads);        
         
         std::vector<float> longestCompletionTimePerThread(num_threads, 0.0f);
         
@@ -1039,10 +1027,6 @@ int detailedmultiupgrade(int argc, char** argv){
             
             //create copy of original account
             auto permutationAccount = account;
-            //set log file of thread
-            if(setLogfile){
-                permutationAccount.setLogFile(&logFilesPerThread[threadId]);
-            }
             
             //perform permutation of upgrades on permutation account
             UpgradeResult nextResult = perform_upgrades(permutationAccount, upgradepermutation);
@@ -1117,6 +1101,8 @@ int detailedmultiupgrade(int argc, char** argv){
         std::unique(indices.begin(), indices.end(), [&](int l, int r){
             return bestUpgradePermutations[l] == bestUpgradePermutations[r];
         });
+
+        assert(indices.size() == bestResults.size());
         
         
         const float longestCompletionTime = *std::max_element(longestCompletionTimePerThread.begin(), longestCompletionTimePerThread.end());

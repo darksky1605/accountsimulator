@@ -15,8 +15,6 @@
 #include <numeric>
 
 	namespace ogh = ogamehelpers;
-
-	std::unique_ptr<std::ofstream> Account::nullfile = std::make_unique<std::ofstream>("/dev/null");
 	
 	ogh::ItemRarity PlanetState::getMetItem() const{
 		if(metItemDurationDays > 0)
@@ -269,7 +267,7 @@
             << ". Production factor: " << oldmineproductionfactor << "->" << newmineproductionfactor 
             << ". Production increased by " << (((double(bestDSE)/oldDSE) - 1) * 100) << " %" << '\n';
             
-            accountPtr->trace(sstream.str());
+            accountPtr->log(sstream.str());
         }
 	}
 	
@@ -400,7 +398,6 @@
 		:speedfactor(ecospeed), time(initialtime)
 	{
 		researchState.accountPtr = this;
-		logfile = nullfile.get();
 	}
 	
 	Account::Account(const Account& rhs){
@@ -420,9 +417,9 @@
 		speedfactor = rhs.speedfactor;
         saveslots = rhs.saveslots;
 		time = rhs.time;
-		setLogFile(rhs.logfile);
         astroPhysicsType = rhs.astroPhysicsType;
         postAstroPhysicsAction = rhs.postAstroPhysicsAction;
+        logRecords = rhs.logRecords;
 		
 		for(auto& planetState : planetStates){
 			planetState.researchStatePtr = &researchState;
@@ -435,17 +432,8 @@
 		return *this;
 	}
 	
-	void Account::setLogFile(std::ofstream* ptr){
-        //logfile->flush();
-		logfile = ptr;		
-	}
-	
 	void Account::log(const std::string& msg){
-		*logfile << msg << '\n';
-	}
-	
-	void Account::trace(const std::string& msg){
-		*logfile << time << ": " << msg << '\n';
+        logRecords.emplace_back(time, msg);
 	}
 	
 	void Account::addNewPlanet(){
@@ -728,7 +716,7 @@
 
 		while(b){
 			sstream << "Waiting until all queues are finished";
-			trace(sstream.str());
+			log(sstream.str());
 			sstream.str("");
 			
 			float timeToSkip = getTimeUntilNextFinishedEvent();
@@ -740,7 +728,7 @@
 		//std::cout << "End wait for finish: " << resources.met << " " << resources.crystal << " " << resources.deut << "\n";
 		
 		sstream << "All queues are empty";
-		trace(sstream.str());
+		log(sstream.str());
 		sstream.str("");
 	}
 	
@@ -756,12 +744,12 @@
                 auto makelog = [&](){
                     sstream << "waitUntilAstroForNextPlanetIsFinished. Elapsed waiting time: " << timeWaited << "\n";
                     
-                    trace(sstream.str());
+                    log(sstream.str());
                     sstream.str("");
                     
                     printQueues(sstream);	
                     
-                    trace(sstream.str());
+                    log(sstream.str());
                     sstream.str("");
                 };
                 
@@ -794,12 +782,12 @@
             sstream << "Saving for job. Elapsed saving time: " << saveTimeDaysForJob << " days. Current production per day: " 
             << currentProduction.met << " " << currentProduction.crystal << " " << currentProduction.deut << "\n";
             
-            trace(sstream.str());
+            log(sstream.str());
             sstream.str("");
             
             printQueues(sstream);	
             
-            trace(sstream.str());
+            log(sstream.str());
             sstream.str("");
         };
         
@@ -865,7 +853,7 @@
         //const int upgradeLocation = job.location;
         
         sstream << "Processing " << entityInfo.name << " " << upgradeLevel << '\n';
-        trace(sstream.str());
+        log(sstream.str());
         sstream.str("");
         
         assert(entityInfo.type == EntityType::Research);
@@ -888,7 +876,7 @@
         
         //wait until the research queue is empty
         while(researchState.researchInProgress()){
-            trace("Waiting for previous research to finish. This does not count as saving time\n");
+            log("Waiting for previous research to finish. This does not count as saving time\n");
             
             //wait for the next event to complete, this may change the production
             float timeToSkip = getTimeUntilNextFinishedEvent();
@@ -944,7 +932,7 @@
         const int upgradeLevel = (upgradeLocation == getNumPlanets() ? 1 : 1 + planetStates[upgradeLocation].getLevel(entityInfo) + (planetStates[upgradeLocation].entityInfoInQueue.entity == entityInfo.entity ? 1 : 0));
         
         sstream << "Planet " << (upgradeLocation+1) << " processing " << entityInfo.name << " " << upgradeLevel << '\n';
-        trace(sstream.str());
+        log(sstream.str());
         sstream.str("");
         
         assert(entityInfo.type == EntityType::Building && upgradeLocation >= 0 && upgradeLocation < getNumPlanets()+1);
@@ -981,7 +969,7 @@
                 
                 //wait until astro is completed
                 while(researchState.researchInProgress()){
-                    trace("Waiting for astro research to finish. This does not count as saving time\n");
+                    log("Waiting for astro research to finish. This does not count as saving time\n");
                     
                     //wait for the next event to complete, this may change the production
                     float timeToSkip = getTimeUntilNextFinishedEvent();
@@ -993,7 +981,7 @@
                 }
                 }else{
                     sstream << "Planet " << (upgradeLocation+1) << " does not exist and required astrophysics level is not in construction!\n";
-                    trace(sstream.str());
+                    log(sstream.str());
                     sstream.str("");
                     assert(false && "Invalid upgrade list!");
                 }
@@ -1024,7 +1012,7 @@
             //wait until the building queue of current planet is free
             
             while(planetStates[upgradeLocation].constructionInProgress()){
-                trace("Waiting for previous construction to finish. This does not count as saving time\n");
+                log("Waiting for previous construction to finish. This does not count as saving time\n");
                 
                 //wait for the next event to complete, this may change the production
                 const float timeToSkip = getTimeUntilNextFinishedEvent();

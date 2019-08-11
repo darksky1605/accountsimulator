@@ -216,6 +216,14 @@
                 return !(operator==(rhs));
             }
 		};
+
+        struct LogRecord{
+            float time;
+            std::string msg;
+            LogRecord() = default;
+            LogRecord(float t, std::string m)
+            : time(t), msg(std::move(m)){}
+        };
         
         /* 
          * Used for Astro researches that enable a new planet slot after research.
@@ -257,15 +265,11 @@
         int saveslots = 1;
 		
 		float time = 0.0f;
-		
-		std::ofstream* logfile;
-		
-		static std::unique_ptr<std::ofstream> nullfile;
                 
         AstroType astroPhysicsType = AstroType::Blocking;
         PostAstroAction postAstroPhysicsAction = PostAstroAction::SimpleCopyPreviousPlanet;
         
-        
+        std::vector<LogRecord> logRecords;
 		
 		Account();
 		
@@ -275,11 +279,7 @@
 		
 		Account& operator=(const Account& rhs);
 		
-		void setLogFile(std::ofstream* ptr);
-		
 		void log(const std::string& msg);
-		
-		void trace(const std::string& msg);
 		
 		void addNewPlanet();
 		
