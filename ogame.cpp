@@ -575,7 +575,7 @@ namespace ogamehelpers{
 		return save_duration;
 	}
 
-	float get_save_duration_notrade(const std::int64_t hm, const std::uint64_t hk, const std::int64_t hd, /*have*/
+	float get_save_duration_notrade(const std::int64_t hm, const std::int64_t hk, const std::int64_t hd, /*have*/
 				const std::int64_t wm, const std::int64_t wk, const std::int64_t wd, /*want*/
 				const std::int64_t pm, const std::int64_t pk,const std::int64_t pd /*production*/){
 		

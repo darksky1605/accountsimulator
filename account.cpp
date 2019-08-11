@@ -433,7 +433,7 @@
 		researchState.accountPtr = this;
 		
 		return *this;
-	};
+	}
 	
 	void Account::setLogFile(std::ofstream* ptr){
         //logfile->flush();
@@ -550,7 +550,7 @@
 			labsPerPlanet.emplace_back(p.labLevel);
 		
 		return ogh::getTotalLabLevel(labsPerPlanet, researchState.igrnLevel);
-	};
+	}
 
     ogh::Production Account::getCurrentDailyMineProduction() const{
         using ogh::Production;
@@ -637,7 +637,7 @@
 		resources.met = 0;
 		resources.crystal = 0;
 		resources.deut = std::max(std::int64_t(0), diffd);	
-	};
+	}
     
     void Account::astroPhysicsResearchCompleted(){
         if(getNumPlanets() < ogh::getMaxPossiblePlanets(researchState.astroLevel)){

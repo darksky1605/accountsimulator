@@ -56,11 +56,11 @@
                 return false;
         }
         return true;
-    };
+    }
     
     bool operator!=(const UpgradeJobList& l, const UpgradeJobList& r){
         return !(l == r);
-    };
+    }
     
     bool operator<(const UpgradeJobList& l, const UpgradeJobList& r){
         return container_less_than_elementwise(l,r);
@@ -711,6 +711,7 @@ void createAccountFile(const std::string& filename){
 }
 
 void usage(int argc, char** argv){
+    (void)argc;
     std::cout << "Usage:" << argv[0] << " Options\n\n";
 	    
     std::cout << "Calculates how long it takes to perform a series of researches and upgrades in an account\n\n";
@@ -737,7 +738,7 @@ void usage(int argc, char** argv){
     std::cout << "The initial account state is read from accountfile\n\n";
     std::cout << "The list of upgrades to perform is read from upgradefile\n\n";
 
-    std::cout << "Example: " << argv[0] << " --accountfile account.txt --upgradefile upgrades.txt --speed 2" << std::endl;
+    std::cout << "Example: " << argv[0] << " --accountfile account.json --upgradefile upgrades.txt --speed 2" << std::endl;
 }
 
 int detailedmultiupgrade(int argc, char** argv){

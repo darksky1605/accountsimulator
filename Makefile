@@ -1,6 +1,6 @@
 DEBUG_FLAG=-g
 OPTIMIZATION_FLAG=$(if $(OPT),$(OPT),-O0)
-WARNING_FLAG = -Wall
+WARNING_FLAG = -Wall -Wextra -Wpedantic
 
 formulartests: formulartests.cpp ogame.hpp ogame.o
 	g++ -std=c++14 $(DEBUG_FLAG) $(WARNING_FLAG) formulartests.cpp ogame.o -o formulartests
