@@ -418,6 +418,7 @@
 		dailyExpeditionIncomePerSlot = rhs.dailyExpeditionIncomePerSlot;
 		traderate = rhs.traderate;
 		speedfactor = rhs.speedfactor;
+        saveslots = rhs.saveslots;
 		time = rhs.time;
 		setLogFile(rhs.logfile);
         astroPhysicsType = rhs.astroPhysicsType;
@@ -585,7 +586,7 @@
 	}
 
     void Account::updateDailyFarmIncome(){
-        const int fleetSlots = ogh::getNumberOfFleetSlots(researchState.computerLevel);
+        const int fleetSlots = std::max(0, ogh::getNumberOfFleetSlots(researchState.computerLevel) - saveslots);
         const int expoSlots = ogh::getNumberOfExpeditionSlots(researchState.astroLevel);
         const int slots = std::max(0, fleetSlots - expoSlots);
 
@@ -593,11 +594,11 @@
     }
         
     void Account::updateDailyExpeditionIncome(){
-        const int fleetSlots = ogh::getNumberOfFleetSlots(researchState.computerLevel);
+        const int fleetSlots = std::max(0, ogh::getNumberOfFleetSlots(researchState.computerLevel) - saveslots);
         const int expoSlots = ogh::getNumberOfExpeditionSlots(researchState.astroLevel);
         const int slots = std::min(fleetSlots, expoSlots);
 
-        dailyExpeditionIncomePerSlot = dailyExpeditionIncome * slots;
+        dailyExpeditionIncome = dailyExpeditionIncomePerSlot * slots;
     }
 	
 	void Account::setPercentToMaxProduction(const char* name, int level){

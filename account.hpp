@@ -254,6 +254,7 @@
         std::array<float, 3> traderate{3.0f,2.0f,1.0f};		
 		
         int speedfactor = 1;
+        int saveslots = 1;
 		
 		float time = 0.0f;
 		

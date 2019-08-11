@@ -166,6 +166,7 @@ void to_json(nlohmann::json& j, const Account& a){
             {"resources", a.resources},
             {"dailyFarmIncomePerSlot", a.dailyFarmIncomePerSlot},
             {"dailyExpeditionIncomePerSlot", a.dailyExpeditionIncomePerSlot},
+            {"saveslots", a.saveslots},
             {"traderate", a.traderate},
             {"ecospeed", a.speedfactor},
             {"numPlanets", a.planetStates.size()},
@@ -179,6 +180,7 @@ void from_json(const nlohmann::json& j, Account& a){
     j.at("resources").get_to(a.resources);
     j.at("dailyFarmIncomePerSlot").get_to(a.dailyFarmIncomePerSlot);
     j.at("dailyExpeditionIncomePerSlot").get_to(a.dailyExpeditionIncomePerSlot);
+    j.at("saveslots").get_to(a.saveslots);
     j.at("traderate").get_to(a.traderate);
     j.at("ecospeed").get_to(a.speedfactor);
 

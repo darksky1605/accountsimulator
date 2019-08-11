@@ -76,6 +76,7 @@
         "deuterium": 0,
         "metal": 0
     },
+    "saveslots": 1,
     "traderate": [
         3.0,
         2.0,
