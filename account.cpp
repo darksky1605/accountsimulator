@@ -871,7 +871,7 @@
         
         stats.job = job;
         stats.level = upgradeLevel;
-        
+
         const Resources constructionCosts = ogamehelpers::getBuildCosts(entityInfo, upgradeLevel);
         
         sstream << "construction costs: " << constructionCosts.met << " " << constructionCosts.crystal << " " << constructionCosts.deut << '\n';
@@ -884,6 +884,20 @@
         const float saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
         
         stats.waitingPeriodDaysBegin = time;
+
+        //wait until no research lab is in construction
+        auto labInConstruction = [](const auto& p){
+            return p.entityInfoInQueue.entity == ogh::Entity::Lab;
+        };
+
+        while(std::any_of(planetStates.begin(), planetStates.end(), labInConstruction)){
+            log("Waiting for finished construction of research labs.\n");
+
+            float timeToSkip = getTimeUntilNextFinishedEvent();
+            advanceTime(timeToSkip);
+
+            printQueues(sstream);
+        }
         
         //wait until the research queue is empty
         while(researchState.researchInProgress()){
@@ -990,12 +1004,12 @@
                     log(sstream.str());
                     sstream.str("");
                 }
-                }else{
-                    sstream << "Planet " << (upgradeLocation+1) << " does not exist and required astrophysics level is not in construction!\n";
-                    log(sstream.str());
-                    sstream.str("");
-                    assert(false && "Invalid upgrade list!");
-                }
+            }else{
+                sstream << "Planet " << (upgradeLocation+1) << " does not exist and required astrophysics level is not in construction!\n";
+                log(sstream.str());
+                sstream.str("");
+                assert(false && "Invalid upgrade list!");
+            }
         }else{
             
             
