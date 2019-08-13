@@ -13,22 +13,22 @@ Here, the optimal permutation can be optimal with respect to either:
 
 
 # Restrictions / Limitations / ...
-No moons
-No ships / def
-Cannot build things which require energy
-All account resources are instantly available at every planet at any time, i.e. no transport delay
-Trades withing save time calculations are unlimited. No storage restrictions. No DM costs. Those trades happen instantly ,i.e. no transport delay.
-Resource production is not limited by storage capacity.
-Everything else I forgot to mention.
+  *No moons
+  *No ships / def
+  *Cannot build things which require energy
+  *All account resources are instantly available at every planet at any time, i.e. no transport delay
+  *Trades withing save time calculations are unlimited. No storage restrictions. No DM costs. Those trades happen instantly ,i.e. no transport delay.
+  *Resource production is not limited by storage capacity.
+  *Everything else I forgot to mention.
 
 # How to use
 The program requires an account file describing the account (buildings, researches,...), and an upgrade file describing the upgrades to be performed.
-In its simplest form, the program can be called with ./accountupgrade --accountfile account.json --upgradefile upgrades.txt
+In its simplest form, the program can be called with `./accountupgrade --accountfile account.json --upgradefile upgrades.txt`
 
-A list of options is available when using the commandline argument '--help', or by running the program without any arguments.
+A list of options is available when using the commandline argument `./accountupgrade --help`, or by running the program without any arguments.
 
 Account file:
-The account file must be given in json format. A default account file 'file.json' can be created via ./accountupgrade --newAccount file.json
+The account file must be given in json format. A default account file 'file.json' can be created via `./accountupgrade --newAccount file.json`
 Planets with their respective buildings are described by the entries numPlanets, planetType and planets. 
 numPlanets is the number of planets of the account.
 planetType must be either "identical" or "individual".
@@ -51,5 +51,27 @@ Valid research names:
 "Energy Technology", "Hyperspace Technology", "Combustion Drive", "Impulse Drive", "Hyperspace Drive",
 "Laser Technology", "Ion Technology", "Plasma Technology", "Intergalactic Research Network", "Astrophysics",
 "Graviton Technology", "none"
+
+
+Upgrade file:
+A single upgrade is given by zero or more planet specifiers separated by whitespace, followed by an upgrade name.
+If no planet specifier is given, the upgrade is performed on every planet. The following example upgrades metal mine on every planet. Afterwards, deut synth is build on the second planet.
+```
+met
+2 deut
+```
+
+It is also possible to place multiple single upgrades in one line. Upgrades are performed from left to right within a line.
+```
+met 2 deut
+```
+
+multiple consecutive single upgrades with the same planet specifier in the same line can be interleaved by surrounding the respective upgrades by `(.` and `.)`. (. indicates whitespace).
+For example, 
+`1 2 met 1 2 deut` is equivalent to `1 met 2 met 3 met 1 deut 2 deut 3 deut`, whereas
+`( 1 2 met 1 2 deut )` is equivalent to `1 met 1 deut 2 met 2 deut 3 met 3 deut`.
+
+When calculating the optimal permutation, only permutations of lines are regarded.
+
 
 
