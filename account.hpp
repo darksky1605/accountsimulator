@@ -267,8 +267,8 @@
 		
 		float time = 0.0f;
                 
-        AstroType astroPhysicsType = AstroType::Blocking;
-        PostAstroAction postAstroPhysicsAction = PostAstroAction::SimpleCopyPreviousPlanet;
+        AstroType astroPhysicsType = AstroType::Nonblocking;
+        PostAstroAction postAstroPhysicsAction = PostAstroAction::None;
         
         std::vector<LogRecord> logRecords;
 		

@@ -891,7 +891,7 @@
         };
 
         while(std::any_of(planetStates.begin(), planetStates.end(), labInConstruction)){
-            log("Waiting for finished construction of research labs.\n");
+            log("Waiting for finished construction of research labs. This does not count as saving time\n");
 
             float timeToSkip = getTimeUntilNextFinishedEvent();
             advanceTime(timeToSkip);
@@ -979,7 +979,16 @@
         
         float saveTimeDaysForJob = 0.0f;
         
-        
+        auto waitForResearchBeforeLabStart = [&](){
+            if(entityInfo.entity == ogh::Entity::Lab && researchState.entityInfoInQueue.entity != ogh::Entity::None){
+                log("Waiting for finished research before building research lab. This does not count as saving time\n");
+
+                float timeToSkip = getTimeUntilNextFinishedEvent();
+                advanceTime(timeToSkip);
+
+                printQueues(sstream);
+            }
+        };
         
         
         if(upgradeLocation == getNumPlanets()){
@@ -991,6 +1000,8 @@
  
             if(researchState.entityInfoInQueue.entity == Entity::Astro
                 && getNumPlanets() < ogamehelpers::getMaxPossiblePlanets(researchState.astroLevel + 1)){
+
+                waitForResearchBeforeLabStart();
                 
                 //wait until astro is completed
                 while(researchState.researchInProgress()){
@@ -1032,7 +1043,7 @@
                 stats.waitingPeriodDaysBegin = time;
             }
             
-            
+            waitForResearchBeforeLabStart();
             
             //wait until the building queue of current planet is free
             
