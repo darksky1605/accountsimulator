@@ -78,11 +78,32 @@ met 2 deut
 multiple consecutive single upgrades with the same planet specifier in the same line can be interleaved by surrounding the respective upgrades by `(.` and `.)`. (. indicates whitespace).
 For example, 
 
-`1 2 met 1 2 deut` is equivalent to `1 met 2 met 3 met 1 deut 2 deut 3 deut`, 
+`1 2 met 1 2 deut` is equivalent to `1 met 2 met 3 met 1 deut 2 deut 3 deut`,  
 whereas
 `( 1 2 met 1 2 deut )` is equivalent to `1 met 1 deut 2 met 2 deut 3 met 3 deut`.
 
 When calculating the optimal permutation, only permutations of lines are regarded.
 
+Here is another example which uses multiple lines, interleaved upgrades and multiple upgrades per line
+
+```
+met
+( crys fusionplant ) plasma
+1 robo 1 nani 1 2 met
+```
+
+
+##### Valid upgrade names
+```
+"metalmine", "met", "crystalmine", "kris", "crys", "deutsynth", "deut", "solarplant", "skw", 
+"fusionplant", "fkw", "robofactory", "robo", "nanitefactory", "nani", "researchlab", "lab", 
+"shipyard", "werft", "metalstorage", "mstorage", "crystalstorage", "cstorage", "deutstorage", "dstorage", 
+"alliancedepot", "allydepot", "missilesilo", "silo", "energytech", "etech", "plasmatech", "plasma", 
+"astrophysics", "astro", "researchnetwork", "igfn", "igrn", "computertech", "comp", "espionagetech", "spiotech", 
+"weaponstech", "waffen", "shieldingtech", "schild", "armourtech", "panzer", "hyperspacetech", "hypertech", 
+"combustiondrive", "verbrenner", "impulsedrive", "impuls", "hyperspacedrive", "hyperantrieb", 
+"lasertech", "laser", "iontech", "ion", "none"
+```
+Upgrade names are not case-sensitive.
 
 
