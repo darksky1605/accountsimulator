@@ -150,7 +150,7 @@ ogh::EntityInfo parseUpgradeName(const std::string& name){
 	    entity = ogh::Deutsynth;
     }else if(name == "solarplant" || name == "skw"){
 	    entity = ogh::Solar;
-    }else if(name == "fusionplanet" || name == "fkw"){
+    }else if(name == "fusionplant" || name == "fkw"){
 	    entity = ogh::Fusion;
     }else if(name == "robofactory" || name == "robo"){
 	    entity = ogh::Robo;
