@@ -75,12 +75,12 @@ It is also possible to place multiple single upgrades in one line. Upgrades are 
 met 2 deut
 ```
 
-multiple consecutive single upgrades with the same planet specifier in the same line can be interleaved by surrounding the respective upgrades by `(.` and `.)`. (. indicates whitespace).
+Multiple consecutive single upgrades with the same planet specifier in the same line can be interleaved by surrounding the respective upgrades by `(.` and `.)`. (. indicates whitespace).
 For example, 
 
-`1 2 met 1 2 deut` is equivalent to `1 met 2 met 3 met 1 deut 2 deut 3 deut`,  
+`1 2 3 met 1 2 3 deut` is equivalent to `1 met 2 met 3 met 1 deut 2 deut 3 deut`,  
 whereas
-`( 1 2 met 1 2 deut )` is equivalent to `1 met 1 deut 2 met 2 deut 3 met 3 deut`.
+`( 1 2 3 met 1 2 3 deut )` is equivalent to `1 met 1 deut 2 met 2 deut 3 met 3 deut`.
 
 When calculating the optimal permutation, only permutations of lines are regarded.
 
