@@ -638,8 +638,26 @@ namespace ogamehelpers{
         return computerLevel + 1;
     }
 
+	int getNumberOfFleetSlotsWithOfficers(int computerLevel, bool hasAdmiral, bool hasStaff){
+		constexpr int admiralSlots = 2;
+		constexpr int staffSlots = 1;
+
+		const int extraAdmiralSlots = hasAdmiral ? admiralSlots : 0;
+		const int extraStaffSlots = hasStaff ? staffSlots : 0;
+		return getNumberOfFleetSlots(computerLevel) + extraAdmiralSlots + extraStaffSlots;
+	}
+
     int getNumberOfExpeditionSlots(int astroLevel){
         return int(std::sqrt(astroLevel));
+    }
+
+	int getNumberOfExpeditionSlotsWithOfficers(int astroLevel, bool hasAdmiral, bool hasStaff){
+        constexpr int admiralSlots = 1;
+		constexpr int staffSlots = 0;
+
+		const int extraAdmiralSlots = hasAdmiral ? admiralSlots : 0;
+		const int extraStaffSlots = hasStaff ? staffSlots : 0;
+		return getNumberOfExpeditionSlots(astroLevel) + extraAdmiralSlots + extraStaffSlots;
     }
 
     EntityInfo parseEntityName(const std::string& name){
