@@ -585,16 +585,18 @@
 	}
 
     void Account::updateDailyFarmIncome(){
-        const int fleetSlots = std::max(0, ogh::getNumberOfFleetSlots(researchState.computerLevel) - saveslots);
-        const int expoSlots = ogh::getNumberOfExpeditionSlots(researchState.astroLevel);
+        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(researchState.computerLevel, officerState.hasAdmiral(), officerState.hasStaff());
+        const int fleetSlots = std::max(0, slotsInAccount - saveslots);
+        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(researchState.astroLevel, officerState.hasAdmiral(), officerState.hasStaff());
         const int slots = std::max(0, fleetSlots - expoSlots);
 
         dailyFarmIncome = dailyFarmIncomePerSlot * slots;
     }
         
     void Account::updateDailyExpeditionIncome(){
-        const int fleetSlots = std::max(0, ogh::getNumberOfFleetSlots(researchState.computerLevel) - saveslots);
-        const int expoSlots = ogh::getNumberOfExpeditionSlots(researchState.astroLevel);
+        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(researchState.computerLevel, officerState.hasAdmiral(), officerState.hasStaff());
+        const int fleetSlots = std::max(0, slotsInAccount - saveslots);
+        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(researchState.astroLevel, officerState.hasAdmiral(), officerState.hasStaff());
         const int slots = std::min(fleetSlots, expoSlots);
 
         dailyExpeditionIncome = dailyExpeditionIncomePerSlot * slots;
