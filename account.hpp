@@ -65,7 +65,6 @@
 		float buildingQueue = 0.0f;
 		ogamehelpers::Entity entityInQueue{};
 		
-		ResearchState* researchStatePtr;
 		Account* accountPtr;
         
         mutable ogamehelpers::Production dailyProduction;
@@ -122,7 +121,10 @@
 		
 		void advanceTime(float days);
 		
-		int getLevel(const ogamehelpers::Entity& entity) const;
+		int getLevel(ogamehelpers::Entity entity) const;
+
+		//increase level by one and return new level;
+		int increaseLevel(ogamehelpers::Entity entity);
 		
 		void startResearch(float timeDays, const ogamehelpers::Entity& entity);
 	};
@@ -258,6 +260,8 @@
 		void startResearch(float timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
 		
 		int getNumPlanets() const;
+
+		int getResearchLevel(const ogamehelpers::Entity& entity) const;
 		
 		void addResources(const ogamehelpers::Resources& res);
 		

@@ -85,9 +85,9 @@
 																	crysLevel, getCrysItem(), crysPercent, 
 																	deutLevel, getDeutItem(), deutPercent, 
 																	solarLevel, solarplantPercent, 
-																	fusionLevel, fusionPercent, researchStatePtr->etechLevel,
+																	fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
 																	temperature, sats, satsPercent,
-																	researchStatePtr->plasmaLevel, accountPtr->speedfactor, 
+																	accountPtr->getResearchLevel(ogh::Entity::Plasma), accountPtr->speedfactor, 
 																	accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff());
         }
 		return dailyProduction;
@@ -115,8 +115,8 @@
         int bestFusionPercent = fusionPercent;
         std::int64_t bestDSE = 0;
         
-        const int etechLevel = researchStatePtr->etechLevel;
-        const int plasmaLevel = researchStatePtr->etechLevel;
+        const int etechLevel = accountPtr->getResearchLevel(ogh::Entity::Energy);
+        const int plasmaLevel = accountPtr->getResearchLevel(ogh::Entity::Plasma);
         const bool hasGeologist = accountPtr->hasGeologist();
         const bool hasEngineer = accountPtr->hasEngineer();
         const bool hasStaff = accountPtr->hasStaff();
@@ -214,7 +214,7 @@
                                                                                 crysLevel, oldCrysPercent,
                                                                                 deutLevel, oldDeutPercent,
                                                                                 solarLevel, solarplantPercent,
-                                                                                fusionLevel, oldFusionPercent, researchStatePtr->etechLevel, 
+                                                                                fusionLevel, oldFusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy), 
                                                                                 sats, satsPercent, temperature,
                                                                                 accountPtr->hasEngineer(), accountPtr->hasStaff());
             
@@ -222,7 +222,7 @@
                                                                                 crysLevel, crysPercent,
                                                                                 deutLevel, deutPercent,
                                                                                 solarLevel, solarplantPercent,
-                                                                                fusionLevel, fusionPercent, researchStatePtr->etechLevel, 
+                                                                                fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy), 
                                                                                 sats, satsPercent, temperature,
                                                                                 accountPtr->hasEngineer(), accountPtr->hasStaff());
 
@@ -262,7 +262,7 @@
 		}			
 	}
 
-    int ResearchState::getLevel(const ogh::Entity& entity) const{
+    int ResearchState::getLevel(ogh::Entity entity) const{
         switch(entity){
         case ogh::Entity::Espionage: return espionageLevel; 
         case ogh::Entity::Computer: return computerLevel; 
@@ -279,6 +279,29 @@
         case ogh::Entity::Plasma: return plasmaLevel; 
         case ogh::Entity::Researchnetwork: return igrnLevel; 
         case ogh::Entity::Astro: return astroLevel;
+        case ogh::Entity::None: return 0;
+        default: throw std::runtime_error("researchstate getLevel error");
+        }
+    }
+
+    int ResearchState::increaseLevel(ogamehelpers::Entity entity){
+        switch(entity){
+        case ogh::Entity::Espionage: return ++espionageLevel; 
+        case ogh::Entity::Computer: return ++computerLevel; 
+        case ogh::Entity::Weapons: return ++weaponsLevel; 
+        case ogh::Entity::Shielding: return ++shieldingLevel; 
+        case ogh::Entity::Armour: return ++armourLevel; 
+        case ogh::Entity::Energy: return ++etechLevel; 
+        case ogh::Entity::Hyperspacetech: return ++hyperspacetechLevel; 
+        case ogh::Entity::Combustion: return ++combustionLevel; 
+        case ogh::Entity::Impulse: return ++impulseLevel; 
+        case ogh::Entity::Hyperspacedrive: return ++hyperspacedriveLevel; 
+        case ogh::Entity::Laser: return ++laserLevel; 
+        case ogh::Entity::Ion: return ++ionLevel; 
+        case ogh::Entity::Plasma: return ++plasmaLevel; 
+        case ogh::Entity::Researchnetwork: return ++igrnLevel; 
+        case ogh::Entity::Astro: return ++astroLevel;
+        case ogh::Entity::None: return 0;
         default: throw std::runtime_error("researchstate getLevel error");
         }
     }
@@ -330,7 +353,6 @@
         logRecords = rhs.logRecords;
 		
 		for(auto& planet : planets){
-			planet.researchStatePtr = &researchState;
 			planet.accountPtr = this;
 		}
 		
@@ -375,8 +397,8 @@
     }
 
     void Account::researchFinishedCallback(){
-        auto handleMineProductionChangingResearch = [&](auto& level){
-            level++;
+        auto handleMineProductionChangingResearch = [&](){
+            const int level = getResearchLevel(researchState.entityInQueue);
 
             auto handlePlanet = [&](auto& planet){
                 planet.dailyProductionNeedsUpdate = true;
@@ -387,30 +409,31 @@
             std::for_each(planets.begin(), planets.end(), handlePlanet);
         };
 
-        auto handleFleetIncomeChangingResearch = [&](auto& level){
-            level++;
+        auto handleFleetIncomeChangingResearch = [&](){
             updateDailyFarmIncome();
             updateDailyExpeditionIncome();
         };
 
         auto& r = researchState;
+        r.increaseLevel(r.entityInQueue);
+
         //update state after research is finished
         switch(r.entityInQueue){
-        case ogh::Entity::Energy: handleMineProductionChangingResearch(r.etechLevel); break;
-        case ogh::Entity::Plasma: handleMineProductionChangingResearch(r.plasmaLevel); break;
-        case ogh::Entity::Researchnetwork: r.igrnLevel++; break;
-        case ogh::Entity::Astro: handleFleetIncomeChangingResearch(r.astroLevel); break; 
-        case ogh::Entity::Computer: handleFleetIncomeChangingResearch(r.computerLevel); break; 
-        case ogh::Entity::Espionage: r.espionageLevel++; break;
-        case ogh::Entity::Weapons: r.weaponsLevel++; break;
-        case ogh::Entity::Shielding: r.shieldingLevel++; break;
-        case ogh::Entity::Armour: r.armourLevel++; break;
-        case ogh::Entity::Hyperspacetech: r.hyperspacetechLevel++; break;
-        case ogh::Entity::Combustion: r.combustionLevel++; break;
-        case ogh::Entity::Impulse: r.impulseLevel++; break;
-        case ogh::Entity::Hyperspacedrive: r.hyperspacedriveLevel++; break;
-        case ogh::Entity::Laser: r.laserLevel++; break;
-        case ogh::Entity::Ion: r.ionLevel++; break;
+        case ogh::Entity::Energy: handleMineProductionChangingResearch(); break;
+        case ogh::Entity::Plasma: handleMineProductionChangingResearch(); break;
+        case ogh::Entity::Researchnetwork: break;
+        case ogh::Entity::Astro: handleFleetIncomeChangingResearch(); break; 
+        case ogh::Entity::Computer: handleFleetIncomeChangingResearch(); break; 
+        case ogh::Entity::Espionage: break;
+        case ogh::Entity::Weapons: break;
+        case ogh::Entity::Shielding: break;
+        case ogh::Entity::Armour: break;
+        case ogh::Entity::Hyperspacetech: break;
+        case ogh::Entity::Combustion: break;
+        case ogh::Entity::Impulse: break;
+        case ogh::Entity::Hyperspacedrive: break;
+        case ogh::Entity::Laser: break;
+        case ogh::Entity::Ion: break;
         case ogh::Entity::None: break;
         default: throw std::runtime_error("No research finished callback for this research " + std::string{ogh::getEntityName(r.entityInQueue)});
         }
@@ -421,7 +444,6 @@
 	void Account::addNewPlanet(){
 		planets.emplace_back();
 		planets.back().planetId = int(planets.size());
-		planets.back().researchStatePtr = &researchState;
 		planets.back().accountPtr = this;
 	}
 	
@@ -518,7 +540,7 @@
 		for(const auto& p : planets)
 			labsPerPlanet.emplace_back(p.labLevel);
 		
-		return ogh::getTotalLabLevel(labsPerPlanet, researchState.igrnLevel);
+		return ogh::getTotalLabLevel(labsPerPlanet, getResearchLevel(ogh::Entity::Researchnetwork));
 	}
 
     ogh::Production Account::getCurrentDailyMineProduction() const{
@@ -555,18 +577,18 @@
 	}
 
     void Account::updateDailyFarmIncome(){
-        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(researchState.computerLevel, hasAdmiral(), hasStaff());
+        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(getResearchLevel(ogh::Entity::Computer), hasAdmiral(), hasStaff());
         const int fleetSlots = std::max(0, slotsInAccount - saveslots);
-        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(researchState.astroLevel, hasAdmiral(), hasStaff());
+        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(getResearchLevel(ogh::Entity::Astro), hasAdmiral(), hasStaff());
         const int slots = std::max(0, fleetSlots - expoSlots);
 
         dailyFarmIncome = dailyFarmIncomePerSlot * slots;
     }
         
     void Account::updateDailyExpeditionIncome(){
-        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(researchState.computerLevel, hasAdmiral(), hasStaff());
+        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(getResearchLevel(ogh::Entity::Computer), hasAdmiral(), hasStaff());
         const int fleetSlots = std::max(0, slotsInAccount - saveslots);
-        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(researchState.astroLevel, hasAdmiral(), hasStaff());
+        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(getResearchLevel(ogh::Entity::Astro), hasAdmiral(), hasStaff());
         const int slots = std::min(fleetSlots, expoSlots);
 
         dailyExpeditionIncome = dailyExpeditionIncomePerSlot * slots;
@@ -619,6 +641,10 @@
 	int Account::getNumPlanets() const{
 		return int(planets.size());
 	}
+
+    int Account::getResearchLevel(const ogamehelpers::Entity& entity) const{
+        return researchState.getLevel(entity);
+    }
 	
 	void Account::addResources(const ogh::Resources& res){
 		resources += res;
@@ -765,7 +791,7 @@
         const EntityInfo entityInfo = ogh::getEntityInfo(entity);
         assert(entityInfo.type == EntityType::Research);
 
-        const int upgradeLevel = 1 + researchState.getLevel(entity) + (researchState.entityInQueue == entity ? 1 : 0);
+        const int upgradeLevel = 1 + getResearchLevel(entity) + (researchState.entityInQueue == entity ? 1 : 0);
         
         sstream << "Processing " << ogh::getEntityName(entity) << " " << upgradeLevel << '\n';
         log(sstream.str());
@@ -836,7 +862,7 @@
             //if Astrophysics research is started which will increase the planet count uppon completion,
             //a new planet is added immediatly. To prevent constructions before the research is actually complete,
             // the building queue is blocked with an empty task with a duration equal to the research duration of Astrophysics.
-            if(getNumPlanets() + 1 == ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
+            if(getNumPlanets() + 1 == ogh::getMaxPossiblePlanets(getResearchLevel(ogh::Entity::Astro) + 1)){
                 addNewPlanet();
                 planets.back().startConstruction(researchTime, ogh::Entity::None);
             }

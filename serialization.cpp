@@ -206,7 +206,6 @@ void from_json(const nlohmann::json& j, Account& a){
     }
 
     auto fixPointers = [&](auto& p){
-        p.researchStatePtr = &a.researchState;
 		p.accountPtr = &a;
     };
 
