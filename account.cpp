@@ -111,7 +111,7 @@
 																	fusionLevel, fusionPercent, researchStatePtr->etechLevel,
 																	temperature, sats, satsPercent,
 																	researchStatePtr->plasmaLevel, accountPtr->speedfactor, 
-																	officerStatePtr->hasEngineer(), officerStatePtr->hasGeologist(), officerStatePtr->hasStaff());
+																	accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff());
         }
 		return dailyProduction;
 	}
@@ -140,9 +140,9 @@
         
         const int etechLevel = researchStatePtr->etechLevel;
         const int plasmaLevel = researchStatePtr->etechLevel;
-        const bool hasGeologist = officerStatePtr->hasGeologist();
-        const bool hasEngineer = officerStatePtr->hasEngineer();
-        const bool hasStaff = officerStatePtr->hasStaff();
+        const bool hasGeologist = accountPtr->hasGeologist();
+        const bool hasEngineer = accountPtr->hasEngineer();
+        const bool hasStaff = accountPtr->hasStaff();
         
         const int geologistpercent = hasGeologist ? 10 : 0;
         const int staffpercent = hasStaff ? 2 : 0;
@@ -239,7 +239,7 @@
                                                                                 solarLevel, solarplantPercent,
                                                                                 fusionLevel, oldFusionPercent, researchStatePtr->etechLevel, 
                                                                                 sats, satsPercent, temperature,
-                                                                                officerStatePtr->hasEngineer(), officerStatePtr->hasStaff());
+                                                                                accountPtr->hasEngineer(), accountPtr->hasStaff());
             
             const double newmineproductionfactor = ogh::getMineProductionFactor(metLevel, metPercent,
                                                                                 crysLevel, crysPercent,
@@ -247,7 +247,7 @@
                                                                                 solarLevel, solarplantPercent,
                                                                                 fusionLevel, fusionPercent, researchStatePtr->etechLevel, 
                                                                                 sats, satsPercent, temperature,
-                                                                                officerStatePtr->hasEngineer(), officerStatePtr->hasStaff());
+                                                                                accountPtr->hasEngineer(), accountPtr->hasStaff());
 
             percentageChanges.emplace_back(PercentageChange{metPercent, 
                                                             crysPercent, 
@@ -352,47 +352,7 @@
         for(auto& planet : planets)
             planet.dailyProductionNeedsUpdate = true;
     }
-	
-	
-	OfficerState::OfficerState(){}
 		
-	OfficerState::OfficerState(const OfficerState& rhs){
-		operator=(rhs);
-	}
-	
-	OfficerState& OfficerState::operator=(const OfficerState& rhs){
-		commanderDurationDays = rhs.commanderDurationDays;
-		engineerDurationDays = rhs.engineerDurationDays;
-		technocratDurationDays = rhs.technocratDurationDays;
-		geologistDurationDays = rhs.geologistDurationDays;
-		admiralDurationDays = rhs.admiralDurationDays;			
-		return *this;
-	}
-	
-	bool OfficerState::hasCommander() const{
-		return commanderDurationDays > 0.0f;
-	}
-	
-	bool OfficerState::hasEngineer() const{
-		return engineerDurationDays > 0.0f;
-	}
-	
-	bool OfficerState::hasTechnocrat() const{
-		return technocratDurationDays > 0.0f;
-	}
-	
-	bool OfficerState::hasGeologist() const{
-		return geologistDurationDays > 0.0f;
-	}
-	
-	bool OfficerState::hasAdmiral() const{
-		return admiralDurationDays > 0.0f;
-	}
-	
-	bool OfficerState::hasStaff() const{
-		return hasCommander() && hasEngineer() && hasTechnocrat() && hasGeologist() && hasAdmiral();
-	}
-	
 	void OfficerState::advanceTime(float days){
 		assert(days >= 0.0f);
 		
@@ -418,7 +378,7 @@
 	Account& Account::operator=(const Account& rhs){
 		planets = rhs.planets;
 		researchState = rhs.researchState;
-		officerState = rhs.officerState;
+		officers = rhs.officers;
 		resources = rhs.resources;
 		dailyFarmIncome = rhs.dailyFarmIncome;
 		dailyExpeditionIncome = rhs.dailyExpeditionIncome;
@@ -432,7 +392,6 @@
 		
 		for(auto& planet : planets){
 			planet.researchStatePtr = &researchState;
-			planet.officerStatePtr = &officerState;
 			planet.accountPtr = this;
 		}
 		
@@ -449,7 +408,6 @@
 		planets.emplace_back();
 		planets.back().planetId = int(planets.size());
 		planets.back().researchStatePtr = &researchState;
-		planets.back().officerStatePtr = &officerState;
 		planets.back().accountPtr = this;
 	}
 	
@@ -464,7 +422,7 @@
 		for(auto& planet : planets)
 			planet.advanceTime(days);
 		researchState.advanceTime(days);
-		officerState.advanceTime(days);
+		officers.advanceTime(days);
 		
 		time += days;
 	}
@@ -499,28 +457,28 @@
             any = true;
 		}
 		
-		if(officerState.hasCommander()){
-			time = std::min(time, officerState.commanderDurationDays);
+		if(hasCommander()){
+			time = std::min(time, officers.commanderDurationDays);
             any = true;
 		}
 		
-		if(officerState.hasEngineer()){
-			time = std::min(time, officerState.engineerDurationDays);
+		if(hasEngineer()){
+			time = std::min(time, officers.engineerDurationDays);
             any = true;
 		}
 		
-		if(officerState.hasTechnocrat()){
-			time = std::min(time, officerState.technocratDurationDays);
+		if(hasTechnocrat()){
+			time = std::min(time, officers.technocratDurationDays);
             any = true;
 		}
 		
-		if(officerState.hasGeologist()){
-			time = std::min(time, officerState.geologistDurationDays);
+		if(hasGeologist()){
+			time = std::min(time, officers.geologistDurationDays);
             any = true;
 		}
 		
-		if(officerState.hasAdmiral()){
-			time = std::min(time, officerState.admiralDurationDays);
+		if(hasAdmiral()){
+			time = std::min(time, officers.admiralDurationDays);
             any = true;
 		}
 		
@@ -583,18 +541,18 @@
 	}
 
     void Account::updateDailyFarmIncome(){
-        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(researchState.computerLevel, officerState.hasAdmiral(), officerState.hasStaff());
+        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(researchState.computerLevel, hasAdmiral(), hasStaff());
         const int fleetSlots = std::max(0, slotsInAccount - saveslots);
-        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(researchState.astroLevel, officerState.hasAdmiral(), officerState.hasStaff());
+        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(researchState.astroLevel, hasAdmiral(), hasStaff());
         const int slots = std::max(0, fleetSlots - expoSlots);
 
         dailyFarmIncome = dailyFarmIncomePerSlot * slots;
     }
         
     void Account::updateDailyExpeditionIncome(){
-        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(researchState.computerLevel, officerState.hasAdmiral(), officerState.hasStaff());
+        const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(researchState.computerLevel, hasAdmiral(), hasStaff());
         const int fleetSlots = std::max(0, slotsInAccount - saveslots);
-        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(researchState.astroLevel, officerState.hasAdmiral(), officerState.hasStaff());
+        const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(researchState.astroLevel, hasAdmiral(), hasStaff());
         const int slots = std::min(fleetSlots, expoSlots);
 
         dailyExpeditionIncome = dailyExpeditionIncomePerSlot * slots;
@@ -739,6 +697,30 @@
         std::for_each(planets.begin(), planets.end(), copyChangesToResult);
 
         return result;
+    }
+
+    bool Account::hasCommander() const{
+        return officers.commanderDurationDays > 0;
+    }
+
+    bool Account::hasEngineer() const{
+        return officers.engineerDurationDays > 0;
+    }
+
+    bool Account::hasTechnocrat() const{
+        return officers.technocratDurationDays > 0;
+    }
+
+    bool Account::hasGeologist() const{
+        return officers.geologistDurationDays > 0;
+    }
+
+    bool Account::hasAdmiral() const{
+        return officers.admiralDurationDays > 0;
+    }
+
+    bool Account::hasStaff() const{
+        return hasCommander() && hasEngineer() && hasTechnocrat() && hasGeologist() && hasAdmiral();
     }
     
     Account::UpgradeJobStats Account::processResearchJob(const UpgradeJob& job){

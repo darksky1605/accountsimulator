@@ -67,7 +67,6 @@
 		ogamehelpers::EntityInfo entityInfoInQueue{};
 		
 		ResearchState* researchStatePtr;
-		OfficerState* officerStatePtr;
 		Account* accountPtr;
 
         std::vector<PercentageChange> percentageChanges;
@@ -142,23 +141,9 @@
 		float geologistDurationDays = 0.0f;
 		float admiralDurationDays = 0.0f;
 		
-		OfficerState();
-		
-		OfficerState(const OfficerState& rhs);
-		
-		OfficerState& operator=(const OfficerState& rhs);
-		
-		bool hasCommander() const;
-		
-		bool hasEngineer() const;
-		
-		bool hasTechnocrat() const;
-		
-		bool hasGeologist() const;
-		
-		bool hasAdmiral() const;
-		
-		bool hasStaff() const;
+		OfficerState() = default;
+		OfficerState(const OfficerState&) = default;
+		OfficerState& operator=(const OfficerState&) = default;
 		
 		void advanceTime(float days);
 	};
@@ -230,7 +215,7 @@
 	
 		std::vector<PlanetState> planets{};
 		ResearchState researchState{};
-		OfficerState officerState{};
+		OfficerState officers{};
 		
 		ogamehelpers::Resources resources{};        
 		ogamehelpers::Production dailyFarmIncomePerSlot{};
@@ -305,6 +290,18 @@
         float waitUntilAstroForNextPlanetIsFinished();
 		
 		float waitUntilCostsAreAvailable(const ogamehelpers::Resources& constructionCosts);
+
+		bool hasCommander() const;
+		
+		bool hasEngineer() const;
+		
+		bool hasTechnocrat() const;
+		
+		bool hasGeologist() const;
+		
+		bool hasAdmiral() const;
+		
+		bool hasStaff() const;
 		
 		UpgradeJobStats processResearchJob(const UpgradeJob& job);
 		
