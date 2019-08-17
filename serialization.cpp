@@ -66,7 +66,7 @@ void to_json(json& j, const PlanetState& p){
             {"deutItemDurationDays", p.deutItemDurationDays},
             {"sats", p.sats},
             {"buildingQueueDays", p.buildingQueue},
-            {"inQueue", p.entityInfoInQueue.name}};
+            {"inQueue", ogh::getEntityName(p.entityInQueue)}};
 }
 
 void from_json(const json& j, PlanetState& p){
@@ -98,7 +98,7 @@ void from_json(const json& j, PlanetState& p){
     j.at("deutItemDurationDays").get_to(p.deutItemDurationDays);
     j.at("sats").get_to(p.sats);
     j.at("buildingQueueDays").get_to(p.buildingQueue);
-    p.entityInfoInQueue = ogh::parseEntityName(j.at("inQueue"));
+    p.entityInQueue = ogh::parseEntityName(j.at("inQueue")).entity;
 }
 
 

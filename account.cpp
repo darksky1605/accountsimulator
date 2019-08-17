@@ -51,8 +51,8 @@
 		return buildingQueue > 0.0f;
 	}
 
-	int PlanetState::getLevel(const ogh::EntityInfo& info) const{
-		switch(info.entity){
+	int PlanetState::getLevel(const ogh::Entity& entity) const{
+		switch(entity){
             case ogh::Entity::Metalmine: return metLevel;
             case ogh::Entity::Crystalmine: return crysLevel;
             case ogh::Entity::Deutsynth: return deutLevel;
@@ -67,17 +67,17 @@
             case ogh::Entity::Deutstorage: return deutStorageLevel;
             case ogh::Entity::Alliancedepot: return allianceDepotLevel;
             case ogh::Entity::Silo: return missileSiloLevel;
-            default: throw std::runtime_error("planetstate getLevel error " + std::string{info.name});
+            default: throw std::runtime_error("planetstate getLevel error " + ogh::getEntityName(entity));
 		}
 	}
 
     void PlanetState::buildingFinishedCallback(){
-        switch(entityInfoInQueue.entity){
-            case ogh::Entity::Metalmine: metLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, metLevel); break;
-            case ogh::Entity::Crystalmine: crysLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, crysLevel); break;
-            case ogh::Entity::Deutsynth: deutLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, deutLevel); break;
-            case ogh::Entity::Solar: solarLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, solarLevel); break;
-            case ogh::Entity::Fusion: fusionLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(entityInfoInQueue.name, fusionLevel); break;
+        switch(entityInQueue){
+            case ogh::Entity::Metalmine: metLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(ogh::getEntityName(entityInQueue), metLevel); break;
+            case ogh::Entity::Crystalmine: crysLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(ogh::getEntityName(entityInQueue), crysLevel); break;
+            case ogh::Entity::Deutsynth: deutLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(ogh::getEntityName(entityInQueue), deutLevel); break;
+            case ogh::Entity::Solar: solarLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(ogh::getEntityName(entityInQueue), solarLevel); break;
+            case ogh::Entity::Fusion: fusionLevel++; dailyProductionNeedsUpdate = true; setPercentToMaxProduction(ogh::getEntityName(entityInQueue), fusionLevel); break;
             case ogh::Entity::Lab: labLevel++; break;
             case ogh::Entity::Robo: roboLevel++; break;
             case ogh::Entity::Nanite: naniteLevel++; break;
@@ -88,18 +88,18 @@
             case ogh::Entity::Alliancedepot: allianceDepotLevel++; break;
             case ogh::Entity::Silo: missileSiloLevel++; break;
             case ogh::Entity::None: break;
-            default: throw std::runtime_error("No building finished callback for this building " + std::string{entityInfoInQueue.name});
+            default: throw std::runtime_error("No building finished callback for this building " + std::string{ogh::getEntityName(entityInQueue)});
         }
 
-        entityInfoInQueue = ogh::EntityInfo{};
+        entityInQueue = ogh::Entity::None;
     }
 	
-	void PlanetState::startConstruction(float timeDays, const ogh::EntityInfo& entityInfo){
+	void PlanetState::startConstruction(float timeDays, const ogh::Entity& entity){
 		assert(timeDays >= 0.0f);
 		assert(!constructionInProgress());
 		
 		buildingQueue = timeDays;
-		entityInfoInQueue = entityInfo;
+		entityInQueue = entity;
 	}
 		
 	ogh::Production PlanetState::getCurrentDailyProduction() const{
@@ -116,7 +116,7 @@
 		return dailyProduction;
 	}
 	
-	void PlanetState::setPercentToMaxProduction(const char* name, int level){
+	void PlanetState::setPercentToMaxProduction(const std::string& name, int level){
         constexpr int metPercentBegin = 70;
         constexpr int crysPercentBegin = 70;
         constexpr int deutPercentBegin = 70;
@@ -564,11 +564,11 @@
         std::for_each(planets.begin(), planets.end(), setPercent);
 	}
 	
-	void Account::startConstruction(int planet, float timeDays, const ogh::EntityInfo& entityInfo, const ogh::Resources& constructionCosts){
+	void Account::startConstruction(int planet, float timeDays, const ogh::Entity& entity, const ogh::Resources& constructionCosts){
 		assert(planet >= 0);
 		assert(planet < getNumPlanets());
 		
-		planets[planet].startConstruction(timeDays, entityInfo);
+		planets[planet].startConstruction(timeDays, entity);
 		updateAccountResourcesAfterConstructionStart(constructionCosts);
 	}
 		
@@ -762,7 +762,7 @@
 
         //wait until no research lab is in construction
         auto labInConstruction = [](const auto& p){
-            return p.entityInfoInQueue.entity == ogh::Entity::Lab;
+            return p.entityInQueue == ogh::Entity::Lab;
         };
 
         while(std::any_of(planets.begin(), planets.end(), labInConstruction)){
@@ -810,7 +810,7 @@
             // the building queue is blocked with an empty task with a duration equal to the research duration of Astrophysics.
             if(getNumPlanets() + 1 == ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
                 addNewPlanet();
-                planets.back().startConstruction(researchTime, ogh::Noentity);
+                planets.back().startConstruction(researchTime, ogh::Entity::None);
             }
         }
         
@@ -840,7 +840,7 @@
         const auto& entityInfo = job.entityInfo;			
         const int upgradeLocation = job.location;
         
-        const int upgradeLevel = (upgradeLocation == getNumPlanets() ? 1 : 1 + planets[upgradeLocation].getLevel(entityInfo) + (planets[upgradeLocation].entityInfoInQueue.entity == entityInfo.entity ? 1 : 0));
+        const int upgradeLevel = (upgradeLocation == getNumPlanets() ? 1 : 1 + planets[upgradeLocation].getLevel(entityInfo.entity) + (planets[upgradeLocation].entityInQueue == entityInfo.entity ? 1 : 0));
         
         sstream << "Planet " << (upgradeLocation+1) << " processing " << entityInfo.name << " " << upgradeLevel << '\n';
         log(sstream.str());
@@ -904,7 +904,7 @@
         stats.constructionBeginDays = time;
         stats.constructionTimeDays = constructionTimeDays;
         
-        startConstruction(upgradeLocation, constructionTimeDays, entityInfo, constructionCosts);
+        startConstruction(upgradeLocation, constructionTimeDays, entityInfo.entity, constructionCosts);
         
         sstream << "Total Elapsed time: " << time << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
         sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';

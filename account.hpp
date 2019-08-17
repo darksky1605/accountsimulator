@@ -22,7 +22,7 @@
         int fusionPercent;
         int planetId;
         int finishedLevel;
-        const char* finishedName;
+        std::string finishedName;
         std::int64_t oldDSE;
         std::int64_t newDSE;
         double oldMineProductionFactor;
@@ -64,7 +64,7 @@
 		int sats = 0;
 		
 		float buildingQueue = 0.0f;
-		ogamehelpers::EntityInfo entityInfoInQueue{};
+		ogamehelpers::Entity entityInQueue{};
 		
 		ResearchState* researchStatePtr;
 		Account* accountPtr;
@@ -86,15 +86,15 @@
 		
 		bool constructionInProgress() const;
 		
-		int getLevel(const ogamehelpers::EntityInfo& info) const;
+		int getLevel(const ogamehelpers::Entity& info) const;
 
         void buildingFinishedCallback();
 		
-		void startConstruction(float timeDays, const ogamehelpers::EntityInfo& entityInfo);
+		void startConstruction(float timeDays, const ogamehelpers::Entity& entityInfo);
 		
 		ogamehelpers::Production getCurrentDailyProduction() const;
 
-		void setPercentToMaxProduction(const char* name, int level);
+		void setPercentToMaxProduction(const std::string& name, int level);
 	};
 	
 	struct ResearchState{
@@ -273,7 +273,7 @@
 
         std::vector<PercentageChange> getPercentageChanges() const;
 		
-		void startConstruction(int planet, float timeDays, const ogamehelpers::EntityInfo& entityInfo, const ogamehelpers::Resources& constructionCosts);
+		void startConstruction(int planet, float timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
 			
 		void startResearch(float timeDays, const ogamehelpers::EntityInfo& entityInfo, const ogamehelpers::Resources& constructionCosts);
 		
