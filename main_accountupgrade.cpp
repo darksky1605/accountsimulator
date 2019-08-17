@@ -25,6 +25,38 @@
 namespace ogh = ogamehelpers;
 using json = nlohmann::json;
 
+#if 0
+/* 
+* Used for Astro researches that enable a new planet slot after research.
+* 
+* Determine whether constructions on the current planets can be started while Astro research is in progress 
+* 
+* AstroType::Blocking: No new constructions can be started before research is completed
+* AstroType::Nonblocking: New constructions can be started on existing planets
+*/
+enum class AstroType {Blocking, Nonblocking};
+
+/* 
+* Used for Astro researches that enable a new planet slot after research.
+* 
+* Determines what should be done after research is completed.
+* 
+* PostAstroAction::SimpleCopyPreviousPlanet: Set levels of new planet to the levels of previous planet. 
+*                                            Time is not advanced.
+* 
+* PostAstroAction::SimpleUpgradeToPreviousPlanet: Perform upgrade jobs to bring the levels of the new planet to the levels of the previous planet.
+* 
+* PostAstroAction::None: No action is performed. The new planet is colonized, but building levels remain 0. Time is not advanced.
+*/
+enum class PostAstroAction {SimpleCopyPreviousPlanet, SimpleUpgradeToPreviousPlanet, None};
+
+        AstroType astroPhysicsType = AstroType::Nonblocking;
+        PostAstroAction postAstroPhysicsAction = PostAstroAction::None;
+
+
+        if(getNumPlanets() < ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
+#endif        
+
 
 struct UpgradeResult{
     bool success = false;

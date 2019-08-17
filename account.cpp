@@ -87,6 +87,7 @@
             case ogh::Entity::Deutstorage: deutStorageLevel++; break;
             case ogh::Entity::Alliancedepot: allianceDepotLevel++; break;
             case ogh::Entity::Silo: missileSiloLevel++; break;
+            case ogh::Entity::None: break;
             default: throw std::runtime_error("No building finished callback for this building " + std::string{entityInfoInQueue.name});
         }
 
@@ -317,7 +318,6 @@
 					            accountPtr->setPercentToMaxProduction(entityInfoInQueue.name, plasmaLevel); break;
         case ogh::Entity::Researchnetwork: igrnLevel++; break;
         case ogh::Entity::Astro: astroLevel++; 
-                                accountPtr->astroPhysicsResearchCompleted(); 
                                 accountPtr->updateDailyFarmIncome();
                                 accountPtr->updateDailyExpeditionIncome(); break;
         case ogh::Entity::Computer: computerLevel++;
@@ -333,7 +333,7 @@
         case ogh::Entity::Hyperspacedrive: hyperspacedriveLevel++; break;
         case ogh::Entity::Laser: laserLevel++; break;
         case ogh::Entity::Ion: ionLevel++; break;
-
+        case ogh::Entity::None: break;
         default: std::cerr << "Warning. No callback for this research\n";
         }
 
@@ -428,8 +428,6 @@
 		speedfactor = rhs.speedfactor;
         saveslots = rhs.saveslots;
 		time = rhs.time;
-        astroPhysicsType = rhs.astroPhysicsType;
-        postAstroPhysicsAction = rhs.postAstroPhysicsAction;
         logRecords = rhs.logRecords;
 		
 		for(auto& planetState : planetStates){
@@ -639,78 +637,7 @@
 		resources.crystal = 0;
 		resources.deut = std::max(std::int64_t(0), diffd);	
 	}
-    
-    void Account::astroPhysicsResearchCompleted(){
-        if(getNumPlanets() < ogh::getMaxPossiblePlanets(researchState.astroLevel)){
-            addNewPlanet();
-            
-            switch(postAstroPhysicsAction){
-                   
-                case PostAstroAction::SimpleCopyPreviousPlanet:{
-                    assert(getNumPlanets() > 1);
-                    
-                    const PlanetState& src = planetStates[getNumPlanets()-2];
-                    PlanetState& dest = planetStates[getNumPlanets()-1];
-                                       
-                    dest = src;
-                    
-                    //fix dest
-                    dest.planetId = src.planetId + 1;
-                    dest.buildingQueue = 0.0f;
-                    dest.entityInfoInQueue = ogh::EntityInfo{};
-                    
-                }break;
-                    
-                case PostAstroAction::SimpleUpgradeToPreviousPlanet:{
-                    assert(getNumPlanets() > 1);
-                    
-                    const PlanetState& src = planetStates[getNumPlanets()-2];
-                    const int newlocation = getNumPlanets()-1;
-                    
-                    for(int i = 1; i <= src.roboLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Robo});
-                    }
-                    
-                    for(int i = 1; i <= src.naniteLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Nanite});
-                    }
-                    
-                    for(int i = 1; i <= src.metLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Metalmine});
-                    }
-                    
-                    for(int i = 1; i <= src.solarLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Solar});
-                    }
-                    
-                    for(int i = 1; i <= src.fusionLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Fusion});
-                    }
-                    
-                    for(int i = 1; i <= src.crysLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Crystalmine});
-                    }
-                    
-                    for(int i = 1; i <= src.deutLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Deutsynth});
-                    }
-                    
-                    for(int i = 1; i <= src.labLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Lab});
-                    }
-                    
-                    for(int i = 1; i <= src.shipyardLevel; i++){
-                        processBuildingJob(UpgradeJob{newlocation, ogh::Shipyard});
-                    }
-                    
-                }break;
-                    
-                case PostAstroAction::None: break;
-                default: std::cerr << "Unhandles case in PostAstroAction switch statement\n"; break;
-            }
-        } 
-    }
-	
+    	
 	void Account::printQueues(std::ostream& os) const{	
 		os << "Building queues (days): [";
 		for(const auto& p : planetStates){
@@ -744,43 +671,7 @@
 		log(sstream.str());
 		sstream.str("");
 	}
-	
-	float Account::waitUntilAstroForNextPlanetIsFinished(){
-        float timeWaited = 0.0f;
-        
-        if(researchState.entityInfoInQueue.entity == ogh::Entity::Astro){
-            if(getNumPlanets() < ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
-                // there is ongoing astrophysics research, and there will be a new planet slot available after research is finished. wait until then.
-                
-                std::stringstream sstream;
-                
-                auto makelog = [&](){
-                    sstream << "waitUntilAstroForNextPlanetIsFinished. Elapsed waiting time: " << timeWaited << "\n";
-                    
-                    log(sstream.str());
-                    sstream.str("");
-                    
-                    printQueues(sstream);	
-                    
-                    log(sstream.str());
-                    sstream.str("");
-                };
-                
-                makelog();
-                
-                while(researchState.entityInfoInQueue.entity == ogh::Entity::Astro){
-                    const float timeToSkip = getTimeUntilNextFinishedEvent();
-                    timeWaited += timeToSkip;                        
-                    advanceTime(timeToSkip);
-                    
-                    makelog();
-                }
-            }
-        }
-        
-        return timeWaited;
-    }
-    
+	    
     float Account::waitUntilCostsAreAvailable(const ogamehelpers::Resources& constructionCosts){
         std::stringstream sstream;
         ogamehelpers::Production currentProduction = getCurrentDailyProduction();
@@ -929,6 +820,16 @@
         stats.constructionTimeDays = researchTime;
         
         startResearch(researchTime, entityInfo, constructionCosts);
+
+        if(entityInfo.entity == ogh::Entity::Astro){
+            //if Astrophysics research is started which will increase the planet count uppon completion,
+            //a new planet is added immediatly. To prevent constructions before the research is actually complete,
+            // the building queue is blocked with an empty task with a duration equal to the research duration of Astrophysics.
+            if(getNumPlanets() + 1 == ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
+                addNewPlanet();
+                planetStates.back().startConstruction(researchTime, ogh::Noentity);
+            }
+        }
         
         sstream << "Total Elapsed time: " << time << " days - Starting research. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
         sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';
@@ -962,8 +863,7 @@
         log(sstream.str());
         sstream.str("");
         
-        assert(entityInfo.type == EntityType::Building && upgradeLocation >= 0 && upgradeLocation < getNumPlanets()+1);
-        
+        assert(entityInfo.type == EntityType::Building && upgradeLocation >= 0 && upgradeLocation < getNumPlanets());        
         
         const int totalLabLevel = 0; //not used for buildings
         
@@ -991,79 +891,27 @@
                 printQueues(sstream);
             }
         };
+            
+        saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
+        stats.waitingPeriodDaysBegin = time;
         
+        waitForResearchBeforeLabStart();
         
-        if(upgradeLocation == getNumPlanets()){
-            //if this is a job for a new planet which can be colonized after the currently running astro research
-            //wait for research to finish
-            
-            saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
-            stats.waitingPeriodDaysBegin = time;
- 
-            if(researchState.entityInfoInQueue.entity == Entity::Astro
-                && getNumPlanets() < ogamehelpers::getMaxPossiblePlanets(researchState.astroLevel + 1)){
-
-                waitForResearchBeforeLabStart();
-                
-                //wait until astro is completed
-                while(researchState.researchInProgress()){
-                    log("Waiting for astro research to finish. This does not count as saving time\n");
-                    
-                    //wait for the next event to complete, this may change the production
-                    float timeToSkip = getTimeUntilNextFinishedEvent();
-                    advanceTime(timeToSkip);
-                    
-                    printQueues(sstream);
-                    log(sstream.str());
-                    sstream.str("");
-                }
-            }else{
-                sstream << "Planet " << (upgradeLocation+1) << " does not exist and required astrophysics level is not in construction!\n";
-                log(sstream.str());
-                sstream.str("");
-                assert(false && "Invalid upgrade list!");
-            }
-        }else{
-            
-            
-            float astrowaitingtime = 0.0f;
-            if(astroPhysicsType == AstroType::Blocking){
-                astrowaitingtime = waitUntilAstroForNextPlanetIsFinished();
-            }
-            
-            if(astrowaitingtime > 0.0f){
-                //there was astro research going on which is now completed and increased the planet count.
-                
-                //saving begins __after__ astro is finished
-                stats.savePeriodDaysBegin = time;
-                saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
-                stats.waitingPeriodDaysBegin = time;
-            }else{
-                //no astro research going on
-                
-                saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
-                stats.waitingPeriodDaysBegin = time;
-            }
-            
-            waitForResearchBeforeLabStart();
-            
-            //wait until the building queue of current planet is free
-            
-            while(planetStates[upgradeLocation].constructionInProgress()){
-                log("Waiting for previous construction to finish. This does not count as saving time\n");
-                
-                //wait for the next event to complete, this may change the production
-                const float timeToSkip = getTimeUntilNextFinishedEvent();
-                advanceTime(timeToSkip);
-                
-                printQueues(sstream);
-                log(sstream.str());
-                sstream.str("");
-            }
-        }
-        
+        //wait until the building queue of current planet is free
         const auto& planetState = planetStates[upgradeLocation];
         
+        while(planetState.constructionInProgress()){
+            log("Waiting for previous construction to finish. This does not count as saving time\n");
+            
+            //wait for the next event to complete, this may change the production
+            const float timeToSkip = getTimeUntilNextFinishedEvent();
+            advanceTime(timeToSkip);
+            
+            printQueues(sstream);
+            log(sstream.str());
+            sstream.str("");
+        }
+
         const float constructionTimeDays = getConstructionTimeInDays(entityInfo, upgradeLevel, planetState.roboLevel, planetState.naniteLevel, planetState.shipyardLevel, totalLabLevel, speedfactor);
         
         sstream << "Construction time in days: " << constructionTimeDays;

@@ -226,29 +226,7 @@
             : time(t), msg(std::move(m)){}
         };
         
-        /* 
-         * Used for Astro researches that enable a new planet slot after research.
-         * 
-         * Determine whether constructions on the current planets can be started while Astro research is in progress 
-         * 
-         * AstroType::Blocking: No new constructions can be started before research is completed
-         * AstroType::Nonblocking: New constructions can be started on existing planets
-         */
-        enum class AstroType {Blocking, Nonblocking};
-        
-        /* 
-         * Used for Astro researches that enable a new planet slot after research.
-         * 
-         * Determines what should be done after research is completed.
-         * 
-         * PostAstroAction::SimpleCopyPreviousPlanet: Set levels of new planet to the levels of previous planet. 
-         *                                            Time is not advanced.
-         * 
-         * PostAstroAction::SimpleUpgradeToPreviousPlanet: Perform upgrade jobs to bring the levels of the new planet to the levels of the previous planet.
-         * 
-         * PostAstroAction::None: No action is performed. The new planet is colonized, but building levels remain 0. Time is not advanced.
-         */
-        enum class PostAstroAction {SimpleCopyPreviousPlanet, SimpleUpgradeToPreviousPlanet, None};
+
 	
 		std::vector<PlanetState> planetStates{};
 		ResearchState researchState{};
@@ -267,8 +245,7 @@
 		
 		float time = 0.0f;
                 
-        AstroType astroPhysicsType = AstroType::Nonblocking;
-        PostAstroAction postAstroPhysicsAction = PostAstroAction::None;
+
         
         std::vector<LogRecord> logRecords;
 		
@@ -321,9 +298,7 @@
 		
 		void updateAccountResourcesAfterConstructionStart(const ogamehelpers::Resources& constructionCosts);
 		
-		void printQueues(std::ostream& os) const;
-        
-        void astroPhysicsResearchCompleted();
+		void printQueues(std::ostream& os) const;	
 		
 		void waitForAllConstructions();
         
