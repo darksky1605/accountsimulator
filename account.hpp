@@ -228,7 +228,7 @@
         
 
 	
-		std::vector<PlanetState> planetStates{};
+		std::vector<PlanetState> planets{};
 		ResearchState researchState{};
 		OfficerState officerState{};
 		
@@ -299,7 +299,7 @@
 		void updateAccountResourcesAfterConstructionStart(const ogamehelpers::Resources& constructionCosts);
 		
 		void printQueues(std::ostream& os) const;	
-		
+
 		void waitForAllConstructions();
         
         float waitUntilAstroForNextPlanetIsFinished();

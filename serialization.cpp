@@ -160,7 +160,7 @@ void from_json(const nlohmann::json& j, OfficerState& s){
 }
 
 void to_json(nlohmann::json& j, const Account& a){
-    j = json{{"planets", a.planetStates}, 
+    j = json{{"planets", a.planets}, 
             {"research", a.researchState},
             {"officers", a.officerState},
             {"resources", a.resources},
@@ -169,12 +169,12 @@ void to_json(nlohmann::json& j, const Account& a){
             {"saveslots", a.saveslots},
             {"traderate", a.traderate},
             {"ecospeed", a.speedfactor},
-            {"numPlanets", a.planetStates.size()},
+            {"numPlanets", a.planets.size()},
             {"planetType", "individual"}};
 }
 
 void from_json(const nlohmann::json& j, Account& a){
-    j.at("planets").get_to(a.planetStates);
+    j.at("planets").get_to(a.planets);
     j.at("research").get_to(a.researchState);
     j.at("officers").get_to(a.officerState);
     j.at("resources").get_to(a.resources);
@@ -187,18 +187,18 @@ void from_json(const nlohmann::json& j, Account& a){
     int numPlanets = j.at("numPlanets");
     std::string planetType = j.at("planetType");
 
-    if(numPlanets == 0 || a.planetStates.size() == 0){
+    if(numPlanets == 0 || a.planets.size() == 0){
         throw std::runtime_error("Invalid account json data. Accounts must have at least 1 planet. Abort.");
     }
 
-    if(numPlanets != int(a.planetStates.size())){
+    if(numPlanets != int(a.planets.size())){
         if(planetType == "individual"){
             throw std::runtime_error("Invalid account json data. Abort.");
         }else if(planetType == "identical"){
-            a.planetStates.resize(numPlanets);
-            std::fill(a.planetStates.begin()+1, a.planetStates.end(), a.planetStates[0]);
+            a.planets.resize(numPlanets);
+            std::fill(a.planets.begin()+1, a.planets.end(), a.planets[0]);
 		    for(int i = 1; i < numPlanets; i++){
-			    a.planetStates[i].planetId = i+1;
+			    a.planets[i].planetId = i+1;
 		    }
         }else{
             throw std::runtime_error("Invalid account json data. planetType must be either \"individual\" or \"identical\"");
@@ -211,7 +211,7 @@ void from_json(const nlohmann::json& j, Account& a){
 		p.accountPtr = &a;
     };
 
-    std::for_each(a.planetStates.begin(), a.planetStates.end(), fixPointers);
+    std::for_each(a.planets.begin(), a.planets.end(), fixPointers);
 
     a.updateDailyFarmIncome();
     a.updateDailyExpeditionIncome();

@@ -349,8 +349,8 @@
 	}
 	
 	void Account::invalidatePlanetProductions(){
-        for(auto& planetState : planetStates)
-            planetState.dailyProductionNeedsUpdate = true;
+        for(auto& planet : planets)
+            planet.dailyProductionNeedsUpdate = true;
     }
 	
 	
@@ -416,7 +416,7 @@
 	}
 	
 	Account& Account::operator=(const Account& rhs){
-		planetStates = rhs.planetStates;
+		planets = rhs.planets;
 		researchState = rhs.researchState;
 		officerState = rhs.officerState;
 		resources = rhs.resources;
@@ -430,10 +430,10 @@
 		time = rhs.time;
         logRecords = rhs.logRecords;
 		
-		for(auto& planetState : planetStates){
-			planetState.researchStatePtr = &researchState;
-			planetState.officerStatePtr = &officerState;
-			planetState.accountPtr = this;
+		for(auto& planet : planets){
+			planet.researchStatePtr = &researchState;
+			planet.officerStatePtr = &officerState;
+			planet.accountPtr = this;
 		}
 		
 		researchState.accountPtr = this;
@@ -446,11 +446,11 @@
 	}
 	
 	void Account::addNewPlanet(){
-		planetStates.emplace_back();
-		planetStates.back().planetId = int(planetStates.size());
-		planetStates.back().researchStatePtr = &researchState;
-		planetStates.back().officerStatePtr = &officerState;
-		planetStates.back().accountPtr = this;
+		planets.emplace_back();
+		planets.back().planetId = int(planets.size());
+		planets.back().researchStatePtr = &researchState;
+		planets.back().officerStatePtr = &officerState;
+		planets.back().accountPtr = this;
 	}
 	
 	//must not advance further than next finished event
@@ -461,8 +461,8 @@
 		const ogh::Production currentProduction = getCurrentDailyProduction();
 		addResources(currentProduction.produce(days));
 		
-		for(auto& state : planetStates)
-			state.advanceTime(days);
+		for(auto& planet : planets)
+			planet.advanceTime(days);
 		researchState.advanceTime(days);
 		officerState.advanceTime(days);
 		
@@ -472,7 +472,7 @@
 	float Account::getTimeUntilNextFinishedEvent() const{
 		float time = std::numeric_limits<float>::max();
         bool any = false;
-		for(const auto& planet : planetStates){
+		for(const auto& planet : planets){
 			if(planet.constructionInProgress()){
 				time = std::min(time, planet.buildingQueue);
                 any = true;
@@ -535,7 +535,7 @@
         auto hasOngoingConstruction = [](const auto& p){return p.constructionInProgress();};
 
         bool result = researchState.researchInProgress() || 
-                        std::any_of(planetStates.begin(), planetStates.end(), hasOngoingConstruction);
+                        std::any_of(planets.begin(), planets.end(), hasOngoingConstruction);
 		
 		return result;
 	}
@@ -543,7 +543,7 @@
 	int Account::getTotalLabLevel() const{
 		std::vector<int> labsPerPlanet;
 		labsPerPlanet.reserve(getNumPlanets());
-		for(const auto& p : planetStates)
+		for(const auto& p : planets)
 			labsPerPlanet.emplace_back(p.labLevel);
 		
 		return ogh::getTotalLabLevel(labsPerPlanet, researchState.igrnLevel);
@@ -556,8 +556,8 @@
             return l + r.getCurrentDailyProduction();
         };
 
-        const Production currentProduction = std::accumulate(planetStates.begin(), 
-                                                            planetStates.end(),
+        const Production currentProduction = std::accumulate(planets.begin(), 
+                                                            planets.end(),
                                                             Production{},
                                                             addProductions);
 		
@@ -603,14 +603,14 @@
 	void Account::setPercentToMaxProduction(const char* name, int level){
         auto setPercent = [&](auto& p){p.setPercentToMaxProduction(name, level);};
 
-        std::for_each(planetStates.begin(), planetStates.end(), setPercent);
+        std::for_each(planets.begin(), planets.end(), setPercent);
 	}
 	
 	void Account::startConstruction(int planet, float timeDays, const ogh::EntityInfo& entityInfo, const ogh::Resources& constructionCosts){
 		assert(planet >= 0);
 		assert(planet < getNumPlanets());
 		
-		planetStates[planet].startConstruction(timeDays, entityInfo);
+		planets[planet].startConstruction(timeDays, entityInfo);
 		updateAccountResourcesAfterConstructionStart(constructionCosts);
 	}
 		
@@ -621,7 +621,7 @@
 	}
 	
 	int Account::getNumPlanets() const{
-		return int(planetStates.size());
+		return int(planets.size());
 	}
 	
 	void Account::addResources(const ogh::Resources& res){
@@ -640,7 +640,7 @@
     	
 	void Account::printQueues(std::ostream& os) const{	
 		os << "Building queues (days): [";
-		for(const auto& p : planetStates){
+		for(const auto& p : planets){
 			os << std::setprecision(5) << std::fixed << p.buildingQueue << ",";
 		}			
 		os << "]\n";	
@@ -736,7 +736,7 @@
                             p.percentageChanges.end());
         };
 
-        std::for_each(planetStates.begin(), planetStates.end(), copyChangesToResult);
+        std::for_each(planets.begin(), planets.end(), copyChangesToResult);
 
         return result;
     }
@@ -783,7 +783,7 @@
             return p.entityInfoInQueue.entity == ogh::Entity::Lab;
         };
 
-        while(std::any_of(planetStates.begin(), planetStates.end(), labInConstruction)){
+        while(std::any_of(planets.begin(), planets.end(), labInConstruction)){
             log("Waiting for finished construction of research labs. This does not count as saving time\n");
 
             float timeToSkip = getTimeUntilNextFinishedEvent();
@@ -827,7 +827,7 @@
             // the building queue is blocked with an empty task with a duration equal to the research duration of Astrophysics.
             if(getNumPlanets() + 1 == ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
                 addNewPlanet();
-                planetStates.back().startConstruction(researchTime, ogh::Noentity);
+                planets.back().startConstruction(researchTime, ogh::Noentity);
             }
         }
         
@@ -857,7 +857,7 @@
         const auto& entityInfo = job.entityInfo;			
         const int upgradeLocation = job.location;
         
-        const int upgradeLevel = (upgradeLocation == getNumPlanets() ? 1 : 1 + planetStates[upgradeLocation].getLevel(entityInfo) + (planetStates[upgradeLocation].entityInfoInQueue.entity == entityInfo.entity ? 1 : 0));
+        const int upgradeLevel = (upgradeLocation == getNumPlanets() ? 1 : 1 + planets[upgradeLocation].getLevel(entityInfo) + (planets[upgradeLocation].entityInfoInQueue.entity == entityInfo.entity ? 1 : 0));
         
         sstream << "Planet " << (upgradeLocation+1) << " processing " << entityInfo.name << " " << upgradeLevel << '\n';
         log(sstream.str());
@@ -898,7 +898,7 @@
         waitForResearchBeforeLabStart();
         
         //wait until the building queue of current planet is free
-        const auto& planetState = planetStates[upgradeLocation];
+        const auto& planetState = planets[upgradeLocation];
         
         while(planetState.constructionInProgress()){
             log("Waiting for previous construction to finish. This does not count as saving time\n");
