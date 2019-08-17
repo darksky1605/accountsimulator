@@ -251,7 +251,7 @@ void usage(int argc, char** argv){
     std::cout << "--permutations n: Display n best permutations. Default 1.\n\n";
     std::cout << "--printlist: Show detailed time table for upgrade.\n\n";
     std::cout << "--printalllists: Show detailed time table for every permutation\n\n";
-    std::cout << "--showPercentageChanges: Show changes of production percentages per planet.\n\n";
+    std::cout << "--percentages: Show changes of production percentages per planet.\n\n";
     std::cout << "--dhm: Print durations in days, hours, minutes format instead of fractional days.\n\n";
 	    
     std::cout << "The initial account state is read from accountfile\n\n";
