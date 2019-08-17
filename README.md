@@ -19,6 +19,7 @@ Here, the optimal permutation can be optimal with respect to either:
   - All account resources are instantly available at every planet at any time, i.e. no transport delay
   - Trades withing save time calculations are unlimited. No storage restrictions. No DM costs. Those trades happen instantly ,i.e. no transport delay.
   - Resource production is not limited by storage capacity.
+  - No requirements checks
   - Everything else I forgot to mention.
 
 # How to use
