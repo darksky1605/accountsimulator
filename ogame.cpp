@@ -660,6 +660,53 @@ namespace ogamehelpers{
 		return getNumberOfExpeditionSlots(astroLevel) + extraAdmiralSlots + extraStaffSlots;
     }
 
+	std::map<Entity, std::string> entityToNameMap = getEntityToNameMap();
+
+	std::map<Entity, std::string> getEntityToNameMap(){
+		std::map<Entity, std::string> map;
+		map[Entity::Metalmine] = "Metal Mine";
+		map[Entity::Crystalmine] = "Crystal Mine";
+		map[Entity::Deutsynth] = "Deuterium Synthesizer";
+		map[Entity::Solar] = "Solar Planet";
+		map[Entity::Fusion] = "Fusion Reactor";
+		map[Entity::Robo] = "Robotics Factory";
+		map[Entity::Nanite] = "Nanite Factory";
+		map[Entity::Shipyard] = "Shipyard";
+		map[Entity::Metalstorage] = "Metal Storage";
+		map[Entity::Crystalstorage] = "Crystal Storage";
+		map[Entity::Deutstorage] = "Deuterium Tank";
+		map[Entity::Lab] = "Research Lab";
+		map[Entity::Terra] = "Terraformer";
+		map[Entity::Alliancedepot] = "Alliance Depot";
+		map[Entity::Spacedock] = "Space Dock";
+		map[Entity::Lunarbase] = "Lunar Base";
+		map[Entity::Phalanx] = "Sensor Phalanx";
+		map[Entity::Jumpgate] = "Jump Gate";
+		map[Entity::Silo] = "Missile Silo";
+		map[Entity::Espionage] = "Espionage Technology";
+		map[Entity::Computer] = "Computer Technology";
+		map[Entity::Weapons] = "Weapons Technology";
+		map[Entity::Shielding] = "Shielding Technology";
+		map[Entity::Armour] = "Armour Technology";
+		map[Entity::Energy] = "Energy Technology";
+		map[Entity::Hyperspacetech] = "Hyperspace Technology";
+		map[Entity::Combustion] = "Combustion Drive";
+		map[Entity::Impulse] = "Impulse Drive";
+		map[Entity::Hyperspacedrive] = "Hyperspace Drive";
+		map[Entity::Laser] = "Laser Technology";
+		map[Entity::Ion] = "Ion Technology";
+		map[Entity::Plasma] = "Plasma Technology";
+		map[Entity::Researchnetwork] = "Intergalactic Research Network";
+		map[Entity::Astro] = "Astrophysics";
+		map[Entity::Graviton] = "Graviton Technology";
+		map[Entity::None] = "None";
+		return map;
+	}
+
+	std::string getEntityName(Entity e){
+		return entityToNameMap.at(e);
+	}
+
     EntityInfo parseEntityName(const std::string& name){
 	    
 	    EntityInfo entity;

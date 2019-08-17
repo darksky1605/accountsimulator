@@ -144,10 +144,10 @@ constexpr EntityInfo Coloship = EntityInfo(10000,20000,10000,0,0,0, EntityType::
 constexpr EntityInfo Noentity = EntityInfo();
 
 
+extern std::map<Entity, std::string> entityToNameMap;
 
-
-
-
+std::map<Entity, std::string> getEntityToNameMap();
+std::string getEntityName(Entity e);
 
 
 struct Resources{
