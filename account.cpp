@@ -747,7 +747,7 @@
         stats.job = job;
         stats.level = upgradeLevel;
 
-        const Resources constructionCosts = ogamehelpers::getBuildCosts(entityInfo, upgradeLevel);
+        const Resources constructionCosts = ogh::getBuildCosts(entityInfo, upgradeLevel);
         
         sstream << "construction costs: " << constructionCosts.met << " " << constructionCosts.crystal << " " << constructionCosts.deut << '\n';
         printQueues(sstream);
@@ -791,7 +791,8 @@
         const int naniteLevel = 0; //not used for research
         const int shipyardLevel = 0; //not used for research
         const int totalLabLevel = getTotalLabLevel();				
-        const float researchTime = ogamehelpers::getConstructionTimeInDays(entityInfo, upgradeLevel, roboLevel, naniteLevel, shipyardLevel, totalLabLevel, speedfactor);
+        const float researchTimeNoOfficer = ogh::getConstructionTimeInDays(entityInfo, upgradeLevel, roboLevel, naniteLevel, shipyardLevel, totalLabLevel, speedfactor);
+        const float researchTime = hasTechnocrat() ? 0.75f * researchTimeNoOfficer : researchTimeNoOfficer;
         
         sstream << "Research time in days: " << researchTime;
         
