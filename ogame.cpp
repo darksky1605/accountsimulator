@@ -62,7 +62,47 @@ namespace ogamehelpers{
     const EntityInfo Noentity = EntityInfo();*/
 
     
-    
+    EntityInfo getEntityInfo(Entity entity){	    
+	    switch(entity){
+		case Entity::Metalmine: return Metalmine;
+		case Entity::Crystalmine: return Crystalmine;
+		case Entity::Deutsynth: return Deutsynth;
+		case Entity::Solar: return Solar;
+		case Entity::Fusion: return Fusion;
+		case Entity::Robo: return Robo;
+		case Entity::Nanite: return Nanite;
+		case Entity::Shipyard: return Shipyard;
+		case Entity::Metalstorage: return Metalstorage;
+		case Entity::Crystalstorage: return Crystalstorage;
+		case Entity::Deutstorage: return Deutstorage;
+		case Entity::Lab: return Lab;
+		case Entity::Terra: return Terra;
+		case Entity::Alliancedepot: return Alliancedepot;
+		case Entity::Spacedock: return Spacedock;
+		case Entity::Lunarbase: return Lunarbase;
+		case Entity::Phalanx: return Phalanx;
+		case Entity::Jumpgate: return Jumpgate;
+		case Entity::Silo: return Silo;
+		case Entity::Espionage: return Espionage;
+		case Entity::Computer: return Computer;
+		case Entity::Weapons: return Weapons;
+		case Entity::Shielding: return Shielding;
+		case Entity::Armour: return Armour;
+		case Entity::Energy: return Energy;
+		case Entity::Hyperspacetech: return Hyperspacetech;
+		case Entity::Combustion: return Combustion;
+		case Entity::Impulse: return Impulse;
+		case Entity::Hyperspacedrive: return Hyperspacedrive;
+		case Entity::Laser: return Laser;
+		case Entity::Ion: return Ion;
+		case Entity::Plasma: return Plasma;
+		case Entity::Researchnetwork: return Researchnetwork;
+		case Entity::Astro: return Astro;
+		case Entity::Graviton: return Graviton;
+		case Entity::None: return Noentity;
+		default: return Noentity;
+		}
+    }
     
     
     

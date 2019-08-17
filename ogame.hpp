@@ -149,6 +149,8 @@ extern std::map<Entity, std::string> entityToNameMap;
 std::map<Entity, std::string> getEntityToNameMap();
 std::string getEntityName(Entity e);
 
+EntityInfo getEntityInfo(Entity entity);
+
 
 struct Resources{
 	std::int64_t met = 0;
