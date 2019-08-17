@@ -120,7 +120,7 @@ void to_json(json& j, const ResearchState& s){
             {"igrnLevel", s.igrnLevel},
             {"astroLevel", s.astroLevel},
             {"researchQueueDays", s.researchQueue},
-            {"inQueue", s.entityInfoInQueue.name}};
+            {"inQueue", ogh::getEntityName(s.entityInQueue)}};
 }
 
 void from_json(const nlohmann::json& j, ResearchState& s){
@@ -140,7 +140,7 @@ void from_json(const nlohmann::json& j, ResearchState& s){
     j.at("igrnLevel").get_to(s.igrnLevel);
     j.at("astroLevel").get_to(s.astroLevel);
     j.at("researchQueueDays").get_to(s.researchQueue);
-    s.entityInfoInQueue = ogh::parseEntityName(j.at("inQueue"));
+    s.entityInQueue = ogh::parseEntityName(j.at("inQueue")).entity;
 }
 
 void to_json(nlohmann::json& j, const OfficerState& s){

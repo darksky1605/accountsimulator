@@ -145,7 +145,7 @@ UpgradeResult perform_upgrades(Account& account,
 
     auto getNumPlanets = [&](){
         int numPlanets = account.getNumPlanets();
-        if(account.researchState.entityInfoInQueue.entity == ogh::Entity::Astro
+        if(account.researchState.entityInQueue == ogh::Entity::Astro
                && numPlanets < ogh::getMaxPossiblePlanets(account.researchState.astroLevel + 1)){
             numPlanets += 1;
         }
@@ -475,9 +475,10 @@ int detailedmultiupgrade(int argc, char** argv){
             if(showPercentageChanges){
                 auto percentageChanges = account.getPercentageChanges();
 
-                auto printChange = [](const auto& change){
+                auto printChange = [&](const auto& change){
+                    std::string timestring = use_dhm_format ? convert_time(change.time) : std::to_string(change.time);
                     auto& stream = std::cout;
-                    stream << "Planet " << change.planetId << ": Changed percents to " 
+                    stream << timestring << " Planet " << change.planetId << ": Changed percents to " 
                     << "m " << change.metPercent << ", c " << change.crysPercent 
                     << ", d " << change.deutPercent << ", f " << change.fusionPercent 
                     << " after construction of " << change.finishedName << " " << change.finishedLevel
