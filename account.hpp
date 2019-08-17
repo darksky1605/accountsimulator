@@ -83,9 +83,9 @@
 		
 		bool constructionInProgress() const;
 		
-		int getLevel(const ogamehelpers::Entity& info) const;
+		int getLevel(const ogamehelpers::Entity& entity) const;
 		
-		void startConstruction(float timeDays, const ogamehelpers::Entity& entityInfo);
+		void startConstruction(float timeDays, const ogamehelpers::Entity& entity);
 		
 		ogamehelpers::Production getCurrentDailyProduction() const;
 
@@ -142,38 +142,6 @@
 	};
 	
 	struct Account{
-		struct UpgradeJob{			
-			int location;
-			ogamehelpers::EntityInfo entityInfo;
-
-            UpgradeJob() = default;
-            UpgradeJob(int l, ogamehelpers::EntityInfo e)
-                : location(l), entityInfo(e){}
-
-			bool isResearch() const{
-				return entityInfo.type == ogamehelpers::EntityType::Research;
-			}
-			
-			bool isBuilding() const{
-				return entityInfo.type == ogamehelpers::EntityType::Building;
-			}
-			
-			bool operator==(const UpgradeJob& rhs) const{
-                return location == rhs.location && entityInfo == rhs.entityInfo;
-            }
-            
-            bool operator!=(const UpgradeJob& rhs) const{
-                return !(operator==(rhs));
-            }
-            
-            bool operator<(const UpgradeJob& rhs) const{
-                if(location > rhs.location)
-                    return false;
-                if(location < rhs.location)
-                    return true;
-                return entityInfo.name < rhs.entityInfo.name;
-            }
-		};	
 			
 		struct UpgradeStats{
 			bool success;

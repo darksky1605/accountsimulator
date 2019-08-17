@@ -104,7 +104,7 @@ UpgradeListResult perform_upgrades(Account& account,
 	
 	auto print_job = [](const auto& job){
         (void)job;
-		//std::cout << job.entityInfo.name << " at planet " << job.location << std::endl;
+		//std::cout << ogh::getEntityName(entityInfo.entity) << " at planet " << job.location << std::endl;
 	};
 
 
@@ -450,13 +450,7 @@ int detailedmultiupgrade(int argc, char** argv){
         for(const auto& x : planned_upgrades)
             std::cout << x << std::endl;
     }
-    
-    /*for(const auto& upgrade : planned_upgrades){
-     *	std::cout << (upgrade.location+1) << " " << upgrade.entityInfo.name << " " << upgrade.level << '\n';
-}*/
-    
-    std::cout << std::endl;
-
+        
     if(permutationMode == 0){
         auto result = perform_upgrades(account, planned_upgrades);
 
@@ -555,7 +549,6 @@ int detailedmultiupgrade(int argc, char** argv){
         std::vector<float> longestCompletionTimePerThread(num_threads, 0.0f);
         
         std::set<std::vector<PermutationGroup>> uniqueProcessedPermutations;
-        //std::atomic_int permcount{0};
         std::mutex m;
         
         parallel_for_each_permutation(planned_upgrades, num_threads, [&](int threadId, const auto& upgradepermutation){
@@ -608,21 +601,7 @@ int detailedmultiupgrade(int argc, char** argv){
                 
             }
             
-            //permcount++;
-            
-            /*std::lock_guard<std::mutex> lg(m);
-            
-            std::cout << "thread " << threadId << " : ";
-            for(const auto& jobList : upgradepermutation){
-                std::cout << "[ ";
-                for(const auto& job : jobList)
-                    std::cout << job.entityInfo.name << ", ";
-                std::cout << " ]";
-            }
-            std::cout << '\n';*/
         });
-        
-        //std::cout << permcount << std::endl;
         
         std::vector<UpgradeListResult> bestResults;
         std::vector<std::vector<PermutationGroup>> bestUpgradePermutations;

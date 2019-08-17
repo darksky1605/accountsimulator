@@ -52,7 +52,7 @@ std::ostream& operator<<(std::ostream& os, const UpgradeTask& r){
 	for(int i = 0; i < int(locs.size()); i++){
 		os << locs[i] << " ";
 	}
-	os << r.entityInfo.name;
+	os << ogh::getEntityName(r.entityInfo.entity);
 	return os;
 }
 

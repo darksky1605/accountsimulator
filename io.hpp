@@ -10,6 +10,39 @@
 #include <string>
 #include <vector>
 
+struct UpgradeJob{			
+    int location;
+    ogamehelpers::EntityInfo entityInfo;
+
+    UpgradeJob() = default;
+    UpgradeJob(int l, ogamehelpers::EntityInfo e)
+        : location(l), entityInfo(e){}
+
+    bool isResearch() const{
+        return entityInfo.type == ogamehelpers::EntityType::Research;
+    }
+    
+    bool isBuilding() const{
+        return entityInfo.type == ogamehelpers::EntityType::Building;
+    }
+    
+    bool operator==(const UpgradeJob& rhs) const{
+        return location == rhs.location && entityInfo == rhs.entityInfo;
+    }
+    
+    bool operator!=(const UpgradeJob& rhs) const{
+        return !(operator==(rhs));
+    }
+    
+    bool operator<(const UpgradeJob& rhs) const{
+        if(location > rhs.location)
+            return false;
+        if(location < rhs.location)
+            return true;
+        return entityInfo.name < rhs.entityInfo.name;
+    }
+};
+
 struct UpgradeTask{
 	static int researchLocation;
 	static int allCurrentPlanetsLocation;
@@ -28,8 +61,8 @@ struct UpgradeTask{
 		return locations;
 	}
 
-    std::vector<Account::UpgradeJob> getUpgradeJobs(int numPlanets) const{
-        std::vector<Account::UpgradeJob> result;
+    std::vector<UpgradeJob> getUpgradeJobs(int numPlanets) const{
+        std::vector<UpgradeJob> result;
         if(locations.empty()) return {};
 
         auto makeJob = [&](auto location){

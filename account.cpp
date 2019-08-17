@@ -767,7 +767,7 @@
 
         const int upgradeLevel = 1 + researchState.getLevel(entity) + (researchState.entityInQueue == entity ? 1 : 0);
         
-        sstream << "Processing " << entityInfo.name << " " << upgradeLevel << '\n';
+        sstream << "Processing " << ogh::getEntityName(entity) << " " << upgradeLevel << '\n';
         log(sstream.str());
         sstream.str("");
         
@@ -830,9 +830,9 @@
         stats.constructionBeginDays = time;
         stats.constructionTimeDays = researchTime;
         
-        startResearch(researchTime, entityInfo.entity, constructionCosts);
+        startResearch(researchTime, entity, constructionCosts);
 
-        if(entityInfo.entity == ogh::Entity::Astro){
+        if(entity == ogh::Entity::Astro){
             //if Astrophysics research is started which will increase the planet count uppon completion,
             //a new planet is added immediatly. To prevent constructions before the research is actually complete,
             // the building queue is blocked with an empty task with a duration equal to the research duration of Astrophysics.
@@ -873,7 +873,7 @@
         
         const int upgradeLevel = 1 + planets[upgradeLocation].getLevel(entity) + (planets[upgradeLocation].entityInQueue == entity ? 1 : 0);
         
-        sstream << "Planet " << (upgradeLocation+1) << " processing " << entityInfo.name << " " << upgradeLevel << '\n';
+        sstream << "Planet " << (upgradeLocation+1) << " processing " << ogh::getEntityName(entity) << " " << upgradeLevel << '\n';
         log(sstream.str());
         sstream.str("");
 
@@ -895,7 +895,7 @@
         float saveTimeDaysForJob = 0.0f;
         
         auto waitForResearchBeforeLabStart = [&](){
-            if(entityInfo.entity == ogh::Entity::Lab && researchState.entityInQueue != ogh::Entity::None){
+            if(entity == ogh::Entity::Lab && researchState.entityInQueue != ogh::Entity::None){
                 log("Waiting for finished research before building research lab. This does not count as saving time\n");
 
                 float timeToSkip = getTimeUntilNextFinishedEvent();
@@ -934,7 +934,7 @@
         stats.constructionBeginDays = time;
         stats.constructionTimeDays = constructionTimeDays;
         
-        startConstruction(upgradeLocation, constructionTimeDays, entityInfo.entity, constructionCosts);
+        startConstruction(upgradeLocation, constructionTimeDays, entity, constructionCosts);
         
         sstream << "Total Elapsed time: " << time << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
         sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';
