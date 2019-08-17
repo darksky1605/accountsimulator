@@ -751,7 +751,7 @@
         return hasCommander() && hasEngineer() && hasTechnocrat() && hasGeologist() && hasAdmiral();
     }
     
-    Account::UpgradeJobStats Account::processResearchJob(const UpgradeJob& job){
+    Account::UpgradeStats Account::processResearchJob(ogh::Entity entity){
         using ogamehelpers::EntityInfo;
         using ogamehelpers::Entity;
         using ogamehelpers::EntityType;
@@ -761,18 +761,18 @@
         
         std::stringstream sstream;
         
-        UpgradeJobStats stats;
-        const auto& entityInfo = job.entityInfo;
-        const int upgradeLevel = 1 + researchState.getLevel(entityInfo.entity) + (researchState.entityInQueue == entityInfo.entity ? 1 : 0);
-        //const int upgradeLocation = job.location;
+        
+        const EntityInfo entityInfo = ogh::getEntityInfo(entity);
+        assert(entityInfo.type == EntityType::Research);
+
+        const int upgradeLevel = 1 + researchState.getLevel(entity) + (researchState.entityInQueue == entity ? 1 : 0);
         
         sstream << "Processing " << entityInfo.name << " " << upgradeLevel << '\n';
         log(sstream.str());
         sstream.str("");
         
-        assert(entityInfo.type == EntityType::Research);
         
-        stats.job = job;
+        UpgradeStats stats;
         stats.level = upgradeLevel;
 
         const Resources constructionCosts = ogh::getBuildCosts(entityInfo, upgradeLevel);
@@ -851,10 +851,12 @@
         log(sstream.str());
         sstream.str("");
         
+        stats.success = true;
+
         return stats;
     }
     
-    Account::UpgradeJobStats Account::processBuildingJob(const UpgradeJob& job){
+    Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity entity){
         using ogamehelpers::EntityInfo;
         using ogamehelpers::Entity;
         using ogamehelpers::EntityType;
@@ -863,26 +865,20 @@
         using ogamehelpers::Production;
         
         std::stringstream sstream;
+
+        const EntityInfo entityInfo = ogh::getEntityInfo(entity);		
+        const int upgradeLocation = planetId;
+
+        assert(entityInfo.type == EntityType::Building && upgradeLocation >= 0 && upgradeLocation < getNumPlanets());
         
-        UpgradeJobStats stats;
-        const auto& entityInfo = job.entityInfo;			
-        const int upgradeLocation = job.location;
-        
-        const int upgradeLevel = (upgradeLocation == getNumPlanets() ? 1 : 1 + planets[upgradeLocation].getLevel(entityInfo.entity) + (planets[upgradeLocation].entityInQueue == entityInfo.entity ? 1 : 0));
+        const int upgradeLevel = 1 + planets[upgradeLocation].getLevel(entity) + (planets[upgradeLocation].entityInQueue == entity ? 1 : 0);
         
         sstream << "Planet " << (upgradeLocation+1) << " processing " << entityInfo.name << " " << upgradeLevel << '\n';
         log(sstream.str());
         sstream.str("");
-        
-        assert(entityInfo.type == EntityType::Building && upgradeLocation >= 0 && upgradeLocation < getNumPlanets());        
-        
+
         const int totalLabLevel = 0; //not used for buildings
-        
-        stats.job = job;			
-        stats.level = upgradeLevel;
-        stats.savePeriodDaysBegin = time;
-        
-        //calculate saving time
+                
         const Resources constructionCosts = getBuildCosts(entityInfo, upgradeLevel);
         
         sstream << "construction costs: " << constructionCosts.met << " " << constructionCosts.crystal << " " << constructionCosts.deut << '\n';
@@ -890,6 +886,12 @@
         log(sstream.str());
         sstream.str("");
         
+        UpgradeStats stats;
+        stats.level = upgradeLevel;
+
+        //calculate saving time
+        stats.savePeriodDaysBegin = time;
+
         float saveTimeDaysForJob = 0.0f;
         
         auto waitForResearchBeforeLabStart = [&](){
@@ -942,6 +944,8 @@
         
         log(sstream.str());
         sstream.str("");
+
+        stats.success = true;
         
         return stats;
     }

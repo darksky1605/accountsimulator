@@ -175,23 +175,23 @@
             }
 		};	
 			
-		struct UpgradeJobStats{
-			UpgradeJob job;
+		struct UpgradeStats{
+			bool success;
 			int level;
 			float waitingPeriodDaysBegin;
 			float savePeriodDaysBegin;
 			float constructionBeginDays;
 			float constructionTimeDays;	
             
-            bool operator==(const UpgradeJobStats& rhs) const{
-                return job == rhs.job && level == rhs.level
+            bool operator==(const UpgradeStats& rhs) const{
+                return success == rhs.success && level == rhs.level 
                     && waitingPeriodDaysBegin == rhs.waitingPeriodDaysBegin
                     && savePeriodDaysBegin == rhs.savePeriodDaysBegin
                     && constructionBeginDays == rhs.constructionBeginDays
                     && constructionTimeDays == rhs.constructionTimeDays;
             }
             
-            bool operator!=(const UpgradeJobStats& rhs) const{
+            bool operator!=(const UpgradeStats& rhs) const{
                 return !(operator==(rhs));
             }
 		};
@@ -315,9 +315,9 @@
 		
 		bool hasStaff() const;
 		
-		UpgradeJobStats processResearchJob(const UpgradeJob& job);
+		UpgradeStats processResearchJob(ogamehelpers::Entity entity);
 		
-		UpgradeJobStats processBuildingJob(const UpgradeJob& job);
+		UpgradeStats processBuildingJob(int planetId, ogamehelpers::Entity entity);
 	};
 
 

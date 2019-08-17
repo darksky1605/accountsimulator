@@ -57,36 +57,50 @@ enum class PostAstroAction {SimpleCopyPreviousPlanet, SimpleUpgradeToPreviousPla
         if(getNumPlanets() < ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
 #endif        
 
-
 struct UpgradeResult{
+    Account::UpgradeStats stats;
+    ogh::Entity entity;
+    int location;
+
+    bool operator==(const UpgradeResult& rhs) const{
+        return stats == rhs.stats && entity == rhs.entity 
+                && location == rhs.location;
+    }
+
+    bool operator!=(const UpgradeResult& rhs) const{
+        return !operator==(rhs);
+    }
+};
+
+struct UpgradeListResult{
     bool success = false;
 	float constructionFinishedInDays = 0;
 	float lastConstructionStartedAfterDays = 0;
 	float savingFinishedInDays = 0;
 	float previousUpgradeDelay = 0;
-	std::vector<Account::UpgradeJobStats> upgradeJobStatistics;
+	std::vector<UpgradeResult> upgradeResults;
     
-    bool operator==(const UpgradeResult& rhs) const{
+    bool operator==(const UpgradeListResult& rhs) const{
         return success == rhs.success && constructionFinishedInDays == rhs.constructionFinishedInDays
         && lastConstructionStartedAfterDays == rhs.lastConstructionStartedAfterDays
         && savingFinishedInDays == rhs.savingFinishedInDays
         && previousUpgradeDelay == rhs.previousUpgradeDelay
-        && upgradeJobStatistics == rhs.upgradeJobStatistics;
+        && upgradeResults == rhs.upgradeResults;
     }
     
-    bool operator!=(const UpgradeResult& rhs) const{
+    bool operator!=(const UpgradeListResult& rhs) const{
         return !(operator==(rhs));
     }
 };
 
 
-UpgradeResult perform_upgrades(Account& account,
+UpgradeListResult perform_upgrades(Account& account,
 								const std::vector<PermutationGroup>& planned_upgrades){
 
 	using ogh::EntityType;
 			
-	UpgradeResult result;
-	result.upgradeJobStatistics.reserve(planned_upgrades.size());
+	UpgradeListResult result;
+	result.upgradeResults.reserve(planned_upgrades.size());
 	
 	auto print_job = [](const auto& job){
         (void)job;
@@ -100,10 +114,15 @@ UpgradeResult perform_upgrades(Account& account,
 
             print_job(job);
 
-            auto stats = account.processResearchJob(job);
-            result.upgradeJobStatistics.emplace_back(std::move(stats));
+            auto stats = account.processResearchJob(job.entityInfo.entity);
+            UpgradeResult upgradeResult{
+                stats,
+                job.entityInfo.entity,
+                job.location,
+            };
+            result.upgradeResults.emplace_back(std::move(upgradeResult));
     
-            if(account.time == std::numeric_limits<float>::max())
+            if(account.time == std::numeric_limits<float>::max() || !stats.success)
                 return false;
             return true;                   
         }else{
@@ -119,10 +138,15 @@ UpgradeResult perform_upgrades(Account& account,
 
                     print_job(curJob);
 
-                    auto stats = account.processBuildingJob(curJob);
-                    result.upgradeJobStatistics.emplace_back(std::move(stats));
+                    auto stats = account.processBuildingJob(curJob.location, curJob.entityInfo.entity);
+                    UpgradeResult upgradeResult{
+                        stats,
+                        curJob.entityInfo.entity,
+                        curJob.location,
+                    };
+                    result.upgradeResults.emplace_back(std::move(upgradeResult));
             
-                    if(account.time == std::numeric_limits<float>::max())
+                    if(account.time == std::numeric_limits<float>::max() || !stats.success)
                         ok = false;
 				}
                 return ok;
@@ -131,10 +155,15 @@ UpgradeResult perform_upgrades(Account& account,
                         && (job.location >= 0 
                             && job.location < account.getNumPlanets()+1)); // +1 to account for possible astro physics in progress
                 print_job(job);
-                auto stats = account.processBuildingJob(job);
-                result.upgradeJobStatistics.emplace_back(std::move(stats));
+                auto stats = account.processBuildingJob(job.location, job.entityInfo.entity);
+                UpgradeResult upgradeResult{
+                    stats,
+                    job.entityInfo.entity,
+                    job.location,
+                };
+                result.upgradeResults.emplace_back(std::move(upgradeResult));
         
-                if(account.time == std::numeric_limits<float>::max())
+                if(account.time == std::numeric_limits<float>::max() || !stats.success)
                     return false;
                 return true;
             }
@@ -179,9 +208,9 @@ UpgradeResult perform_upgrades(Account& account,
         result.savingFinishedInDays = 0.0f;
         result.previousUpgradeDelay = 0.0f;
         
-        for(const auto& stat : result.upgradeJobStatistics){
-            result.savingFinishedInDays += stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin;
-            result.previousUpgradeDelay += stat.constructionBeginDays - stat.waitingPeriodDaysBegin;
+        for(const auto& res : result.upgradeResults){
+            result.savingFinishedInDays += res.stats.waitingPeriodDaysBegin - res.stats.savePeriodDaysBegin;
+            result.previousUpgradeDelay += res.stats.constructionBeginDays - res.stats.waitingPeriodDaysBegin;
         }
         
         //wait until all planets finished building
@@ -454,18 +483,18 @@ int detailedmultiupgrade(int argc, char** argv){
             if(printList){
                 std::cout << "Detailed statistics:\n";
                 
-                for(int jobid = 0; jobid < int(result.upgradeJobStatistics.size()); jobid++){
-                    const auto& stat = result.upgradeJobStatistics[jobid];
-                    const auto& job = stat.job;
-                    const auto& entityInfo = job.entityInfo;
+                for(int jobid = 0; jobid < int(result.upgradeResults.size()); jobid++){
+                    const auto& res = result.upgradeResults.at(jobid);
+                    const auto& stat = res.stats;
+                    const auto& entity = res.entity;
                     const int upgradeLevel = stat.level;
-                    const int upgradeLocation = job.location;
+                    const int upgradeLocation = res.location;
                     if(use_dhm_format){
-                        std::cout << "Planet " << (upgradeLocation+1) << ": " << entityInfo.name << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
+                        std::cout << "Planet " << (upgradeLocation+1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
                         << ", Waiting period begin: " << convert_time(stat.waitingPeriodDaysBegin) << ", Construction begin: " << convert_time(stat.constructionBeginDays) << ", Construction time: " << convert_time(stat.constructionTimeDays) 
                         << ", Save time: " << convert_time(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';                    
                     }else{
-                        std::cout << "Planet " << (upgradeLocation+1) << ": " << entityInfo.name << " " << upgradeLevel << ". Saving period begin: " << stat.savePeriodDaysBegin 
+                        std::cout << "Planet " << (upgradeLocation+1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << stat.savePeriodDaysBegin 
                             << ", Waiting period begin: " << stat.waitingPeriodDaysBegin << ", Construction begin: " << stat.constructionBeginDays << ", Construction time: " << stat.constructionTimeDays 
                             << ", Save time: " << (stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';
                     }
@@ -497,20 +526,20 @@ int detailedmultiupgrade(int argc, char** argv){
         }
     }else{
         
-        auto resultcomp1 = [](const UpgradeResult& l, const UpgradeResult& r){
+        auto resultcomp1 = [](const UpgradeListResult& l, const UpgradeListResult& r){
             return l.constructionFinishedInDays < r.constructionFinishedInDays;
         };
-        auto resultcomp2 = [](const UpgradeResult& l, const UpgradeResult& r){
+        auto resultcomp2 = [](const UpgradeListResult& l, const UpgradeListResult& r){
             return l.lastConstructionStartedAfterDays < r.lastConstructionStartedAfterDays;
         };
-        auto resultcomp3 = [](const UpgradeResult& l, const UpgradeResult& r){
+        auto resultcomp3 = [](const UpgradeListResult& l, const UpgradeListResult& r){
             return l.savingFinishedInDays < r.savingFinishedInDays;
         };
-        auto resultcomp4 = [](const UpgradeResult& l, const UpgradeResult& r){
+        auto resultcomp4 = [](const UpgradeListResult& l, const UpgradeListResult& r){
             return l.previousUpgradeDelay < r.previousUpgradeDelay;
         };
         
-        std::function<bool(const UpgradeResult&, const UpgradeResult&)> resultcomp;
+        std::function<bool(const UpgradeListResult&, const UpgradeListResult&)> resultcomp;
         switch(permutationMode){
             case 1: resultcomp = resultcomp1; break;
             case 2: resultcomp = resultcomp2; break;
@@ -519,7 +548,7 @@ int detailedmultiupgrade(int argc, char** argv){
             default: assert(false);
         }
         
-        std::vector<std::vector<UpgradeResult>> bestResultsPerThread(num_threads);
+        std::vector<std::vector<UpgradeListResult>> bestResultsPerThread(num_threads);
         std::vector<std::vector<std::vector<PermutationGroup>>> bestUpgradePermutationsPerThread(num_threads);
         std::vector<std::vector<Account>> bestAccountsPerThread(num_threads);        
         
@@ -544,7 +573,7 @@ int detailedmultiupgrade(int argc, char** argv){
             auto permutationAccount = account;
             
             //perform permutation of upgrades on permutation account
-            UpgradeResult nextResult = perform_upgrades(permutationAccount, upgradepermutation);
+            UpgradeListResult nextResult = perform_upgrades(permutationAccount, upgradepermutation);
             
             if(nextResult.success){
             
@@ -595,7 +624,7 @@ int detailedmultiupgrade(int argc, char** argv){
         
         //std::cout << permcount << std::endl;
         
-        std::vector<UpgradeResult> bestResults;
+        std::vector<UpgradeListResult> bestResults;
         std::vector<std::vector<PermutationGroup>> bestUpgradePermutations;
         std::vector<Account> bestAccounts;
         
@@ -683,19 +712,19 @@ int detailedmultiupgrade(int argc, char** argv){
             if((printList && i == 0) || printAllLists){
                 std::cout << "Detailed statistics:\n";
                 
-                for(int jobid = 0; jobid < int(bestResult.upgradeJobStatistics.size()); jobid++){
-                    const auto& stat = bestResult.upgradeJobStatistics[jobid];
-                    const auto& job = stat.job;
-                    const auto& entityInfo = job.entityInfo;
+                for(int jobid = 0; jobid < int(bestResult.upgradeResults.size()); jobid++){
+                    const auto& res = bestResult.upgradeResults.at(jobid);
+                    const auto& stat = res.stats;
+                    const auto& entity = res.entity;
                     const int upgradeLevel = stat.level;
-                    const int upgradeLocation = job.location;
+                    const int upgradeLocation = res.location;
                     
                     if(use_dhm_format){
-                        std::cout << "Planet " << (upgradeLocation+1) << ": " << entityInfo.name << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
+                        std::cout << "Planet " << (upgradeLocation+1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
                         << ", Waiting period begin: " << convert_time(stat.waitingPeriodDaysBegin) << ", Construction begin: " << convert_time(stat.constructionBeginDays) << ", Construction time: " << convert_time(stat.constructionTimeDays) 
                         << ", Save time: " << convert_time(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';
                     }else{
-                        std::cout << "Planet " << (upgradeLocation+1) << ": " << entityInfo.name << " " << upgradeLevel << ". Saving period begin: " << stat.savePeriodDaysBegin 
+                        std::cout << "Planet " << (upgradeLocation+1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << stat.savePeriodDaysBegin 
                         << ", Waiting period begin: " << stat.waitingPeriodDaysBegin << ", Construction begin: " << stat.constructionBeginDays << ", Construction time: " << stat.constructionTimeDays 
                         << ", Save time: " << (stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';
                     }
