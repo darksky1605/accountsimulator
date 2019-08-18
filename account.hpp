@@ -83,6 +83,9 @@
 		bool constructionInProgress() const;
 		
 		int getLevel(const ogamehelpers::Entity& entity) const;
+
+		//increase level by one and return new level;
+		int increaseLevel(ogamehelpers::Entity entity);
 		
 		void startConstruction(float timeDays, const ogamehelpers::Entity& entity);
 		

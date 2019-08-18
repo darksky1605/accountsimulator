@@ -67,9 +67,32 @@
             case ogh::Entity::Deutstorage: return deutStorageLevel;
             case ogh::Entity::Alliancedepot: return allianceDepotLevel;
             case ogh::Entity::Silo: return missileSiloLevel;
+            case ogh::Entity::None: return 0;
             default: throw std::runtime_error("planetstate getLevel error " + ogh::getEntityName(entity));
 		}
 	}
+
+    //increase level by one and return new level;
+	int PlanetState::increaseLevel(ogamehelpers::Entity entity){
+        switch(entity){
+            case ogh::Entity::Metalmine: return ++metLevel;
+            case ogh::Entity::Crystalmine: return ++crysLevel;
+            case ogh::Entity::Deutsynth: return ++deutLevel;
+            case ogh::Entity::Solar: return ++solarLevel;
+            case ogh::Entity::Fusion: return ++fusionLevel;
+            case ogh::Entity::Lab: return ++labLevel;
+            case ogh::Entity::Robo: return ++roboLevel;
+            case ogh::Entity::Nanite: return ++naniteLevel;
+            case ogh::Entity::Shipyard: return ++shipyardLevel;
+            case ogh::Entity::Metalstorage: return ++metalStorageLevel;
+            case ogh::Entity::Crystalstorage: return ++crystalStorageLevel;
+            case ogh::Entity::Deutstorage: return ++deutStorageLevel;
+            case ogh::Entity::Alliancedepot: return ++allianceDepotLevel;
+            case ogh::Entity::Silo: return ++missileSiloLevel;
+            case ogh::Entity::None: return 0;
+            default: throw std::runtime_error("planetstate getLevel error " + ogh::getEntityName(entity));
+		}
+    }
 	
 	void PlanetState::startConstruction(float timeDays, const ogh::Entity& entity){
 		assert(timeDays >= 0.0f);
@@ -367,28 +390,30 @@
 
 
     void Account::buildingFinishedCallback(PlanetState& p){
-        auto handleProductionChangingBuilding = [&](auto& level){
-            level++;
+        auto handleProductionChangingBuilding = [&](){
             p.dailyProductionNeedsUpdate = true;
             auto result = p.setPercentToMaxProduction();
+            const int level = p.getLevel(p.entityInQueue);
             recordPercentageChange(result, p.entityInQueue, level);     
         };
 
+        p.increaseLevel(p.entityInQueue);
+
         switch(p.entityInQueue){
-            case ogh::Entity::Metalmine: handleProductionChangingBuilding(p.metLevel); break;
-            case ogh::Entity::Crystalmine: handleProductionChangingBuilding(p.crysLevel); break;
-            case ogh::Entity::Deutsynth: handleProductionChangingBuilding(p.deutLevel); break;
-            case ogh::Entity::Solar: handleProductionChangingBuilding(p.solarLevel); break;
-            case ogh::Entity::Fusion: handleProductionChangingBuilding(p.fusionLevel); break;
-            case ogh::Entity::Lab: p.labLevel++; break;
-            case ogh::Entity::Robo: p.roboLevel++; break;
-            case ogh::Entity::Nanite: p.naniteLevel++; break;
-            case ogh::Entity::Shipyard: p.shipyardLevel++; break;
-            case ogh::Entity::Metalstorage: p.metalStorageLevel++; break;
-            case ogh::Entity::Crystalstorage: p.crystalStorageLevel++; break;
-            case ogh::Entity::Deutstorage: p.deutStorageLevel++; break;
-            case ogh::Entity::Alliancedepot: p.allianceDepotLevel++; break;
-            case ogh::Entity::Silo: p.missileSiloLevel++; break;
+            case ogh::Entity::Metalmine: handleProductionChangingBuilding(); break;
+            case ogh::Entity::Crystalmine: handleProductionChangingBuilding(); break;
+            case ogh::Entity::Deutsynth: handleProductionChangingBuilding(); break;
+            case ogh::Entity::Solar: handleProductionChangingBuilding(); break;
+            case ogh::Entity::Fusion: handleProductionChangingBuilding(); break;
+            case ogh::Entity::Lab: break;
+            case ogh::Entity::Robo: break;
+            case ogh::Entity::Nanite: break;
+            case ogh::Entity::Shipyard: break;
+            case ogh::Entity::Metalstorage: break;
+            case ogh::Entity::Crystalstorage: break;
+            case ogh::Entity::Deutstorage: break;
+            case ogh::Entity::Alliancedepot: break;
+            case ogh::Entity::Silo: break;
             case ogh::Entity::None: break;
             default: throw std::runtime_error("No building finished callback for this building " + std::string{ogh::getEntityName(p.entityInQueue)});
         }
