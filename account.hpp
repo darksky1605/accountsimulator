@@ -264,7 +264,9 @@
 		
 		int getNumPlanets() const;
 
-		int getResearchLevel(const ogamehelpers::Entity& entity) const;
+		int getResearchLevel(ogamehelpers::Entity entity) const;
+
+		int getBuildingLevel(int planetId, ogamehelpers::Entity entity) const;
 		
 		void addResources(const ogamehelpers::Resources& res);
 		
@@ -273,8 +275,6 @@
 		void printQueues(std::ostream& os) const;	
 
 		void waitForAllConstructions();
-        
-        float waitUntilAstroForNextPlanetIsFinished();
 		
 		float waitUntilCostsAreAvailable(const ogamehelpers::Resources& constructionCosts);
 

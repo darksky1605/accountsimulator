@@ -667,8 +667,15 @@
 		return int(planets.size());
 	}
 
-    int Account::getResearchLevel(const ogamehelpers::Entity& entity) const{
+    int Account::getResearchLevel(ogamehelpers::Entity entity) const{
         return researchState.getLevel(entity);
+    }
+
+    int Account::getBuildingLevel(int planetId, ogamehelpers::Entity entity) const{
+        assert(planetId > 0 && planetId <= getNumPlanets());
+        //planetId is 1-based
+        const int index = planetId - 1;
+        return planets[index].getLevel(entity);
     }
 	
 	void Account::addResources(const ogh::Resources& res){
