@@ -1,26 +1,26 @@
-#include "ogame.hpp"
 #include "account.hpp"
-#include "parallel_permutation.hpp"
-#include "util.hpp"
 #include "hpc_helpers.cuh"
-#include "serialization.hpp"
-#include "json.hpp"
 #include "io.hpp"
+#include "json.hpp"
+#include "ogame.hpp"
+#include "parallel_permutation.hpp"
+#include "serialization.hpp"
+#include "util.hpp"
 
-#include <string>
-#include <iostream>
-#include <iomanip>
+#include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <cctype>
-#include <algorithm>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <numeric>
+#include <set>
 #include <sstream>
 #include <stdexcept>
-#include <memory>
-#include <numeric>
-#include <atomic>
-#include <mutex>
-#include <set>
+#include <string>
 
 namespace ogh = ogamehelpers;
 using json = nlohmann::json;
@@ -55,61 +55,54 @@ enum class PostAstroAction {SimpleCopyPreviousPlanet, SimpleUpgradeToPreviousPla
 
 
         if(getNumPlanets() < ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
-#endif        
+#endif
 
-struct UpgradeResult{
+struct UpgradeResult {
     Account::UpgradeStats stats;
     ogh::Entity entity;
     int location;
 
-    bool operator==(const UpgradeResult& rhs) const{
-        return stats == rhs.stats && entity == rhs.entity 
-                && location == rhs.location;
+    bool operator==(const UpgradeResult& rhs) const {
+        return stats == rhs.stats && entity == rhs.entity && location == rhs.location;
     }
 
-    bool operator!=(const UpgradeResult& rhs) const{
+    bool operator!=(const UpgradeResult& rhs) const {
         return !operator==(rhs);
     }
 };
 
-struct UpgradeListResult{
+struct UpgradeListResult {
     bool success = false;
-	float constructionFinishedInDays = 0;
-	float lastConstructionStartedAfterDays = 0;
-	float savingFinishedInDays = 0;
-	float previousUpgradeDelay = 0;
-	std::vector<UpgradeResult> upgradeResults;
-    
-    bool operator==(const UpgradeListResult& rhs) const{
-        return success == rhs.success && constructionFinishedInDays == rhs.constructionFinishedInDays
-        && lastConstructionStartedAfterDays == rhs.lastConstructionStartedAfterDays
-        && savingFinishedInDays == rhs.savingFinishedInDays
-        && previousUpgradeDelay == rhs.previousUpgradeDelay
-        && upgradeResults == rhs.upgradeResults;
+    float constructionFinishedInDays = 0;
+    float lastConstructionStartedAfterDays = 0;
+    float savingFinishedInDays = 0;
+    float previousUpgradeDelay = 0;
+    std::vector<UpgradeResult> upgradeResults;
+
+    bool operator==(const UpgradeListResult& rhs) const {
+        return success == rhs.success && constructionFinishedInDays == rhs.constructionFinishedInDays && lastConstructionStartedAfterDays == rhs.lastConstructionStartedAfterDays && savingFinishedInDays == rhs.savingFinishedInDays && previousUpgradeDelay == rhs.previousUpgradeDelay && upgradeResults == rhs.upgradeResults;
     }
-    
-    bool operator!=(const UpgradeListResult& rhs) const{
+
+    bool operator!=(const UpgradeListResult& rhs) const {
         return !(operator==(rhs));
     }
 };
 
-
 UpgradeListResult perform_upgrades(Account& account,
-								const std::vector<PermutationGroup>& planned_upgrades){
+                                   const std::vector<PermutationGroup>& planned_upgrades) {
 
-	using ogh::EntityType;
-			
-	UpgradeListResult result;
-	result.upgradeResults.reserve(planned_upgrades.size());
-	
-	auto print_job = [](const auto& job){
+    using ogh::EntityType;
+
+    UpgradeListResult result;
+    result.upgradeResults.reserve(planned_upgrades.size());
+
+    auto print_job = [](const auto& job) {
         (void)job;
-		//std::cout << ogh::getEntityName(entityInfo.entity) << " at planet " << job.location << std::endl;
-	};
+        //std::cout << ogh::getEntityName(entityInfo.entity) << " at planet " << job.location << std::endl;
+    };
 
-
-    auto submitJobAndCheckTime = [&](const auto& job){
-        if(job.isResearch()){
+    auto submitJobAndCheckTime = [&](const auto& job) {
+        if (job.isResearch()) {
             assert(job.entityInfo.type == EntityType::Research && job.location == UpgradeTask::researchLocation);
 
             print_job(job);
@@ -121,20 +114,18 @@ UpgradeListResult perform_upgrades(Account& account,
                 job.location,
             };
             result.upgradeResults.emplace_back(std::move(upgradeResult));
-    
-            if(account.time == std::numeric_limits<float>::max() || !stats.success)
+
+            if (account.time == std::numeric_limits<float>::max() || !stats.success)
                 return false;
-            return true;                   
-        }else{
-            if(job.location == UpgradeTask::allCurrentPlanetsLocation){
+            return true;
+        } else {
+            if (job.location == UpgradeTask::allCurrentPlanetsLocation) {
                 auto curJob = job;
                 bool ok = true;
-                for(int i = 0; i < account.getNumPlanets() && ok; i++){
+                for (int i = 0; i < account.getNumPlanets() && ok; i++) {
                     curJob.location = i;
 
-                    assert(curJob.entityInfo.type == EntityType::Building 
-                            && (curJob.location >= 0 
-                                   && curJob.location < account.getNumPlanets()+1)); // +1 to account for possible astro physics in progress
+                    assert(curJob.entityInfo.type == EntityType::Building && (curJob.location >= 0 && curJob.location < account.getNumPlanets() + 1)); // +1 to account for possible astro physics in progress
 
                     print_job(curJob);
 
@@ -145,15 +136,13 @@ UpgradeListResult perform_upgrades(Account& account,
                         curJob.location,
                     };
                     result.upgradeResults.emplace_back(std::move(upgradeResult));
-            
-                    if(account.time == std::numeric_limits<float>::max() || !stats.success)
+
+                    if (account.time == std::numeric_limits<float>::max() || !stats.success)
                         ok = false;
-				}
+                }
                 return ok;
-            }else{
-                assert(job.entityInfo.type == EntityType::Building 
-                        && (job.location >= 0 
-                            && job.location < account.getNumPlanets()+1)); // +1 to account for possible astro physics in progress
+            } else {
+                assert(job.entityInfo.type == EntityType::Building && (job.location >= 0 && job.location < account.getNumPlanets() + 1)); // +1 to account for possible astro physics in progress
                 print_job(job);
                 auto stats = account.processBuildingJob(job.location, job.entityInfo.entity);
                 UpgradeResult upgradeResult{
@@ -162,8 +151,8 @@ UpgradeListResult perform_upgrades(Account& account,
                     job.location,
                 };
                 result.upgradeResults.emplace_back(std::move(upgradeResult));
-        
-                if(account.time == std::numeric_limits<float>::max() || !stats.success)
+
+                if (account.time == std::numeric_limits<float>::max() || !stats.success)
                     return false;
                 return true;
             }
@@ -172,96 +161,91 @@ UpgradeListResult perform_upgrades(Account& account,
         return false;
     };
 
-    auto getNumPlanets = [&](){
+    auto getNumPlanets = [&]() {
         int numPlanets = account.getNumPlanets();
-        if(account.researchState.entityInQueue == ogh::Entity::Astro
-               && numPlanets < ogh::getMaxPossiblePlanets(account.researchState.astroLevel + 1)){
+        if (account.researchState.entityInQueue == ogh::Entity::Astro && numPlanets < ogh::getMaxPossiblePlanets(account.researchState.astroLevel + 1)) {
             numPlanets += 1;
         }
         return numPlanets;
     };
 
-    auto submitUpgradeTask = [&](const auto& task){
+    auto submitUpgradeTask = [&](const auto& task) {
         const int numPlanets = getNumPlanets();
         const auto upgradeJobs = task.getUpgradeJobs(numPlanets);
         return std::all_of(upgradeJobs.begin(), upgradeJobs.end(), submitJobAndCheckTime);
     };
 
-    auto submitUpgradeGroup = [&](const auto& upgradeGroup){
+    auto submitUpgradeGroup = [&](const auto& upgradeGroup) {
         const int numPlanets = getNumPlanets();
         const auto upgradeTasks = upgradeGroup.getTasks(numPlanets);
         return std::all_of(upgradeTasks.begin(), upgradeTasks.end(), submitUpgradeTask);
     };
 
-    auto submitPermutationGroup = [&](const auto& permGroup){
+    auto submitPermutationGroup = [&](const auto& permGroup) {
         const auto upgradeGroups = permGroup.groups;
         return std::all_of(upgradeGroups.begin(), upgradeGroups.end(), submitUpgradeGroup);
     };
 
     const bool ok = std::all_of(planned_upgrades.begin(), planned_upgrades.end(), submitPermutationGroup);
-	
-	result.success = ok;
-	
-	if(ok){
-        
+
+    result.success = ok;
+
+    if (ok) {
+
         result.lastConstructionStartedAfterDays = account.time;
         result.savingFinishedInDays = 0.0f;
         result.previousUpgradeDelay = 0.0f;
-        
-        for(const auto& res : result.upgradeResults){
+
+        for (const auto& res : result.upgradeResults) {
             result.savingFinishedInDays += res.stats.waitingPeriodDaysBegin - res.stats.savePeriodDaysBegin;
             result.previousUpgradeDelay += res.stats.constructionBeginDays - res.stats.waitingPeriodDaysBegin;
         }
-        
+
         //wait until all planets finished building
-        
+
         account.waitForAllConstructions();
-        
+
         result.constructionFinishedInDays = account.time;
     }
-	
-	std::cout << std::flush;
-	std::cerr << std::flush;
-	
-	return result;
-	
+
+    std::cout << std::flush;
+    std::cerr << std::flush;
+
+    return result;
 }
 
-
-std::string convert_time(float daysfloat){
-	std::stringstream ss;
-	std::uint64_t seconds = daysfloat * 24ULL * 60ULL * 60ULL;
-	std::uint64_t days = seconds / (24ULL*60ULL*60ULL);
-	seconds = seconds % (24ULL*60ULL*60ULL);
-	std::uint64_t hours = seconds / (60ULL*60ULL);
-	seconds = seconds % (60ULL * 60ULL);
-	std::uint64_t minutes = seconds / 60ULL;
-	seconds = seconds % 60ULL;
-	ss << days << "d " << hours << "h " << minutes << "m " << seconds << "s";
-	return ss.str();
+std::string convert_time(float daysfloat) {
+    std::stringstream ss;
+    std::uint64_t seconds = daysfloat * 24ULL * 60ULL * 60ULL;
+    std::uint64_t days = seconds / (24ULL * 60ULL * 60ULL);
+    seconds = seconds % (24ULL * 60ULL * 60ULL);
+    std::uint64_t hours = seconds / (60ULL * 60ULL);
+    seconds = seconds % (60ULL * 60ULL);
+    std::uint64_t minutes = seconds / 60ULL;
+    seconds = seconds % 60ULL;
+    ss << days << "d " << hours << "h " << minutes << "m " << seconds << "s";
+    return ss.str();
 }
 
-
-
-void printLogRecord(std::ostream& os, const Account::LogRecord& record){
+void printLogRecord(std::ostream& os, const Account::LogRecord& record) {
     os << record.time << ": " << record.msg << '\n';
 }
 
-void createAccountFile(const std::string& filename){
+void createAccountFile(const std::string& filename) {
     Account account;
     account.addNewPlanet();
     json j = account;
     std::ofstream out(filename);
-    if(!out){
+    if (!out) {
         throw std::runtime_error("Cannot open new account file " + filename);
     }
     out << std::setw(4) << j;
 }
 
-void usage(int argc, char** argv){
+void usage(int argc, char** argv) {
     (void)argc;
     std::cout << "Usage:" << argv[0] << " Options\n\n";
-	    
+
     std::cout << "Calculates how long it takes to perform a series of researches and upgrades in an account\n\n";
     std::cout << "Options:\n";
     std::cout << "--help: Show this message.\n\n";
@@ -282,18 +266,18 @@ void usage(int argc, char** argv){
     std::cout << "--printalllists: Show detailed time table for every permutation\n\n";
     std::cout << "--percentages: Show changes of production percentages per planet.\n\n";
     std::cout << "--dhm: Print durations in days, hours, minutes format instead of fractional days.\n\n";
-	    
+
     std::cout << "The initial account state is read from accountfile\n\n";
     std::cout << "The list of upgrades to perform is read from upgradefile\n\n";
 
     std::cout << "Example: " << argv[0] << " --accountfile account.json --upgradefile upgrades.txt --speed 2" << std::endl;
 }
 
-int detailedmultiupgrade(int argc, char** argv){
+int detailedmultiupgrade(int argc, char** argv) {
     //constexpr bool debugprint = true;
     //constexpr bool nanisweep = false;
-    
-    if(argc == 1){
+
+    if (argc == 1) {
         usage(argc, argv);
         return 0;
     }
@@ -301,24 +285,23 @@ int detailedmultiupgrade(int argc, char** argv){
     //check for options which do not start a simulation
     {
 
-        for(int i = 1; i < argc; i++){
-            if(std::string(argv[i]) == "--help"){
+        for (int i = 1; i < argc; i++) {
+            if (std::string(argv[i]) == "--help") {
                 usage(argc, argv);
                 return 0;
             }
 
-            if(std::string(argv[i]) == "--createAccount"){
-                assert(i+1 < argc);
+            if (std::string(argv[i]) == "--createAccount") {
+                assert(i + 1 < argc);
                 //bool createAccount = true;
-                std::string newAccountFile = std::string(argv[i+1]);
+                std::string newAccountFile = std::string(argv[i + 1]);
                 i++;
                 createAccountFile(newAccountFile);
                 return 0;
             }
         }
-        
     }
-    
+
     int speedfactor = 1;
     bool overwriteSpeed = false;
     std::string accountFile("");
@@ -332,85 +315,85 @@ int detailedmultiupgrade(int argc, char** argv){
     bool use_dhm_format = false;
     bool appendLog = false;
     bool showPercentageChanges = false;
-    
-    for(int i = 1; i < argc; i++){        
-        if(std::string(argv[i]) == "--printlist"){
+
+    for (int i = 1; i < argc; i++) {
+        if (std::string(argv[i]) == "--printlist") {
             printList = true;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--printalllists"){
+
+        if (std::string(argv[i]) == "--printalllists") {
             printAllLists = true;
             continue;
         }
 
-        if(std::string(argv[i]) == "--percentages"){
+        if (std::string(argv[i]) == "--percentages") {
             showPercentageChanges = true;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--speed"){
-            assert(i+1 < argc);
-            speedfactor = std::atoi(argv[i+1]);
+
+        if (std::string(argv[i]) == "--speed") {
+            assert(i + 1 < argc);
+            speedfactor = std::atoi(argv[i + 1]);
             i++;
             overwriteSpeed = true;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--threads"){
-            assert(i+1 < argc);
-            num_threads = std::atoi(argv[i+1]);
+
+        if (std::string(argv[i]) == "--threads") {
+            assert(i + 1 < argc);
+            num_threads = std::atoi(argv[i + 1]);
             i++;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--accountfile"){
-            assert(i+1 < argc);
-            accountFile = std::string(argv[i+1]);
+
+        if (std::string(argv[i]) == "--accountfile") {
+            assert(i + 1 < argc);
+            accountFile = std::string(argv[i + 1]);
             i++;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--upgradefile"){
-            assert(i+1 < argc);
-            upgradeFile = std::string(argv[i+1]);
+
+        if (std::string(argv[i]) == "--upgradefile") {
+            assert(i + 1 < argc);
+            upgradeFile = std::string(argv[i + 1]);
             i++;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--logfile"){
-            assert(i+1 < argc);
-            logFileName = std::string(argv[i+1]);
+
+        if (std::string(argv[i]) == "--logfile") {
+            assert(i + 1 < argc);
+            logFileName = std::string(argv[i + 1]);
             i++;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--permute"){
-            assert(i+1 < argc);
-            permutationMode = std::atoi(argv[i+1]);
+
+        if (std::string(argv[i]) == "--permute") {
+            assert(i + 1 < argc);
+            permutationMode = std::atoi(argv[i + 1]);
             i++;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--permutations"){
-            assert(i+1 < argc);
-            num_best_permutations = std::atoi(argv[i+1]);
+
+        if (std::string(argv[i]) == "--permutations") {
+            assert(i + 1 < argc);
+            num_best_permutations = std::atoi(argv[i + 1]);
             i++;
             continue;
         }
-                
-        if(std::string(argv[i]) == "--dhm"){
+
+        if (std::string(argv[i]) == "--dhm") {
             use_dhm_format = true;
             continue;
         }
-        
-        if(std::string(argv[i]) == "--appendlog"){
+
+        if (std::string(argv[i]) == "--appendlog") {
             appendLog = true;
             continue;
         }
     }
-    
-    if(overwriteSpeed){
+
+    if (overwriteSpeed) {
         std::cout << "Speed factor: " << speedfactor << '\n';
     }
     std::cout << "Permutation mode: " << permutationMode << '\n';
@@ -423,323 +406,308 @@ int detailedmultiupgrade(int argc, char** argv){
     std::cout << "Append log file: " << appendLog << '\n';
     std::cout << "DHM time format: " << use_dhm_format << '\n';
     std::cout << "Threads: " << num_threads << '\n';
-    
+
     auto openmode = std::ios_base::out;
-    if(appendLog)
+    if (appendLog)
         openmode = std::ios_base::app;
-    
+
     std::ofstream logFile(logFileName, openmode);
-    
-    if(!logFile){
+
+    if (!logFile) {
         throw std::runtime_error("Cannot open log file " + logFileName);
     }
 
-    auto printLog = [&](const auto& record){
+    auto printLog = [&](const auto& record) {
         printLogRecord(logFile, record);
     };
-   
+
     Account account = parseAccountJsonFile(accountFile);
 
-    if(overwriteSpeed){
+    if (overwriteSpeed) {
         account.speedfactor = speedfactor;
     }
 
     auto planned_upgrades = parseUpgradeFile(upgradeFile);
 
     {
-        for(const auto& x : planned_upgrades)
+        for (const auto& x : planned_upgrades)
             std::cout << x << std::endl;
     }
-        
-    if(permutationMode == 0){
+
+    if (permutationMode == 0) {
         auto result = perform_upgrades(account, planned_upgrades);
 
-        if(result.success){
+        if (result.success) {
 
             std::for_each(account.logRecords.begin(), account.logRecords.end(), printLog);
             logFile.flush();
             std::cout << std::endl;
 
-            if(use_dhm_format){
+            if (use_dhm_format) {
                 std::cout << "The selected upgrades take " << convert_time(result.constructionFinishedInDays) << " days.\n";
                 std::cout << "Last upgrade started after " << convert_time(result.lastConstructionStartedAfterDays) << " days.\n";
                 std::cout << "The required saving time is " << convert_time(result.savingFinishedInDays) << " days.\n";
                 std::cout << "Days lost because a queue was full: " << convert_time(result.previousUpgradeDelay) << " days.\n";
-            }else{
+            } else {
                 std::cout << "The selected upgrades take " << result.constructionFinishedInDays << " days.\n";
                 std::cout << "Last upgrade started after " << result.lastConstructionStartedAfterDays << " days.\n";
                 std::cout << "The required saving time is " << result.savingFinishedInDays << " days.\n";
                 std::cout << "Days lost because a queue was full: " << result.previousUpgradeDelay << " days.\n";
             }
-            
+
             std::cout << '\n';
-            
-            if(printList){
+
+            if (printList) {
                 std::cout << "Detailed statistics:\n";
-                
-                for(int jobid = 0; jobid < int(result.upgradeResults.size()); jobid++){
+
+                for (int jobid = 0; jobid < int(result.upgradeResults.size()); jobid++) {
                     const auto& res = result.upgradeResults.at(jobid);
                     const auto& stat = res.stats;
                     const auto& entity = res.entity;
                     const int upgradeLevel = stat.level;
                     const int upgradeLocation = res.location;
-                    if(use_dhm_format){
-                        std::cout << "Planet " << (upgradeLocation+1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
-                        << ", Waiting period begin: " << convert_time(stat.waitingPeriodDaysBegin) << ", Construction begin: " << convert_time(stat.constructionBeginDays) << ", Construction time: " << convert_time(stat.constructionTimeDays) 
-                        << ", Save time: " << convert_time(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';                    
-                    }else{
-                        std::cout << "Planet " << (upgradeLocation+1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << stat.savePeriodDaysBegin 
-                            << ", Waiting period begin: " << stat.waitingPeriodDaysBegin << ", Construction begin: " << stat.constructionBeginDays << ", Construction time: " << stat.constructionTimeDays 
-                            << ", Save time: " << (stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';
+                    if (use_dhm_format) {
+                        std::cout << "Planet " << (upgradeLocation + 1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
+                                  << ", Waiting period begin: " << convert_time(stat.waitingPeriodDaysBegin) << ", Construction begin: " << convert_time(stat.constructionBeginDays) << ", Construction time: " << convert_time(stat.constructionTimeDays)
+                                  << ", Save time: " << convert_time(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin) << '\n';
+                    } else {
+                        std::cout << "Planet " << (upgradeLocation + 1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << stat.savePeriodDaysBegin
+                                  << ", Waiting period begin: " << stat.waitingPeriodDaysBegin << ", Construction begin: " << stat.constructionBeginDays << ", Construction time: " << stat.constructionTimeDays
+                                  << ", Save time: " << (stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin) << '\n';
                     }
                 }
             }
 
-            if(showPercentageChanges){
+            if (showPercentageChanges) {
                 auto percentageChanges = account.getPercentageChanges();
 
-                auto printChange = [&](const auto& change){
+                auto printChange = [&](const auto& change) {
                     std::string timestring = use_dhm_format ? convert_time(change.time) : std::to_string(change.time);
                     auto& stream = std::cout;
-                    stream << timestring << " Planet " << change.planetId << ": Changed percents to " 
-                    << "m " << change.metPercent << ", c " << change.crysPercent 
-                    << ", d " << change.deutPercent << ", f " << change.fusionPercent 
-                    << " after construction of " << change.finishedName << " " << change.finishedLevel
-                    << ". Production factor: " << change.oldMineProductionFactor 
-                    << "->" << change.newMineProductionFactor 
-                    << ". Production increased by " << (((double(change.newDSE)/change.oldDSE) - 1) * 100) 
-                    << " % DSE" << std::endl;
+                    stream << timestring << " Planet " << change.planetId << ": Changed percents to "
+                           << "m " << change.metPercent << ", c " << change.crysPercent
+                           << ", d " << change.deutPercent << ", f " << change.fusionPercent
+                           << " after construction of " << change.finishedName << " " << change.finishedLevel
+                           << ". Production factor: " << change.oldMineProductionFactor
+                           << "->" << change.newMineProductionFactor
+                           << ". Production increased by " << (((double(change.newDSE) / change.oldDSE) - 1) * 100)
+                           << " % DSE" << std::endl;
                 };
 
                 std::cout << '\n';
 
                 std::for_each(percentageChanges.begin(), percentageChanges.end(), printChange);
             }
-        }else{
+        } else {
             std::cout << "Error: Upgrades could not be performed!" << std::endl;
         }
-    }else{
-        
-        auto resultcomp1 = [](const UpgradeListResult& l, const UpgradeListResult& r){
+    } else {
+
+        auto resultcomp1 = [](const UpgradeListResult& l, const UpgradeListResult& r) {
             return l.constructionFinishedInDays < r.constructionFinishedInDays;
         };
-        auto resultcomp2 = [](const UpgradeListResult& l, const UpgradeListResult& r){
+        auto resultcomp2 = [](const UpgradeListResult& l, const UpgradeListResult& r) {
             return l.lastConstructionStartedAfterDays < r.lastConstructionStartedAfterDays;
         };
-        auto resultcomp3 = [](const UpgradeListResult& l, const UpgradeListResult& r){
+        auto resultcomp3 = [](const UpgradeListResult& l, const UpgradeListResult& r) {
             return l.savingFinishedInDays < r.savingFinishedInDays;
         };
-        auto resultcomp4 = [](const UpgradeListResult& l, const UpgradeListResult& r){
+        auto resultcomp4 = [](const UpgradeListResult& l, const UpgradeListResult& r) {
             return l.previousUpgradeDelay < r.previousUpgradeDelay;
         };
-        
+
         std::function<bool(const UpgradeListResult&, const UpgradeListResult&)> resultcomp;
-        switch(permutationMode){
-            case 1: resultcomp = resultcomp1; break;
-            case 2: resultcomp = resultcomp2; break;
-            case 3: resultcomp = resultcomp3; break;
-            case 4: resultcomp = resultcomp4; break;
-            default: assert(false);
+        switch (permutationMode) {
+        case 1:
+            resultcomp = resultcomp1;
+            break;
+        case 2:
+            resultcomp = resultcomp2;
+            break;
+        case 3:
+            resultcomp = resultcomp3;
+            break;
+        case 4:
+            resultcomp = resultcomp4;
+            break;
+        default:
+            assert(false);
         }
-        
+
         std::vector<std::vector<UpgradeListResult>> bestResultsPerThread(num_threads);
         std::vector<std::vector<std::vector<PermutationGroup>>> bestUpgradePermutationsPerThread(num_threads);
-        std::vector<std::vector<Account>> bestAccountsPerThread(num_threads);        
-        
+        std::vector<std::vector<Account>> bestAccountsPerThread(num_threads);
+
         std::vector<float> longestCompletionTimePerThread(num_threads, 0.0f);
-        
+
         std::set<std::vector<PermutationGroup>> uniqueProcessedPermutations;
         std::mutex m;
-        
-        parallel_for_each_permutation(planned_upgrades, num_threads, [&](int threadId, const auto& upgradepermutation){
-            
+
+        parallel_for_each_permutation(planned_upgrades, num_threads, [&](int threadId, const auto& upgradepermutation) {
             {
                 std::lock_guard<std::mutex> lg(m);
-                if(uniqueProcessedPermutations.count(upgradepermutation) > 0){
+                if (uniqueProcessedPermutations.count(upgradepermutation) > 0) {
                     return;
-                }else{
+                } else {
                     uniqueProcessedPermutations.insert(upgradepermutation);
                 }
             }
-            
+
             //create copy of original account
             auto permutationAccount = account;
-            
+
             //perform permutation of upgrades on permutation account
             UpgradeListResult nextResult = perform_upgrades(permutationAccount, upgradepermutation);
-            
-            if(nextResult.success){
-            
+
+            if (nextResult.success) {
+
                 auto& myBestResults = bestResultsPerThread[threadId];
                 auto& myBestUpgradePermutations = bestUpgradePermutationsPerThread[threadId];
                 auto& myBestAccounts = bestAccountsPerThread[threadId];
                 auto& longestCompletionTime = longestCompletionTimePerThread[threadId];
-                
+
                 //save result if it is better than one of the previously saved results (can be at most num_best_permutations previously saved results)
                 auto iter = lower_bound(myBestResults.begin(), myBestResults.end(), nextResult, resultcomp);
-                std::size_t distance = std::distance(myBestResults.begin(),iter);
-                
-                if(iter == myBestResults.end() && int(myBestResults.size()) < num_best_permutations){
+                std::size_t distance = std::distance(myBestResults.begin(), iter);
+
+                if (iter == myBestResults.end() && int(myBestResults.size()) < num_best_permutations) {
                     myBestResults.emplace_back(nextResult);
                     myBestUpgradePermutations.emplace_back(upgradepermutation);
                     myBestAccounts.emplace_back(permutationAccount);
-                }else if(iter != myBestResults.end() && *iter != nextResult){
+                } else if (iter != myBestResults.end() && *iter != nextResult) {
                     myBestResults.insert(iter, nextResult);
                     myBestUpgradePermutations.insert(myBestUpgradePermutations.begin() + distance, upgradepermutation);
                     myBestAccounts.insert(myBestAccounts.begin() + distance, permutationAccount);
-                    
-                    if(int(myBestResults.size()) > num_best_permutations)
+
+                    if (int(myBestResults.size()) > num_best_permutations)
                         myBestResults.resize(num_best_permutations);
-                    if(int(myBestUpgradePermutations.size()) > num_best_permutations)
+                    if (int(myBestUpgradePermutations.size()) > num_best_permutations)
                         myBestUpgradePermutations.resize(num_best_permutations);
-                    if(int(myBestAccounts.size()) > num_best_permutations)
+                    if (int(myBestAccounts.size()) > num_best_permutations)
                         myBestAccounts.resize(num_best_permutations);
                 }
-                
+
                 //find out the worst completion time of all permutations
                 longestCompletionTime = std::max(longestCompletionTime, permutationAccount.time);
-                
             }
-            
         });
-        
+
         std::vector<UpgradeListResult> bestResults;
         std::vector<std::vector<PermutationGroup>> bestUpgradePermutations;
         std::vector<Account> bestAccounts;
-        
+
         //combine results of threads
-        for(int i = 0; i < num_threads; i++){
+        for (int i = 0; i < num_threads; i++) {
             bestResults.insert(bestResults.end(), bestResultsPerThread[i].begin(), bestResultsPerThread[i].end());
             bestUpgradePermutations.insert(bestUpgradePermutations.end(), bestUpgradePermutationsPerThread[i].begin(), bestUpgradePermutationsPerThread[i].end());
             bestAccounts.insert(bestAccounts.end(), bestAccountsPerThread[i].begin(), bestAccountsPerThread[i].end());
         }
-        
+
         //sort results (result indices)
         std::vector<int> indices(bestResults.size());
         std::iota(indices.begin(), indices.end(), 0);
-        std::sort(indices.begin(), indices.end(), [&](int l, int r){
+        std::sort(indices.begin(), indices.end(), [&](int l, int r) {
             return resultcomp(bestResults[l], bestResults[r]);
         });
-        
-        std::unique(indices.begin(), indices.end(), [&](int l, int r){
+
+        std::unique(indices.begin(), indices.end(), [&](int l, int r) {
             return bestUpgradePermutations[l] == bestUpgradePermutations[r];
         });
 
         assert(indices.size() == bestResults.size());
-        
-        
+
         const float longestCompletionTime = *std::max_element(longestCompletionTimePerThread.begin(), longestCompletionTimePerThread.end());
-        
+
         std::cout << "Best permutations:\n";
-        for(int i = 0; i < std::min(num_best_permutations, int(indices.size())); i++){
+        for (int i = 0; i < std::min(num_best_permutations, int(indices.size())); i++) {
             int resultIndex = indices[i];
             const auto& bestResult = bestResults[resultIndex];
             const auto& bestUpgradePermutation = bestUpgradePermutations[resultIndex];
             auto& bestAccount = bestAccounts[resultIndex];
-            
-            for(const auto& jobList : bestUpgradePermutation){
+
+            for (const auto& jobList : bestUpgradePermutation) {
                 std::cout << "[ ";
                 std::cout << jobList;
                 std::cout << " ]";
             }
             std::cout << '\n';
-            
+
             float timeToAdvance = std::max(0.0f, longestCompletionTime - bestAccount.time);
-            
+
             std::int64_t currentResourcesDSE = bestAccount.resources.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deut;
             auto currentProduction = bestAccount.getCurrentDailyProduction();
             std::int64_t currentProductionPerDayDSE = currentProduction.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deut;
             std::int64_t currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
-            
-            if(use_dhm_format){
+
+            if (use_dhm_format) {
                 std::cout << "Account after " << convert_time(bestAccount.time) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
-            }else{
+            } else {
                 std::cout << "Account after " << bestAccount.time << " days: Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
             }
-            
-            
+
             bestAccount.advanceTime(timeToAdvance);
-            
-            if(use_dhm_format){
+
+            if (use_dhm_format) {
                 std::cout << "The selected upgrades take " << convert_time(bestResult.constructionFinishedInDays) << " days.\n";
                 std::cout << "Last upgrade started after " << convert_time(bestResult.lastConstructionStartedAfterDays) << " days.\n";
                 std::cout << "The required saving time is " << convert_time(bestResult.savingFinishedInDays) << " days.\n";
                 std::cout << "Days lost because a queue was full: " << convert_time(bestResult.previousUpgradeDelay) << " days.\n";
-            }else{
+            } else {
                 std::cout << "The selected upgrades take " << bestResult.constructionFinishedInDays << " days.\n";
                 std::cout << "Last upgrade started after " << bestResult.lastConstructionStartedAfterDays << " days.\n";
                 std::cout << "The required saving time is " << bestResult.savingFinishedInDays << " days.\n";
                 std::cout << "Days lost because a queue was full: " << bestResult.previousUpgradeDelay << " days.\n";
             }
-            
-            
-            
-            
+
             currentResourcesDSE = bestAccount.resources.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deut;
             currentProduction = bestAccount.getCurrentDailyProduction();
             currentProductionPerDayDSE = currentProduction.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deut;
             currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
-            
-            if(use_dhm_format){
+
+            if (use_dhm_format) {
                 std::cout << "Account after " << convert_time(longestCompletionTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
-            }else{
+            } else {
                 std::cout << "Account after " << longestCompletionTime << " days: Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
             }
-            
+
             std::cout << '\n';
-            
-            if((printList && i == 0) || printAllLists){
+
+            if ((printList && i == 0) || printAllLists) {
                 std::cout << "Detailed statistics:\n";
-                
-                for(int jobid = 0; jobid < int(bestResult.upgradeResults.size()); jobid++){
+
+                for (int jobid = 0; jobid < int(bestResult.upgradeResults.size()); jobid++) {
                     const auto& res = bestResult.upgradeResults.at(jobid);
                     const auto& stat = res.stats;
                     const auto& entity = res.entity;
                     const int upgradeLevel = stat.level;
                     const int upgradeLocation = res.location;
-                    
-                    if(use_dhm_format){
-                        std::cout << "Planet " << (upgradeLocation+1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
-                        << ", Waiting period begin: " << convert_time(stat.waitingPeriodDaysBegin) << ", Construction begin: " << convert_time(stat.constructionBeginDays) << ", Construction time: " << convert_time(stat.constructionTimeDays) 
-                        << ", Save time: " << convert_time(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';
-                    }else{
-                        std::cout << "Planet " << (upgradeLocation+1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << stat.savePeriodDaysBegin 
-                        << ", Waiting period begin: " << stat.waitingPeriodDaysBegin << ", Construction begin: " << stat.constructionBeginDays << ", Construction time: " << stat.constructionTimeDays 
-                        << ", Save time: " << (stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin)<< '\n';
+
+                    if (use_dhm_format) {
+                        std::cout << "Planet " << (upgradeLocation + 1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
+                                  << ", Waiting period begin: " << convert_time(stat.waitingPeriodDaysBegin) << ", Construction begin: " << convert_time(stat.constructionBeginDays) << ", Construction time: " << convert_time(stat.constructionTimeDays)
+                                  << ", Save time: " << convert_time(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin) << '\n';
+                    } else {
+                        std::cout << "Planet " << (upgradeLocation + 1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << stat.savePeriodDaysBegin
+                                  << ", Waiting period begin: " << stat.waitingPeriodDaysBegin << ", Construction begin: " << stat.constructionBeginDays << ", Construction time: " << stat.constructionTimeDays
+                                  << ", Save time: " << (stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin) << '\n';
                     }
-                    
-                    
-                    
                 }
             }
         }
     }
-    
+
     std::cout.flush();
-        
-    
+
     return 0;
 }
 
+int main(int argc, char** argv) {
 
+    TIMERSTARTCPU(program_execution);
 
+    int retVal = detailedmultiupgrade(argc, argv);
 
+    TIMERSTOPCPU(program_execution);
 
-
-
-
-
-
-
-
-int main(int argc, char** argv){
-
-	TIMERSTARTCPU(program_execution);
-	
-	int retVal = detailedmultiupgrade(argc, argv);
-	
-	TIMERSTOPCPU(program_execution);
-	
-	return retVal;
-
+    return retVal;
 }
