@@ -139,17 +139,19 @@ ogamehelpers::Entity PlanetState::getBuildingInConstruction() const{
     return entityInQueue;
 }
 
+void PlanetState::calculateDailyProduction() {
+    dailyProduction = ogh::getDailyProduction(metLevel, getMetItem(), metPercent,
+                                                crysLevel, getCrysItem(), crysPercent,
+                                                deutLevel, getDeutItem(), deutPercent,
+                                                solarLevel, solarplantPercent,
+                                                fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
+                                                temperature, sats, satsPercent,
+                                                accountPtr->getResearchLevel(ogh::Entity::Plasma), accountPtr->speedfactor,
+                                                accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff());
+
+}
+
 ogh::Production PlanetState::getCurrentDailyProduction() const {
-    if (dailyProductionNeedsUpdate) {
-        dailyProduction = ogh::getDailyProduction(metLevel, getMetItem(), metPercent,
-                                                  crysLevel, getCrysItem(), crysPercent,
-                                                  deutLevel, getDeutItem(), deutPercent,
-                                                  solarLevel, solarplantPercent,
-                                                  fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
-                                                  temperature, sats, satsPercent,
-                                                  accountPtr->getResearchLevel(ogh::Entity::Plasma), accountPtr->speedfactor,
-                                                  accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff());
-    }
     return dailyProduction;
 }
 
@@ -166,7 +168,8 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     const int oldDeutPercent = deutPercent;
     const int oldFusionPercent = fusionPercent;
 
-    const auto oldProd = getCurrentDailyProduction();
+    const Production oldProd = getCurrentDailyProduction();
+    Production bestProd = oldProd;
     const std::int64_t oldDSE = oldProd.met / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + oldProd.crystal / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + oldProd.deut;
 
     int bestMetPercent = metPercent;
@@ -190,6 +193,8 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     const double metBaseProd = 30 * metLevel * std::pow(1.1, metLevel);
     const double crysBaseProd = 20 * crysLevel * std::pow(1.1, crysLevel);
     const double deutBaseProd = 10 * deutLevel * std::pow(1.1, deutLevel) * (1.44 - 0.004 * temperature);
+
+    
 
     for (int newMetPercent = 100; newMetPercent >= metPercentBegin; newMetPercent -= 10) {
 
@@ -267,8 +272,12 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     deutPercent = bestDeutPercent;
     fusionPercent = bestFusionPercent;
 
+    if(dailyProduction != bestProd){
+        dailyProduction = bestProd;
+        accountPtr->planetProductionChanged(oldProd, bestProd);
+    }
+
     if (metPercent != oldMetPercent || crysPercent != oldCrysPercent || deutPercent != oldDeutPercent || fusionPercent != oldFusionPercent) {
-        dailyProductionNeedsUpdate = true;
 
         const double oldmineproductionfactor = ogh::getMineProductionFactor(metLevel, oldMetPercent,
                                                                             crysLevel, oldCrysPercent,
@@ -437,6 +446,8 @@ Account& Account::operator=(const Account& rhs) {
     dailyExpeditionIncome = rhs.dailyExpeditionIncome;
     dailyFarmIncomePerSlot = rhs.dailyFarmIncomePerSlot;
     dailyExpeditionIncomePerSlot = rhs.dailyExpeditionIncomePerSlot;
+    dailyMineProduction = rhs.dailyMineProduction;
+    dailyMineProductionInitialized = rhs.dailyMineProductionInitialized;
     traderate = rhs.traderate;
     speedfactor = rhs.speedfactor;
     saveslots = rhs.saveslots;
@@ -458,7 +469,6 @@ void Account::log(const std::string& msg) {
 
 void Account::buildingFinishedCallback(PlanetState& p) {
     auto handleProductionChangingBuilding = [&]() {
-        p.dailyProductionNeedsUpdate = true;
         auto result = p.setPercentToMaxProduction();
         const int level = p.getLevel(p.entityInQueue);
         recordPercentageChange(result, p.entityInQueue, level);
@@ -514,7 +524,6 @@ void Account::researchFinishedCallback() {
         const int level = getResearchLevel(researches.entityInQueue);
 
         auto handlePlanet = [&](auto& planet) {
-            planet.dailyProductionNeedsUpdate = true;
             auto result = planet.setPercentToMaxProduction();
             recordPercentageChange(result, researches.entityInQueue, level);
         };
@@ -573,6 +582,11 @@ void Account::researchFinishedCallback() {
     }
 
     researches.entityInQueue = ogh::Entity::None;
+}
+
+void Account::planetProductionChanged(const ogamehelpers::Production& oldProd, const ogamehelpers::Production& newProd){
+    dailyMineProduction -= oldProd;
+    dailyMineProduction += newProd;
 }
 
 void Account::addNewPlanet() {
@@ -677,19 +691,33 @@ int Account::getTotalLabLevel() const {
     return ogh::getTotalLabLevel(labsPerPlanet, getResearchLevel(ogh::Entity::Researchnetwork));
 }
 
-ogh::Production Account::getCurrentDailyMineProduction() const {
+void Account::calculateDailyProduction(){
     using ogh::Production;
 
     auto addProductions = [](const auto& l, const auto& r) {
         return l + r.getCurrentDailyProduction();
     };
 
-    const Production currentProduction = std::accumulate(planets.begin(),
-                                                         planets.end(),
-                                                         Production{},
-                                                         addProductions);
+    dailyMineProduction = std::accumulate(planets.begin(),
+                                            planets.end(),
+                                            Production{},
+                                            addProductions);
+}
 
-    return currentProduction;
+ogh::Production Account::getCurrentDailyMineProduction() const {
+    // using ogh::Production;
+
+    // auto addProductions = [](const auto& l, const auto& r) {
+    //     return l + r.getCurrentDailyProduction();
+    // };
+
+    // const Production currentProduction = std::accumulate(planets.begin(),
+    //                                                      planets.end(),
+    //                                                      Production{},
+    //                                                      addProductions);
+
+    // return currentProduction;
+    return dailyMineProduction;
 }
 
 ogh::Production Account::getCurrentDailyFarmIncome() const {
@@ -935,6 +963,14 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     using ogamehelpers::Production;
     using ogamehelpers::Resources;
 
+    if(!dailyMineProductionInitialized){
+        for(auto& planet : planets){
+            planet.calculateDailyProduction();
+        }
+        calculateDailyProduction();
+        dailyMineProductionInitialized = true;
+    }
+
     std::stringstream sstream;
 
     const EntityInfo entityInfo = ogh::getEntityInfo(entity);
@@ -1037,6 +1073,14 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     using ogamehelpers::ItemRarity;
     using ogamehelpers::Production;
     using ogamehelpers::Resources;
+
+    if(!dailyMineProductionInitialized){
+        for(auto& planet : planets){
+            planet.calculateDailyProduction();
+        }
+        calculateDailyProduction();
+        dailyMineProductionInitialized = true;
+    }
 
     std::stringstream sstream;
 

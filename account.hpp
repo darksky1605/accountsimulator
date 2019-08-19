@@ -65,8 +65,7 @@ struct PlanetState {
 
     Account* accountPtr;
 
-    mutable ogamehelpers::Production dailyProduction;
-    bool dailyProductionNeedsUpdate = true;
+    ogamehelpers::Production dailyProduction;
 
     PlanetState() = default;
     PlanetState(const PlanetState& rhs) = default;
@@ -89,6 +88,7 @@ struct PlanetState {
 
     ogamehelpers::Entity getBuildingInConstruction() const;
 
+    void calculateDailyProduction();
     ogamehelpers::Production getCurrentDailyProduction() const;
 
     SetPercentsResult setPercentToMaxProduction();
@@ -197,8 +197,13 @@ struct Account {
     ogamehelpers::Production dailyExpeditionIncomePerSlot{};
     ogamehelpers::Production dailyFarmIncome{};
     ogamehelpers::Production dailyExpeditionIncome{};
+    ogamehelpers::Production dailyMineProduction{};
+
+    bool dailyMineProductionInitialized = false;
 
     std::array<float, 3> traderate{{3.0f, 2.0f, 1.0f}};
+
+    
 
     int speedfactor = 1;
     int saveslots = 1;
@@ -223,6 +228,8 @@ struct Account {
 
     void researchFinishedCallback();
 
+    void planetProductionChanged(const ogamehelpers::Production& oldProd, const ogamehelpers::Production& newProd);
+
     void addNewPlanet();
 
     //must not advance further than next finished event
@@ -235,6 +242,8 @@ struct Account {
     int getTotalLabLevel() const;
 
     void invalidatePlanetProductions();
+
+    void calculateDailyProduction();
 
     ogamehelpers::Production getCurrentDailyMineProduction() const;
 
