@@ -258,7 +258,7 @@ void parallel_for_each_unique_permutation(const Container& container, int num_th
 
             MultisetPermutation<int> permGenerator(indices, comparator);
             permGenerator.skip(firstPerm);
-            std::cout << "thread " << threadId << " begin" << std::endl;
+            //std::cout << "thread " << threadId << " begin" << std::endl;
 
             Container permutation(container);
 
@@ -273,7 +273,7 @@ void parallel_for_each_unique_permutation(const Container& container, int num_th
                 ++count;
                 permIndices = permGenerator.getNextPerm();
             }
-            std::cout << "thread " << threadId << " end" << std::endl;
+            //std::cout << "thread " << threadId << " end" << std::endl;
         });
     }
 
