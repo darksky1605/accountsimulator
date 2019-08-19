@@ -135,6 +135,10 @@ void PlanetState::startConstruction(float timeDays, const ogh::Entity& entity) {
     entityInQueue = entity;
 }
 
+ogamehelpers::Entity PlanetState::getBuildingInConstruction() const{
+    return entityInQueue;
+}
+
 ogh::Production PlanetState::getCurrentDailyProduction() const {
     if (dailyProductionNeedsUpdate) {
         dailyProduction = ogh::getDailyProduction(metLevel, getMetItem(), metPercent,
@@ -417,7 +421,7 @@ Account::Account() : Account(1, 0.0f) {}
 
 Account::Account(int ecospeed, float initialtime)
     : speedfactor(ecospeed), time(initialtime) {
-    researchState.accountPtr = this;
+    researches.accountPtr = this;
 }
 
 Account::Account(const Account& rhs) {
@@ -426,7 +430,7 @@ Account::Account(const Account& rhs) {
 
 Account& Account::operator=(const Account& rhs) {
     planets = rhs.planets;
-    researchState = rhs.researchState;
+    researches = rhs.researches;
     officers = rhs.officers;
     resources = rhs.resources;
     dailyFarmIncome = rhs.dailyFarmIncome;
@@ -443,7 +447,7 @@ Account& Account::operator=(const Account& rhs) {
         planet.accountPtr = this;
     }
 
-    researchState.accountPtr = this;
+    researches.accountPtr = this;
 
     return *this;
 }
@@ -507,12 +511,12 @@ void Account::buildingFinishedCallback(PlanetState& p) {
 
 void Account::researchFinishedCallback() {
     auto handleMineProductionChangingResearch = [&]() {
-        const int level = getResearchLevel(researchState.entityInQueue);
+        const int level = getResearchLevel(researches.entityInQueue);
 
         auto handlePlanet = [&](auto& planet) {
             planet.dailyProductionNeedsUpdate = true;
             auto result = planet.setPercentToMaxProduction();
-            recordPercentageChange(result, researchState.entityInQueue, level);
+            recordPercentageChange(result, researches.entityInQueue, level);
         };
 
         std::for_each(planets.begin(), planets.end(), handlePlanet);
@@ -523,7 +527,7 @@ void Account::researchFinishedCallback() {
         updateDailyExpeditionIncome();
     };
 
-    auto& r = researchState;
+    auto& r = researches;
     r.increaseLevel(r.entityInQueue);
 
     //update state after research is finished
@@ -568,7 +572,7 @@ void Account::researchFinishedCallback() {
         throw std::runtime_error("No research finished callback for this research " + std::string{ogh::getEntityName(r.entityInQueue)});
     }
 
-    researchState.entityInQueue = ogh::Entity::None;
+    researches.entityInQueue = ogh::Entity::None;
 }
 
 void Account::addNewPlanet() {
@@ -587,7 +591,7 @@ void Account::advanceTime(float days) {
 
     for (auto& planet : planets)
         planet.advanceTime(days);
-    researchState.advanceTime(days);
+    researches.advanceTime(days);
     officers.advanceTime(days);
 
     time += days;
@@ -618,8 +622,8 @@ float Account::getTimeUntilNextFinishedEvent() const {
         }
     }
 
-    if (researchState.researchInProgress()) {
-        time = std::min(time, researchState.researchQueue);
+    if (researches.researchInProgress()) {
+        time = std::min(time, researches.researchQueue);
         any = true;
     }
 
@@ -658,7 +662,7 @@ float Account::getTimeUntilNextFinishedEvent() const {
 bool Account::hasUnfinishedConstructionEvent() const {
     auto hasOngoingConstruction = [](const auto& p) { return p.constructionInProgress(); };
 
-    bool result = researchState.researchInProgress() ||
+    bool result = researches.researchInProgress() ||
                   std::any_of(planets.begin(), planets.end(), hasOngoingConstruction);
 
     return result;
@@ -762,7 +766,7 @@ void Account::startConstruction(int planet, float timeDays, const ogh::Entity& e
 
 void Account::startResearch(float timeDays, const ogh::Entity& entity, const ogh::Resources& constructionCosts) {
 
-    researchState.startResearch(timeDays, entity);
+    researches.startResearch(timeDays, entity);
     updateAccountResourcesAfterConstructionStart(constructionCosts);
 }
 
@@ -771,7 +775,7 @@ int Account::getNumPlanets() const {
 }
 
 int Account::getResearchLevel(ogamehelpers::Entity entity) const {
-    return researchState.getLevel(entity);
+    return researches.getLevel(entity);
 }
 
 int Account::getBuildingLevel(int planetId, ogamehelpers::Entity entity) const {
@@ -779,6 +783,17 @@ int Account::getBuildingLevel(int planetId, ogamehelpers::Entity entity) const {
     //planetId is 1-based
     const int index = planetId - 1;
     return planets[index].getLevel(entity);
+}
+
+ogamehelpers::Entity Account::getResearchInConstruction() const{
+    return researches.entityInQueue;
+}
+
+ogamehelpers::Entity Account::getBuildingInConstruction(int planetId) const{
+    assert(planetId > 0 && planetId <= getNumPlanets());
+    //planetId is 1-based
+    const int index = planetId - 1;
+    return planets[index].getBuildingInConstruction();
 }
 
 void Account::addResources(const ogh::Resources& res) {
@@ -801,7 +816,7 @@ void Account::printQueues(std::ostream& os) const {
         os << std::setprecision(5) << std::fixed << p.buildingQueue << ",";
     }
     os << "]\n";
-    os << "Research queue (days): " << std::setprecision(5) << std::fixed << researchState.researchQueue << '\n';
+    os << "Research queue (days): " << std::setprecision(5) << std::fixed << researches.researchQueue << '\n';
 }
 
 void Account::waitForAllConstructions() {
@@ -925,7 +940,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     const EntityInfo entityInfo = ogh::getEntityInfo(entity);
     assert(entityInfo.type == EntityType::Research);
 
-    const int upgradeLevel = 1 + getResearchLevel(entity) + (researchState.entityInQueue == entity ? 1 : 0);
+    const int upgradeLevel = 1 + getResearchLevel(entity) + (researches.entityInQueue == entity ? 1 : 0);
 
     sstream << "Processing " << ogh::getEntityName(entity) << " " << upgradeLevel << '\n';
     log(sstream.str());
@@ -962,7 +977,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     }
 
     //wait until the research queue is empty
-    while (researchState.researchInProgress()) {
+    while (researches.researchInProgress()) {
         log("Waiting for previous research to finish. This does not count as saving time\n");
 
         //wait for the next event to complete, this may change the production
@@ -1054,7 +1069,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     float saveTimeDaysForJob = 0.0f;
 
     auto waitForResearchBeforeLabStart = [&]() {
-        if (entity == ogh::Entity::Lab && researchState.entityInQueue != ogh::Entity::None) {
+        if (entity == ogh::Entity::Lab && researches.entityInQueue != ogh::Entity::None) {
             log("Waiting for finished research before building research lab. This does not count as saving time\n");
 
             float timeToSkip = getTimeUntilNextFinishedEvent();

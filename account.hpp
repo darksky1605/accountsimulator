@@ -87,6 +87,8 @@ struct PlanetState {
 
     void startConstruction(float timeDays, const ogamehelpers::Entity& entity);
 
+    ogamehelpers::Entity getBuildingInConstruction() const;
+
     ogamehelpers::Production getCurrentDailyProduction() const;
 
     SetPercentsResult setPercentToMaxProduction();
@@ -187,7 +189,7 @@ struct Account {
     };
 
     std::vector<PlanetState> planets{};
-    ResearchState researchState{};
+    ResearchState researches{};
     OfficerState officers{};
 
     ogamehelpers::Resources resources{};
@@ -259,6 +261,10 @@ struct Account {
     int getResearchLevel(ogamehelpers::Entity entity) const;
 
     int getBuildingLevel(int planetId, ogamehelpers::Entity entity) const;
+
+    ogamehelpers::Entity getResearchInConstruction() const;
+
+    ogamehelpers::Entity getBuildingInConstruction(int planetId) const;
 
     void addResources(const ogamehelpers::Resources& res);
 

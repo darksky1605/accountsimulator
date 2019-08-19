@@ -54,7 +54,7 @@ enum class PostAstroAction {SimpleCopyPreviousPlanet, SimpleUpgradeToPreviousPla
         PostAstroAction postAstroPhysicsAction = PostAstroAction::None;
 
 
-        if(getNumPlanets() < ogh::getMaxPossiblePlanets(researchState.astroLevel + 1)){
+        if(getNumPlanets() < ogh::getMaxPossiblePlanets(researches.astroLevel + 1)){
 #endif
 
 struct UpgradeResult {
@@ -163,7 +163,7 @@ UpgradeListResult perform_upgrades(Account& account,
 
     auto getNumPlanets = [&]() {
         int numPlanets = account.getNumPlanets();
-        if (account.researchState.entityInQueue == ogh::Entity::Astro && numPlanets < ogh::getMaxPossiblePlanets(account.researchState.astroLevel + 1)) {
+        if (account.researches.entityInQueue == ogh::Entity::Astro && numPlanets < ogh::getMaxPossiblePlanets(account.researches.astroLevel + 1)) {
             numPlanets += 1;
         }
         return numPlanets;
