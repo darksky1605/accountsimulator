@@ -202,6 +202,8 @@ Resources operator*(Resources l, float r);
 Resources operator*(Resources l, int r);
 Resources operator*(float l, Resources r);
 Resources operator*(int r, Resources l);
+bool operator==(const Resources& l, const Resources& r);
+bool operator!=(const Resources& l, const Resources& r);
 
 //time dependent production
 struct Production {
@@ -222,6 +224,8 @@ Production operator-(Production l, const Production& r);
 //multiply production by unitless factor, e.g. double production
 Production operator*(Production l, float r);
 Production operator*(float l, const Production& r);
+bool operator==(const Production& l, const Production& r);
+bool operator!=(const Production& l, const Production& r);
 
 /*
 struct EntityMap{

@@ -194,6 +194,14 @@ Resources operator*(int l, Resources r) {
     return operator*(r, l);
 }
 
+bool operator==(const Resources& l, const Resources& r){
+    return l.met == r.met && l.crystal == r.crystal && l.deut == r.deut;
+}
+
+bool operator!=(const Resources& l, const Resources& r){
+    return !operator==(l, r);
+}
+
 Production& Production::operator+=(const Production& rhs) {
     met += rhs.met;
     crystal += rhs.crystal;
@@ -242,6 +250,15 @@ Production operator*(Production l, float r) {
 Production operator*(float l, const Production& r) {
     return r * l;
 }
+
+bool operator==(const Production& l, const Production& r){
+    return l.met == r.met && l.crystal == r.crystal && l.deut == r.deut;
+}
+
+bool operator!=(const Production& l, const Production& r){
+    return !operator==(l, r);
+}
+
 
 std::string thousandsSeparator(std::int64_t num) {
     std::ostringstream ss;
