@@ -257,6 +257,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
                     const std::int64_t newDSE = newProd.met / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + newProd.crystal / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + newProd.deut;
                     if (newDSE > bestDSE) {
                         bestDSE = newDSE;
+                        bestProd = newProd;
                         bestMetPercent = newMetPercent;
                         bestCrysPercent = newCrysPercent;
                         bestDeutPercent = newDeutPercent;
