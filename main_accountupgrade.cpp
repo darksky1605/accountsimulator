@@ -543,16 +543,7 @@ int detailedmultiupgrade(int argc, char** argv) {
         std::set<std::vector<PermutationGroup>> uniqueProcessedPermutations;
         std::mutex m;
 
-        parallel_for_each_permutation(planned_upgrades, num_threads, [&](int threadId, const auto& upgradepermutation) {
-            {
-                std::lock_guard<std::mutex> lg(m);
-                if (uniqueProcessedPermutations.count(upgradepermutation) > 0) {
-                    return;
-                } else {
-                    uniqueProcessedPermutations.insert(upgradepermutation);
-                }
-            }
-
+        auto handle_permutation = [&](int threadId, const auto& upgradepermutation){
             //create copy of original account
             auto permutationAccount = account;
 
@@ -590,7 +581,9 @@ int detailedmultiupgrade(int argc, char** argv) {
                 //find out the worst completion time of all permutations
                 longestCompletionTime = std::max(longestCompletionTime, permutationAccount.time);
             }
-        });
+        };
+
+        parallel_for_each_unique_permutation(planned_upgrades, num_threads, handle_permutation);
 
         std::vector<UpgradeListResult> bestResults;
         std::vector<std::vector<PermutationGroup>> bestUpgradePermutations;
