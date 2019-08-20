@@ -208,7 +208,7 @@ struct Account {
     int speedfactor = 1;
     int saveslots = 1;
 
-    float time = 0.0f;
+    float accountTime = 0.0f;
 
     std::vector<PercentageChange> percentageChanges;
 

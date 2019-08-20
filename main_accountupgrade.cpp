@@ -113,7 +113,7 @@ UpgradeListResult perform_upgrades(Account& account,
             };
             result.upgradeResults.emplace_back(std::move(upgradeResult));
 
-            if (account.time == std::numeric_limits<float>::max() || !stats.success)
+            if (account.accountTime == std::numeric_limits<float>::max() || !stats.success)
                 return false;
             return true;
         } else {
@@ -135,7 +135,7 @@ UpgradeListResult perform_upgrades(Account& account,
                     };
                     result.upgradeResults.emplace_back(std::move(upgradeResult));
 
-                    if (account.time == std::numeric_limits<float>::max() || !stats.success)
+                    if (account.accountTime == std::numeric_limits<float>::max() || !stats.success)
                         ok = false;
                 }
                 return ok;
@@ -150,7 +150,7 @@ UpgradeListResult perform_upgrades(Account& account,
                 };
                 result.upgradeResults.emplace_back(std::move(upgradeResult));
 
-                if (account.time == std::numeric_limits<float>::max() || !stats.success)
+                if (account.accountTime == std::numeric_limits<float>::max() || !stats.success)
                     return false;
                 return true;
             }
@@ -190,7 +190,7 @@ UpgradeListResult perform_upgrades(Account& account,
 
     if (ok) {
 
-        result.lastConstructionStartedAfterDays = account.time;
+        result.lastConstructionStartedAfterDays = account.accountTime;
         result.savingFinishedInDays = 0.0f;
         result.previousUpgradeDelay = 0.0f;
 
@@ -203,7 +203,7 @@ UpgradeListResult perform_upgrades(Account& account,
 
         account.waitForAllConstructions();
 
-        result.constructionFinishedInDays = account.time;
+        result.constructionFinishedInDays = account.accountTime;
     }
 
     std::cout << std::flush;
@@ -577,7 +577,7 @@ int detailedmultiupgrade(int argc, char** argv) {
                 }
 
                 //find out the worst completion time of all permutations
-                longestCompletionTime = std::max(longestCompletionTime, permutationAccount.time);
+                longestCompletionTime = std::max(longestCompletionTime, permutationAccount.accountTime);
             }
         };
 
@@ -623,7 +623,7 @@ int detailedmultiupgrade(int argc, char** argv) {
             }
             std::cout << '\n';
 
-            float timeToAdvance = std::max(0.0f, longestCompletionTime - bestAccount.time);
+            float timeToAdvance = std::max(0.0f, longestCompletionTime - bestAccount.accountTime);
 
             std::int64_t currentResourcesDSE = bestAccount.resources.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deut;
             auto currentProduction = bestAccount.getCurrentDailyProduction();
@@ -631,9 +631,9 @@ int detailedmultiupgrade(int argc, char** argv) {
             std::int64_t currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
 
             if (use_dhm_format) {
-                std::cout << "Account after " << convert_time(bestAccount.time) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
+                std::cout << "Account after " << convert_time(bestAccount.accountTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
             } else {
-                std::cout << "Account after " << bestAccount.time << " days: Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
+                std::cout << "Account after " << bestAccount.accountTime << " days: Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
             }
 
             bestAccount.advanceTime(timeToAdvance);

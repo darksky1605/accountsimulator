@@ -431,7 +431,7 @@ void OfficerState::advanceTime(float days) {
 Account::Account() : Account(1, 0.0f) {}
 
 Account::Account(int ecospeed, float initialtime)
-    : speedfactor(ecospeed), time(initialtime) {
+    : speedfactor(ecospeed), accountTime(initialtime) {
     researches.accountPtr = this;
 }
 
@@ -453,7 +453,7 @@ Account& Account::operator=(const Account& rhs) {
     traderate = rhs.traderate;
     speedfactor = rhs.speedfactor;
     saveslots = rhs.saveslots;
-    time = rhs.time;
+    accountTime = rhs.accountTime;
     logRecords = rhs.logRecords;
     eventTimes = rhs.eventTimes;
 
@@ -467,7 +467,7 @@ Account& Account::operator=(const Account& rhs) {
 }
 
 void Account::log(const std::string& msg) {
-    logRecords.emplace_back(time, msg);
+    logRecords.emplace_back(accountTime, msg);
 }
 
 void Account::buildingFinishedCallback(PlanetState& p) {
@@ -667,10 +667,10 @@ void Account::advanceTime(float days) {
     researches.advanceTime(days);
     officers.advanceTime(days);
 
-    time += days;
+    accountTime += days;
 
     //TODO instead of loop, find range to erase, then erase it
-    while(!eventTimes.empty() && eventTimes.front() <= time){
+    while(!eventTimes.empty() && eventTimes.front() <= accountTime){
         eventTimes.erase(eventTimes.begin());
     }
     //std::cerr << "after advance " << days << " account time " << time << '\n';
@@ -681,7 +681,7 @@ void Account::advanceTime(float days) {
 float Account::getTimeUntilNextFinishedEvent() const {
     float timeUntilNext = std::numeric_limits<float>::max();
     if(!eventTimes.empty()){
-        timeUntilNext = eventTimes.front() - time;
+        timeUntilNext = eventTimes.front() - accountTime;
     }
     //return timeUntilNext;
     float time2 = std::numeric_limits<float>::max();
@@ -840,7 +840,7 @@ void Account::recordPercentageChange(const PlanetState::SetPercentsResult& resul
         pchange.fusionPercent = result.fusionPercent;
         pchange.planetId = result.planetId;
         pchange.finishedLevel = level;
-        pchange.time = time;
+        pchange.time = accountTime;
         pchange.oldDSE = result.oldDSE;
         pchange.newDSE = result.newDSE;
         pchange.oldMineProductionFactor = result.oldMineProductionFactor;
@@ -866,14 +866,14 @@ void Account::startConstruction(int planet, float timeDays, const ogh::Entity& e
 
     planets[planet].startConstruction(timeDays, entity);
     updateAccountResourcesAfterConstructionStart(constructionCosts);
-    registerNewEvent(time + timeDays);
+    registerNewEvent(accountTime + timeDays);
 }
 
 void Account::startResearch(float timeDays, const ogh::Entity& entity, const ogh::Resources& constructionCosts) {
 
     researches.startResearch(timeDays, entity);
     updateAccountResourcesAfterConstructionStart(constructionCosts);
-    registerNewEvent(time + timeDays);
+    registerNewEvent(accountTime + timeDays);
 }
 
 int Account::getNumPlanets() const {
@@ -1071,11 +1071,11 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     log(sstream.str());
     sstream.str("");
 
-    stats.savePeriodDaysBegin = time;
+    stats.savePeriodDaysBegin = accountTime;
 
     const float saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
 
-    stats.waitingPeriodDaysBegin = time;
+    stats.waitingPeriodDaysBegin = accountTime;
 
     //wait until no research lab is in construction
     auto labInConstruction = [](const auto& p) {
@@ -1116,7 +1116,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     log(sstream.str());
     sstream.str("");
 
-    stats.constructionBeginDays = time;
+    stats.constructionBeginDays = accountTime;
     stats.constructionTimeDays = researchTime;
 
     startResearch(researchTime, entity, constructionCosts);
@@ -1131,7 +1131,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
         }
     }
 
-    sstream << "Total Elapsed time: " << time << " days - Starting research. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
+    sstream << "Total Elapsed time: " << accountTime << " days - Starting research. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
     sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';
     printQueues(sstream);
     sstream << "\n";
@@ -1189,7 +1189,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     stats.level = upgradeLevel;
 
     //calculate saving time
-    stats.savePeriodDaysBegin = time;
+    stats.savePeriodDaysBegin = accountTime;
 
     float saveTimeDaysForJob = 0.0f;
 
@@ -1205,7 +1205,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     };
 
     saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
-    stats.waitingPeriodDaysBegin = time;
+    stats.waitingPeriodDaysBegin = accountTime;
 
     waitForResearchBeforeLabStart();
 
@@ -1230,12 +1230,12 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     log(sstream.str());
     sstream.str("");
 
-    stats.constructionBeginDays = time;
+    stats.constructionBeginDays = accountTime;
     stats.constructionTimeDays = constructionTimeDays;
 
     startConstruction(upgradeLocation, constructionTimeDays, entity, constructionCosts);
 
-    sstream << "Total Elapsed time: " << time << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
+    sstream << "Total Elapsed time: " << accountTime << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
     sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';
     printQueues(sstream);
     sstream << "\n";
