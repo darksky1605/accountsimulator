@@ -13,6 +13,7 @@
 #include <numeric>
 #include <sstream>
 #include <vector>
+#include <iterator>
 
 namespace ogh = ogamehelpers;
 
@@ -646,8 +647,11 @@ void Account::initEventTimes() {
 }
 
 void Account::registerNewEvent(float when){
+    //std::cerr << "register " << when << '\n';
     auto it = std::lower_bound(eventTimes.begin(), eventTimes.end(), when);
     eventTimes.insert(it, when);
+    //std::copy(eventTimes.begin(), eventTimes.end(), std::ostream_iterator<float>(std::cerr, " "));
+   // std::cerr << '\n';
 }
 
 //must not advance further than next finished event
@@ -669,6 +673,9 @@ void Account::advanceTime(float days) {
     while(!eventTimes.empty() && eventTimes.front() <= time){
         eventTimes.erase(eventTimes.begin());
     }
+    //std::cerr << "after advance " << days << " account time " << time << '\n';
+   // std::copy(eventTimes.begin(), eventTimes.end(), std::ostream_iterator<float>(std::cerr, " "));
+    //std::cerr << '\n';
 }
 
 float Account::getTimeUntilNextFinishedEvent() const {
@@ -676,66 +683,70 @@ float Account::getTimeUntilNextFinishedEvent() const {
     if(!eventTimes.empty()){
         timeUntilNext = eventTimes.front() - time;
     }
-    return timeUntilNext;
-    // float time = std::numeric_limits<float>::max();
-    // bool any = false;
-    // for (const auto& planet : planets) {
-    //     if (planet.constructionInProgress()) {
-    //         time = std::min(time, planet.buildingQueue);
-    //         any = true;
-    //     }
+    //return timeUntilNext;
+    float time2 = std::numeric_limits<float>::max();
+    bool any = false;
+    for (const auto& planet : planets) {
+        if (planet.constructionInProgress()) {
+            time2 = std::min(time2, planet.buildingQueue);
+            any = true;
+        }
 
-    //     if (planet.getMetItem() != ogh::ItemRarity::None) {
-    //         time = std::min(time, planet.metItemDurationDays);
-    //         any = true;
-    //     }
+        if (planet.getMetItem() != ogh::ItemRarity::None) {
+            time2 = std::min(time2, planet.metItemDurationDays);
+            any = true;
+        }
 
-    //     if (planet.getCrysItem() != ogh::ItemRarity::None) {
-    //         time = std::min(time, planet.crysItemDurationDays);
-    //         any = true;
-    //     }
+        if (planet.getCrysItem() != ogh::ItemRarity::None) {
+            time2 = std::min(time2, planet.crysItemDurationDays);
+            any = true;
+        }
 
-    //     if (planet.getDeutItem() != ogh::ItemRarity::None) {
-    //         time = std::min(time, planet.deutItemDurationDays);
-    //         any = true;
-    //     }
-    // }
+        if (planet.getDeutItem() != ogh::ItemRarity::None) {
+            time2 = std::min(time2, planet.deutItemDurationDays);
+            any = true;
+        }
+    }
 
-    // if (researches.researchInProgress()) {
-    //     time = std::min(time, researches.researchQueue);
-    //     any = true;
-    // }
+    if (researches.researchInProgress()) {
+        time2 = std::min(time2, researches.researchQueue);
+        any = true;
+    }
 
-    // if (hasCommander()) {
-    //     time = std::min(time, officers.commanderDurationDays);
-    //     any = true;
-    // }
+    if (hasCommander()) {
+        time2 = std::min(time2, officers.commanderDurationDays);
+        any = true;
+    }
 
-    // if (hasEngineer()) {
-    //     time = std::min(time, officers.engineerDurationDays);
-    //     any = true;
-    // }
+    if (hasEngineer()) {
+        time2 = std::min(time2, officers.engineerDurationDays);
+        any = true;
+    }
 
-    // if (hasTechnocrat()) {
-    //     time = std::min(time, officers.technocratDurationDays);
-    //     any = true;
-    // }
+    if (hasTechnocrat()) {
+        time2 = std::min(time2, officers.technocratDurationDays);
+        any = true;
+    }
 
-    // if (hasGeologist()) {
-    //     time = std::min(time, officers.geologistDurationDays);
-    //     any = true;
-    // }
+    if (hasGeologist()) {
+        time2 = std::min(time2, officers.geologistDurationDays);
+        any = true;
+    }
 
-    // if (hasAdmiral()) {
-    //     time = std::min(time, officers.admiralDurationDays);
-    //     any = true;
-    // }
+    if (hasAdmiral()) {
+        time2 = std::min(time2, officers.admiralDurationDays);
+        any = true;
+    }
 
-    // if (any) {
-    //     assert(time != std::numeric_limits<float>::max());
-    // }
-    //
-    //return time;
+    if (any) {
+        assert(time2 != std::numeric_limits<float>::max());
+        // if(std::abs(time2 - timeUntilNext) > 1e-4){
+        //     std::cerr << "time2 = " << time2 << ", timeUntilNext = " << timeUntilNext << "\n";
+        // }
+        //assert(std::abs(time2 - timeUntilNext) <= 1e-4);
+    }
+    
+    return time2;
 }
 
 bool Account::hasUnfinishedConstructionEvent() const {
