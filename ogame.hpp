@@ -12,6 +12,8 @@
 #include <functional>
 #include <iomanip>
 
+#include <chrono>
+
 namespace ogamehelpers {
 
 enum class EntityType { Building,
@@ -285,6 +287,7 @@ Resources getBuildCosts(const EntityInfo& info, int level);
 Resources getTotalCosts(const EntityInfo& info, int level);
 
 float getConstructionTimeInDays(const EntityInfo& info, int level, int roboLevel, int naniLevel, int shipyardLevel, int flabLevel, int speedfactor);
+std::chrono::seconds getConstructionTime(const EntityInfo& info, int level, int roboLevel, int naniLevel, int shipyardLevel, int flabLevel, int speedfactor);
 
 int getTotalLabLevel(const std::vector<int>& labsPerPlanet, int igrnLevel);
 
