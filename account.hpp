@@ -199,7 +199,7 @@ struct Account {
     ogamehelpers::Production dailyExpeditionIncome{};
     ogamehelpers::Production dailyMineProduction{};
 
-    bool dailyMineProductionInitialized = false;
+    bool accountInitialized = false;
 
     std::array<float, 3> traderate{{3.0f, 2.0f, 1.0f}};
 
@@ -213,6 +213,8 @@ struct Account {
     std::vector<PercentageChange> percentageChanges;
 
     std::vector<LogRecord> logRecords;
+
+    std::vector<float> eventTimes;
 
     Account();
 
@@ -232,6 +234,11 @@ struct Account {
 
     void addNewPlanet();
 
+    void initEventTimes();
+
+    //timepoint must be given in accounttime
+    void registerNewEvent(float when);
+
     //must not advance further than next finished event
     void advanceTime(float days);
 
@@ -240,8 +247,6 @@ struct Account {
     bool hasUnfinishedConstructionEvent() const;
 
     int getTotalLabLevel() const;
-
-    void invalidatePlanetProductions();
 
     void calculateDailyProduction();
 
