@@ -273,6 +273,10 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     deutPercent = bestDeutPercent;
     fusionPercent = bestFusionPercent;
 
+    std::stringstream ss;
+    ss << dailyProduction.met << " " << dailyProduction.crystal << " " << dailyProduction.deut << " -> " ss << bestProd.met << " " << bestProd.crystal << " " << bestProd.deut;
+    accountPtr->log(ss.str());
+
     if(dailyProduction != bestProd){
         dailyProduction = bestProd;
         accountPtr->planetProductionChanged(oldProd, bestProd);
