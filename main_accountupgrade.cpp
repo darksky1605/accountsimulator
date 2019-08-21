@@ -226,7 +226,7 @@ std::string convert_time(float daysfloat) {
 }
 
 void printLogRecord(std::ostream& os, const Account::LogRecord& record) {
-    os << record.time << ": " << record.msg << '\n';
+    os << convert_time(record.time) << ": " << record.msg << '\n';
 }
 
 void createAccountFile(const std::string& filename) {
