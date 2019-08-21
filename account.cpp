@@ -274,7 +274,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     fusionPercent = bestFusionPercent;
 
     std::stringstream ss;
-    ss << dailyProduction.met << " " << dailyProduction.crystal << " " << dailyProduction.deut << " -> " ss << bestProd.met << " " << bestProd.crystal << " " << bestProd.deut;
+    ss << dailyProduction.met << " " << dailyProduction.crystal << " " << dailyProduction.deut << " -> " << bestProd.met << " " << bestProd.crystal << " " << bestProd.deut;
     accountPtr->log(ss.str());
 
     if(dailyProduction != bestProd){
