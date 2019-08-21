@@ -3,6 +3,7 @@
 
 #include "ogame.hpp"
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -55,12 +56,12 @@ struct PlanetState {
     ogamehelpers::ItemRarity metItem = ogamehelpers::ItemRarity::None;
     ogamehelpers::ItemRarity crysItem = ogamehelpers::ItemRarity::None;
     ogamehelpers::ItemRarity deutItem = ogamehelpers::ItemRarity::None;
-    float metItemDurationDays = 0.0f;
-    float crysItemDurationDays = 0.0f;
-    float deutItemDurationDays = 0.0f;
+    std::chrono::seconds metItemDuration{0};
+    std::chrono::seconds crysItemDuration{0};
+    std::chrono::seconds deutItemDuration{0};
     int sats = 0;
 
-    float buildingQueue = 0.0f;
+    std::chrono::seconds buildingQueue{0};
     ogamehelpers::Entity entityInQueue{};
 
     Account* accountPtr;
@@ -75,7 +76,7 @@ struct PlanetState {
     ogamehelpers::ItemRarity getCrysItem() const;
     ogamehelpers::ItemRarity getDeutItem() const;
 
-    void advanceTime(float days);
+    void advanceTime(std::chrono::seconds days);
 
     bool constructionInProgress() const;
 
@@ -84,7 +85,7 @@ struct PlanetState {
     //increase level by one and return new level;
     int increaseLevel(ogamehelpers::Entity entity);
 
-    void startConstruction(float timeDays, const ogamehelpers::Entity& entity);
+    void startConstruction(std::chrono::seconds timeDays, const ogamehelpers::Entity& entity);
 
     ogamehelpers::Entity getBuildingInConstruction() const;
 
@@ -111,7 +112,7 @@ struct ResearchState {
     int igrnLevel = 0;
     int astroLevel = 0;
 
-    float researchQueue = 0.0f;
+    std::chrono::seconds researchQueue{0};
     ogamehelpers::Entity entityInQueue{};
 
     Account* accountPtr;
@@ -122,28 +123,28 @@ struct ResearchState {
 
     bool researchInProgress() const;
 
-    void advanceTime(float days);
+    void advanceTime(std::chrono::seconds days);
 
     int getLevel(ogamehelpers::Entity entity) const;
 
     //increase level by one and return new level;
     int increaseLevel(ogamehelpers::Entity entity);
 
-    void startResearch(float timeDays, const ogamehelpers::Entity& entity);
+    void startResearch(std::chrono::seconds timeDays, const ogamehelpers::Entity& entity);
 };
 
 struct OfficerState {
-    float commanderDurationDays = 0.0f;
-    float engineerDurationDays = 0.0f;
-    float technocratDurationDays = 0.0f;
-    float geologistDurationDays = 0.0f;
-    float admiralDurationDays = 0.0f;
+    std::chrono::seconds commanderDuration{0};
+    std::chrono::seconds engineerDuration{0};
+    std::chrono::seconds technocratDuration{0};
+    std::chrono::seconds geologistDuration{0};
+    std::chrono::seconds admiralDuration{0};
 
     OfficerState() = default;
     OfficerState(const OfficerState&) = default;
     OfficerState& operator=(const OfficerState&) = default;
 
-    void advanceTime(float days);
+    void advanceTime(std::chrono::seconds days);
 };
 
 struct Account {
@@ -151,10 +152,10 @@ struct Account {
     struct UpgradeStats {
         bool success;
         int level;
-        float waitingPeriodDaysBegin;
-        float savePeriodDaysBegin;
-        float constructionBeginDays;
-        float constructionTimeDays;
+        std::chrono::seconds waitingPeriodDaysBegin{0};
+        std::chrono::seconds savePeriodDaysBegin{0};
+        std::chrono::seconds constructionBeginDays{0};
+        std::chrono::seconds constructionTimeDays{0};
 
         bool operator==(const UpgradeStats& rhs) const {
             return success == rhs.success && level == rhs.level && waitingPeriodDaysBegin == rhs.waitingPeriodDaysBegin && savePeriodDaysBegin == rhs.savePeriodDaysBegin && constructionBeginDays == rhs.constructionBeginDays && constructionTimeDays == rhs.constructionTimeDays;
@@ -172,7 +173,7 @@ struct Account {
         int fusionPercent;
         int planetId;
         int finishedLevel;
-        float time;
+        std::chrono::seconds time;
         std::int64_t oldDSE;
         std::int64_t newDSE;
         double oldMineProductionFactor;
@@ -181,10 +182,10 @@ struct Account {
     };
 
     struct LogRecord {
-        float time;
+        std::chrono::seconds time;
         std::string msg;
         LogRecord() = default;
-        LogRecord(float t, std::string m)
+        LogRecord(std::chrono::seconds t, std::string m)
             : time(t), msg(std::move(m)) {}
     };
 
@@ -208,17 +209,17 @@ struct Account {
     int speedfactor = 1;
     int saveslots = 1;
 
-    float accountTime = 0.0f;
+    std::chrono::seconds accountTime{0};
 
     std::vector<PercentageChange> percentageChanges;
 
     std::vector<LogRecord> logRecords;
 
-    std::vector<float> eventTimes;
+    std::vector<std::chrono::seconds> eventTimes;
 
     Account();
 
-    Account(int ecospeed, float initialtime);
+    Account(int ecospeed, std::chrono::seconds initialtime);
 
     Account(const Account& rhs);
 
@@ -237,12 +238,12 @@ struct Account {
     void initEventTimes();
 
     //timepoint must be given in accounttime
-    void registerNewEvent(float when);
+    void registerNewEvent(std::chrono::seconds when);
 
     //must not advance further than next finished event
-    void advanceTime(float days);
+    void advanceTime(std::chrono::seconds days);
 
-    float getTimeUntilNextFinishedEvent() const;
+    std::chrono::seconds getTimeUntilNextFinishedEvent() const;
 
     bool hasUnfinishedConstructionEvent() const;
 
@@ -266,9 +267,9 @@ struct Account {
 
     std::vector<PercentageChange> getPercentageChanges() const;
 
-    void startConstruction(int planet, float timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
+    void startConstruction(int planet, std::chrono::seconds timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
 
-    void startResearch(float timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
+    void startResearch(std::chrono::seconds timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
 
     int getNumPlanets() const;
 
@@ -288,7 +289,7 @@ struct Account {
 
     void waitForAllConstructions();
 
-    float waitUntilCostsAreAvailable(const ogamehelpers::Resources& constructionCosts);
+    std::chrono::seconds waitUntilCostsAreAvailable(const ogamehelpers::Resources& constructionCosts);
 
     bool hasCommander() const;
 

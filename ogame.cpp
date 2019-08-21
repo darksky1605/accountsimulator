@@ -233,6 +233,19 @@ Resources Production::produce(float time) const {
     return res;
 }
 
+Resources Production::produce(std::chrono::seconds period) const{
+    constexpr auto zero = std::chrono::seconds::zero();
+    
+    assert(period >= zero);
+
+    Resources res;
+    res.met = std::int64_t(met) * period.count();
+    res.crystal = std::int64_t(crystal) * period.count();
+    res.deut = std::int64_t(deut) * period.count();
+
+    return res;
+}
+
 Production operator+(Production l, const Production& r) {
     l += r;
     return l;
@@ -336,7 +349,6 @@ float getConstructionTimeInDays(const EntityInfo& info, int level, int roboLevel
         } else {
             const float hours = (costs.met + costs.crystal) / (2500.f * (1 + shipyardLevel) * std::pow(2, naniLevel)) / speedfactor;
             days = hours / 24.f;
-            std::uint64_t seconds{hours * 60 * 60};
         }
         break;
     }
@@ -390,40 +402,39 @@ std::chrono::seconds getConstructionTime(const EntityInfo& info, int level, int 
         if (shipyardLevel == 0) {
             duration = std::chrono::seconds::max();
         } else {
-            const float hours = (costs.met + costs.crystal) / (2500.f * (1 + shipyardLevel) * std::pow(2, naniLevel)) / speedfactor;
-            std::uint64_t seconds{hours * 60 * 60};
+            const double hours = (costs.met + costs.crystal) / (2500.f * (1 + shipyardLevel) * std::pow(2, naniLevel)) / speedfactor;
+            const double seconds = std::ceil(hours * 60 * 60);
 
-            duration = std::chrono::seconds{seconds};
+            duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
         }
         break;
     }
     case EntityType::Building: {
         const bool exceptionalBuilding = std::find(buildingTimeExceptions.begin(), buildingTimeExceptions.end(), info.entity) != buildingTimeExceptions.end();
         const float factor = exceptionalBuilding ? 1.0f : std::max(4.f - level / 2.f, 1.0f);
-        float seconds = (costs.met + costs.crystal) * 1.44f / factor / (1 + roboLevel) / std::pow(2, naniLevel) / speedfactor;
-        seconds = std::max(1.0f, seconds);
+        double seconds = (costs.met + costs.crystal) * 1.44f / factor / (1 + roboLevel) / std::pow(2, naniLevel) / speedfactor;
+        seconds = std::max(1.0, seconds);
 
-        std::uint64_t uintseconds{seconds};
-        duration = std::chrono::seconds{uintseconds};
+        duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
         break;
     }
     case EntityType::Research: {
         if (flabLevel == 0) {
             duration = std::chrono::seconds::max();
         }else{
-            const float hours = (costs.met + costs.crystal) / (1000.f * (1 + flabLevel)) / speedfactor;
-            std::uint64_t seconds{std::floor(hours * 60 * 60)};
+            const double hours = (costs.met + costs.crystal) / (1000.f * (1 + flabLevel)) / speedfactor;
+            const double seconds = std::ceil(hours * 60 * 60);
 
-            duration = std::chrono::seconds{seconds};
+            duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
         }
         break;
     }
     case EntityType::None:
-        duration = std::chrono::seconds{0};
+        duration = std::chrono::seconds::zero();
         break;
     }
 
-    if (duration < std::chrono::seconds{0}) //overflow
+    if (duration < std::chrono::seconds::zero()) //overflow
         duration = std::chrono::seconds::max();
     else
         duration = std::max(duration, std::chrono::seconds{1});
@@ -690,7 +701,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     return result;
 }
 
-float get_save_duration_symmetrictrade(const std::int64_t hm, const std::uint64_t hk, const std::int64_t hd, /*have*/
+std::chrono::seconds get_save_duration_symmetrictrade(const std::int64_t hm, const std::uint64_t hk, const std::int64_t hd, /*have*/
                                        const std::int64_t wm, const std::int64_t wk, const std::int64_t wd,  /*want*/
                                        const std::int64_t pm, const std::int64_t pk, const std::int64_t pd,  /*production*/
                                        const std::array<float, 3>& traderate /*e.g 3:2:1*/) {
@@ -705,16 +716,19 @@ float get_save_duration_symmetrictrade(const std::int64_t hm, const std::uint64_
     const std::int64_t n_dse = nm / traderate[0] * traderate[2] + nk / traderate[1] * traderate[2] + nd;
 
     if (n_dse <= 0.0f)
-        return 0.0f;
+        return std::chrono::seconds::zero();
 
     const std::int64_t p_dse = pm / traderate[0] * traderate[2] + pk / traderate[1] * traderate[2] + pd;
 
     if (p_dse <= 0.0f)
-        return std::numeric_limits<float>::max();
+        return std::chrono::seconds::max();
 
-    float save_duration = float(n_dse) / p_dse;
+    double save_duration_days = double(n_dse) / p_dse;
 
-    return save_duration;
+    double seconds = std::ceil(save_duration_days * 24 * 60 * 60);
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
+
+    return secs;
 }
 
 float get_save_duration_notrade(const std::int64_t hm, const std::int64_t hk, const std::int64_t hd, /*have*/
