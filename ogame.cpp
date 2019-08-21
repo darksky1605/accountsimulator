@@ -238,10 +238,12 @@ Resources Production::produce(std::chrono::seconds period) const{
     
     assert(period >= zero);
 
+    double hours = period.count() / 60.0 / 60.0 / 24.0;
+
     Resources res;
-    res.met = std::int64_t(met) * period.count();
-    res.crystal = std::int64_t(crystal) * period.count();
-    res.deut = std::int64_t(deut) * period.count();
+    res.met = std::int64_t(met) * hours;
+    res.crystal = std::int64_t(crystal) * hours;
+    res.deut = std::int64_t(deut) * hours;
 
     return res;
 }
