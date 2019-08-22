@@ -225,14 +225,6 @@ Production& Production::operator*=(float f) {
     return *this;
 }
 
-Resources Production::produce(float time) const {
-    Resources res;
-    res.met = met * time;
-    res.crystal = crystal * time;
-    res.deut = deut * time;
-    return res;
-}
-
 Resources Production::produce(std::chrono::seconds period) const{
     constexpr auto zero = std::chrono::seconds::zero();
     

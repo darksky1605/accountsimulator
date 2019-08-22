@@ -218,7 +218,6 @@ struct Production {
     //multiply production by unitless factor, e.g. double production
     Production& operator*=(float f);
 
-    Resources produce(float time) const;
     Resources produce(std::chrono::seconds time) const;
 };
 
