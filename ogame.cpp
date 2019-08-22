@@ -203,6 +203,51 @@ bool operator!=(const Resources& l, const Resources& r){
     return !operator==(l, r);
 }
 
+Production Production::makeProductionPerSeconds(){
+    return makeProductionPerSeconds(0,0,0);
+}
+
+Production Production::makeProductionPerSeconds(std::int64_t m, std::int64_t c, std::int64_t d){
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::seconds{1});
+    return makeProduction(seconds, m, c, d);
+}
+
+Production Production::makeProductionPerMinute(){
+    return makeProductionPerMinute(0,0,0);
+}
+
+Production Production::makeProductionPerMinute(std::int64_t m, std::int64_t c, std::int64_t d){
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::minutes{1});
+    return makeProduction(seconds, m, c, d);
+}
+
+Production Production::makeProductionPerHour(){
+    return makeProductionPerHour(0,0,0);
+}
+
+Production Production::makeProductionPerHour(std::int64_t m, std::int64_t c, std::int64_t d){
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{1});
+    return makeProduction(seconds, m, c, d);
+}
+
+Production Production::makeProductionPerDay(){
+    return makeProductionPerDay(0,0,0);
+}
+
+Production Production::makeProductionPerDay(std::int64_t m, std::int64_t c, std::int64_t d){
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24});
+    return makeProduction(seconds, m, c, d);
+}
+
+Production Production::makeProduction(std::chrono::seconds r, std::int64_t m, std::int64_t c, std::int64_t d){
+    Production p;
+    p.r = r;
+    p.met = m;
+    p.crystal = c;
+    p.deut = d;
+    return p;
+}
+
 Production& Production::operator+=(const Production& rhs) {
     met += rhs.met;
     crystal += rhs.crystal;
@@ -518,13 +563,15 @@ int getItemProductionPercent(ItemRarity item) {
 }
 
 Production getDefaultProduction() {
-    Production result{default_production_met, default_production_crys, default_production_deut};
-    return result;
+    //Production result{default_production_met, default_production_crys, default_production_deut};
+    //return result;
+    return Production::makeProductionPerHour(default_production_met, default_production_crys, default_production_deut);
 }
 
 Production getDailyDefaultProduction() {
-    Production result{default_production_met * 24, default_production_crys * 24, default_production_deut * 24};
-    return result;
+    //Production result{default_production_met * 24, default_production_crys * 24, default_production_deut * 24};
+    //return result;
+    return Production::makeProductionPerHour(default_production_met * 24, default_production_crys * 24, default_production_deut * 24);
 }
 
 double getMineProductionFactor(int metLevel, int metPercent,

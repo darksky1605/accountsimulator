@@ -209,9 +209,25 @@ bool operator!=(const Resources& l, const Resources& r);
 
 //time dependent production
 struct Production {
+    std::chrono::seconds r{1}; //how many seconds need to pass to produce met amount of metal
+
     std::int64_t met = 0;
     std::int64_t crystal = 0;
     std::int64_t deut = 0;
+
+    static Production makeProductionPerSeconds();
+    static Production makeProductionPerSeconds(std::int64_t m, std::int64_t c, std::int64_t d);
+
+    static Production makeProductionPerMinute();
+    static Production makeProductionPerMinute(std::int64_t m, std::int64_t c, std::int64_t d);
+
+    static Production makeProductionPerHour();
+    static Production makeProductionPerHour(std::int64_t m, std::int64_t c, std::int64_t d);
+
+    static Production makeProductionPerDay();
+    static Production makeProductionPerDay(std::int64_t m, std::int64_t c, std::int64_t d);
+
+    static Production makeProduction(std::chrono::seconds r, std::int64_t m, std::int64_t c, std::int64_t d);
 
     Production& operator+=(const Production& rhs);
     Production& operator-=(const Production& rhs);
