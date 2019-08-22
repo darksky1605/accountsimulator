@@ -285,6 +285,21 @@ Resources Production::produce(std::chrono::seconds period) const{
     return res;
 }
 
+Resources Production::produce2(std::chrono::seconds period) const{
+    constexpr auto zero = std::chrono::seconds::zero();
+    
+    assert(period >= zero);
+
+    const double ratio = double(period.count()) / double(r.count());
+
+    Resources res;
+    res.met = met * ratio;
+    res.crystal = crystal * ratio;
+    res.deut = deut * ratio;
+
+    return res;
+}
+
 Production operator+(Production l, const Production& r) {
     l += r;
     return l;
