@@ -333,115 +333,60 @@ Resources getTotalCosts(const EntityInfo& info, int level) {
     return result;
 }
 
-float getConstructionTimeInDays(const EntityInfo& info, int level, int roboLevel, int naniLevel, int shipyardLevel, int flabLevel, int speedfactor) {
-
-    const std::array<Entity, 4> buildingTimeExceptions = {Entity::Nanite, Entity::Lunarbase, Entity::Phalanx, Entity::Jumpgate};
-
-    float days = 0;
-
-    if (level <= 0)
-        return days;
-
-    const Resources costs = getBuildCosts(info, level);
-
-    switch (info.type) {
-    case EntityType::Ship: {
-        if (shipyardLevel == 0) {
-            days = std::numeric_limits<float>::max();
-        } else {
-            const float hours = (costs.met + costs.crystal) / (2500.f * (1 + shipyardLevel) * std::pow(2, naniLevel)) / speedfactor;
-            days = hours / 24.f;
-        }
-        break;
-    }
-    case EntityType::Building: {
-        const bool exceptionalBuilding = std::find(buildingTimeExceptions.begin(), buildingTimeExceptions.end(), info.entity) != buildingTimeExceptions.end();
-        const float factor = exceptionalBuilding ? 1.0f : std::max(4.f - level / 2.f, 1.0f);
-        float seconds = (costs.met + costs.crystal) * 1.44f / factor / (1 + roboLevel) / std::pow(2, naniLevel) / speedfactor;
-        seconds = std::max(1.0f, seconds);
-        days = std::floor(seconds) / 60.f / 60.f / 24.f;
-        break;
-    }
-    case EntityType::Research: {
-        if (flabLevel == 0) {
-            days = std::numeric_limits<float>::max();
-        } else {
-            const float hours = (costs.met + costs.crystal) / (1000.f * (1 + flabLevel)) / speedfactor;
-            days = hours / 24.f;
-        }
-        break;
-    }
-    case EntityType::None:
-        return 0;
-    }
-
-    if (days < 0) //overflow
-        days = std::numeric_limits<float>::max();
-    else
-        days = std::max(days, 1.0f / 60.f / 60.f / 24.f);
-
-    auto duration = getConstructionTime(info, level, roboLevel, naniLevel, shipyardLevel, flabLevel, speedfactor);
-
-    std::cout << duration.count() << " " << std::setprecision(10) << days << std::endl;
-
-    return days;
-}
-
 std::chrono::seconds getConstructionTime(const EntityInfo& info, int level, int roboLevel, int naniLevel, int shipyardLevel, int flabLevel, int speedfactor) {
 
     const std::array<Entity, 4> buildingTimeExceptions = {Entity::Nanite, Entity::Lunarbase, Entity::Phalanx, Entity::Jumpgate};
 
     if (level <= 0){
-        return std::chrono::seconds{0};
+        return std::chrono::seconds::zero();
     }
 
-    std::chrono::seconds duration{};
+    double duration{};
 
     const Resources costs = getBuildCosts(info, level);
 
     switch (info.type) {
     case EntityType::Ship: {
         if (shipyardLevel == 0) {
-            duration = std::chrono::seconds::max();
+            return std::chrono::seconds::max();
         } else {
             const double hours = (costs.met + costs.crystal) / (2500.f * (1 + shipyardLevel) * std::pow(2, naniLevel)) / speedfactor;
-            const double seconds = std::ceil(hours * 60 * 60);
+            const double seconds = hours * 60 * 60;
 
-            duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
+            duration = seconds;
         }
         break;
     }
     case EntityType::Building: {
         const bool exceptionalBuilding = std::find(buildingTimeExceptions.begin(), buildingTimeExceptions.end(), info.entity) != buildingTimeExceptions.end();
         const float factor = exceptionalBuilding ? 1.0f : std::max(4.f - level / 2.f, 1.0f);
-        double seconds = (costs.met + costs.crystal) * 1.44f / factor / (1 + roboLevel) / std::pow(2, naniLevel) / speedfactor;
-        seconds = std::max(1.0, seconds);
+        const double seconds = (costs.met + costs.crystal) * 1.44f / factor / (1 + roboLevel) / std::pow(2, naniLevel) / speedfactor;
+        duration = seconds;
 
-        duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
         break;
     }
     case EntityType::Research: {
         if (flabLevel == 0) {
-            duration = std::chrono::seconds::max();
+            return std::chrono::seconds::max();
         }else{
             const double hours = (costs.met + costs.crystal) / (1000.f * (1 + flabLevel)) / speedfactor;
             const double seconds = std::ceil(hours * 60 * 60);
 
-            duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
+            duration = seconds;
         }
         break;
     }
     case EntityType::None:
-        duration = std::chrono::seconds::zero();
+        return std::chrono::seconds::zero();
         break;
     }
 
-    if (duration < std::chrono::seconds::zero()) //overflow
-        duration = std::chrono::seconds::max();
-    else
-        duration = std::max(duration, std::chrono::seconds{1});
+    duration = std::ceil(duration);
 
-    return duration;
+    if (duration < 0) //overflow
+        return std::chrono::seconds::max();
+    else
+        return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{duration});
 }
 
 int getTotalLabLevel(const std::vector<int>& labsPerPlanet, int igrnLevel) {

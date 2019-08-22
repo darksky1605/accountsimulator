@@ -1134,7 +1134,6 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     const int naniteLevel = 0;   //not used for research
     const int shipyardLevel = 0; //not used for research
     const int totalLabLevel = getTotalLabLevel();
-    //const float researchTimeNoOfficer = ogh::getConstructionTimeInDays(entityInfo, upgradeLevel, roboLevel, naniteLevel, shipyardLevel, totalLabLevel, speedfactor);
 
     const std::chrono::seconds researchTimeNoOfficer = ogh::getConstructionTime(entityInfo, upgradeLevel, roboLevel, naniteLevel, shipyardLevel, totalLabLevel, speedfactor);
     const std::chrono::seconds researchTime = hasTechnocrat() ? std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{std::ceil(researchTimeNoOfficer.count() * 0.75)}) : researchTimeNoOfficer;
@@ -1251,7 +1250,6 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
         sstream.str("");
     }
 
-    const float constructionTimeDays = getConstructionTimeInDays(entityInfo, upgradeLevel, planetState.roboLevel, planetState.naniteLevel, planetState.shipyardLevel, totalLabLevel, speedfactor);
     const std::chrono::seconds constructionTime = ogh::getConstructionTime(entityInfo, upgradeLevel, planetState.roboLevel, planetState.naniteLevel, planetState.shipyardLevel, totalLabLevel, speedfactor);
 
     sstream << "Construction time in seconds: " << constructionTime.count();
