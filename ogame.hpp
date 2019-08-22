@@ -12,6 +12,8 @@
 #include <functional>
 #include <iomanip>
 
+#include <chrono>
+
 namespace ogamehelpers {
 
 enum class EntityType { Building,
@@ -217,6 +219,7 @@ struct Production {
     Production& operator*=(float f);
 
     Resources produce(float time) const;
+    Resources produce(std::chrono::seconds time) const;
 };
 
 Production operator+(Production l, const Production& r);
@@ -284,7 +287,7 @@ Resources getBuildCosts(const EntityInfo& info, int level);
 
 Resources getTotalCosts(const EntityInfo& info, int level);
 
-float getConstructionTimeInDays(const EntityInfo& info, int level, int roboLevel, int naniLevel, int shipyardLevel, int flabLevel, int speedfactor);
+std::chrono::seconds getConstructionTime(const EntityInfo& info, int level, int roboLevel, int naniLevel, int shipyardLevel, int flabLevel, int speedfactor);
 
 int getTotalLabLevel(const std::vector<int>& labsPerPlanet, int igrnLevel);
 
@@ -328,7 +331,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                               int plasmaLevel, int speedfactor,
                               bool engineer, bool geologist, bool staff);
 
-float get_save_duration_symmetrictrade(const std::int64_t hm, const std::uint64_t hk, const std::int64_t hd, /*have*/
+std::chrono::seconds get_save_duration_symmetrictrade(const std::int64_t hm, const std::uint64_t hk, const std::int64_t hd, /*have*/
                                        const std::int64_t wm, const std::int64_t wk, const std::int64_t wd,  /*want*/
                                        const std::int64_t pm, const std::int64_t pk, const std::int64_t pd,  /*production*/
                                        const std::array<float, 3>& traderate /*e.g 3:2:1*/);

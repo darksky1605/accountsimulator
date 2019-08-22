@@ -13,43 +13,54 @@
 #include <numeric>
 #include <sstream>
 #include <vector>
+#include <iterator>
 
 namespace ogh = ogamehelpers;
 
 ogh::ItemRarity PlanetState::getMetItem() const {
-    if (metItemDurationDays > 0)
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    if (metItemDuration > zero)
         return metItem;
     return ogh::ItemRarity::None;
 }
 
 ogh::ItemRarity PlanetState::getCrysItem() const {
-    if (crysItemDurationDays > 0)
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    if (crysItemDuration > zero)
         return crysItem;
     return ogh::ItemRarity::None;
 }
 
 ogh::ItemRarity PlanetState::getDeutItem() const {
-    if (deutItemDurationDays > 0)
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    if (deutItemDuration > zero)
         return deutItem;
     return ogh::ItemRarity::None;
 }
 
-void PlanetState::advanceTime(float days) {
-    assert(days >= 0.0f);
+void PlanetState::advanceTime(std::chrono::seconds timestep) {
+    constexpr auto zero = std::chrono::seconds::zero();
 
-    metItemDurationDays = std::max(0.0f, metItemDurationDays - days);
-    crysItemDurationDays = std::max(0.0f, crysItemDurationDays - days);
-    deutItemDurationDays = std::max(0.0f, deutItemDurationDays - days);
+    assert(timestep >= zero);
+
+    metItemDuration = std::max(zero, metItemDuration - timestep);
+    crysItemDuration = std::max(zero, crysItemDuration - timestep);
+    deutItemDuration = std::max(zero, deutItemDuration - timestep);
 
     if (constructionInProgress()) {
-        buildingQueue = std::max(0.0f, buildingQueue - days);
+        buildingQueue = std::max(zero, buildingQueue - timestep);
         if (!constructionInProgress())
             accountPtr->buildingFinishedCallback(*this);
     }
 }
 
 bool PlanetState::constructionInProgress() const {
-    return buildingQueue > 0.0f;
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    return buildingQueue > zero;
 }
 
 int PlanetState::getLevel(const ogh::Entity& entity) const {
@@ -127,11 +138,13 @@ int PlanetState::increaseLevel(ogamehelpers::Entity entity) {
     }
 }
 
-void PlanetState::startConstruction(float timeDays, const ogh::Entity& entity) {
-    assert(timeDays >= 0.0f);
+void PlanetState::startConstruction(std::chrono::seconds durationOfConstruction, const ogh::Entity& entity) {
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    assert(durationOfConstruction >= zero);
     assert(!constructionInProgress());
 
-    buildingQueue = timeDays;
+    buildingQueue = durationOfConstruction;
     entityInQueue = entity;
 }
 
@@ -322,14 +335,18 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 }
 
 bool ResearchState::researchInProgress() const {
-    return researchQueue > 0.0f;
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    return researchQueue > zero;
 }
 
-void ResearchState::advanceTime(float days) {
-    assert(days >= 0.0f);
+void ResearchState::advanceTime(std::chrono::seconds timestep) {
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    assert(timestep >= zero);
 
     if (researchInProgress()) {
-        researchQueue = std::max(0.0f, researchQueue - days);
+        researchQueue = std::max(std::chrono::seconds::zero(), researchQueue - timestep);
         if (!researchInProgress())
             accountPtr->researchFinishedCallback();
     }
@@ -413,28 +430,32 @@ int ResearchState::increaseLevel(ogamehelpers::Entity entity) {
     }
 }
 
-void ResearchState::startResearch(float timeDays, const ogh::Entity& entity) {
-    assert(timeDays >= 0.0f);
+void ResearchState::startResearch(std::chrono::seconds constructionDuration, const ogh::Entity& entity) {
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    assert(constructionDuration >= zero);
     assert(!researchInProgress());
 
-    researchQueue = timeDays;
+    researchQueue = constructionDuration;
     entityInQueue = entity;
 }
 
-void OfficerState::advanceTime(float days) {
-    assert(days >= 0.0f);
+void OfficerState::advanceTime(std::chrono::seconds timestep) {
+    constexpr auto zero = std::chrono::seconds::zero();
 
-    commanderDurationDays = std::max(0.0f, commanderDurationDays - days);
-    engineerDurationDays = std::max(0.0f, engineerDurationDays - days);
-    technocratDurationDays = std::max(0.0f, technocratDurationDays - days);
-    geologistDurationDays = std::max(0.0f, geologistDurationDays - days);
-    admiralDurationDays = std::max(0.0f, admiralDurationDays - days);
+    assert(timestep >= zero);    
+
+    commanderDuration = std::max(zero, commanderDuration - timestep);
+    engineerDuration = std::max(zero, engineerDuration - timestep);
+    technocratDuration = std::max(zero, technocratDuration - timestep);
+    geologistDuration = std::max(zero, geologistDuration - timestep);
+    admiralDuration = std::max(zero, admiralDuration - timestep);
 }
 
-Account::Account() : Account(1, 0.0f) {}
+Account::Account() : Account(1, std::chrono::seconds::zero()) {}
 
-Account::Account(int ecospeed, float initialtime)
-    : speedfactor(ecospeed), time(initialtime) {
+Account::Account(int ecospeed, std::chrono::seconds initialtime)
+    : speedfactor(ecospeed), accountTime(initialtime) {
     researches.accountPtr = this;
 }
 
@@ -452,12 +473,13 @@ Account& Account::operator=(const Account& rhs) {
     dailyFarmIncomePerSlot = rhs.dailyFarmIncomePerSlot;
     dailyExpeditionIncomePerSlot = rhs.dailyExpeditionIncomePerSlot;
     dailyMineProduction = rhs.dailyMineProduction;
-    dailyMineProductionInitialized = rhs.dailyMineProductionInitialized;
+    accountInitialized = rhs.accountInitialized;
     traderate = rhs.traderate;
     speedfactor = rhs.speedfactor;
     saveslots = rhs.saveslots;
-    time = rhs.time;
+    accountTime = rhs.accountTime;
     logRecords = rhs.logRecords;
+    eventTimes = rhs.eventTimes;
 
     for (auto& planet : planets) {
         planet.accountPtr = this;
@@ -469,7 +491,7 @@ Account& Account::operator=(const Account& rhs) {
 }
 
 void Account::log(const std::string& msg) {
-    logRecords.emplace_back(time, msg);
+    logRecords.emplace_back(accountTime, msg);
 }
 
 void Account::buildingFinishedCallback(PlanetState& p) {
@@ -600,82 +622,157 @@ void Account::addNewPlanet() {
     planets.back().accountPtr = this;
 }
 
-//must not advance further than next finished event
-void Account::advanceTime(float days) {
-    assert(days >= 0.0f);
-    assert(days <= getTimeUntilNextFinishedEvent());
+void Account::initEventTimes() {
+    eventTimes.reserve(getNumPlanets() * 4 + 6);
 
-    const ogh::Production currentProduction = getCurrentDailyProduction();
-    addResources(currentProduction.produce(days));
+    for (const auto& planet : planets) {
+        if (planet.constructionInProgress()) {
+            eventTimes.emplace_back(planet.buildingQueue);
+        }
 
-    for (auto& planet : planets)
-        planet.advanceTime(days);
-    researches.advanceTime(days);
-    officers.advanceTime(days);
+        if (planet.getMetItem() != ogh::ItemRarity::None) {
+            eventTimes.emplace_back(planet.metItemDuration);
+        }
 
-    time += days;
+        if (planet.getCrysItem() != ogh::ItemRarity::None) {
+            eventTimes.emplace_back(planet.crysItemDuration);
+        }
+
+        if (planet.getDeutItem() != ogh::ItemRarity::None) {
+            eventTimes.emplace_back(planet.deutItemDuration);
+        }
+    }
+
+    if (researches.researchInProgress()) {
+        eventTimes.emplace_back(researches.researchQueue);
+    }
+
+    if (hasCommander()) {
+        eventTimes.emplace_back(officers.commanderDuration);
+    }
+
+    if (hasEngineer()) {
+        eventTimes.emplace_back(officers.engineerDuration);
+    }
+
+    if (hasTechnocrat()) {
+        eventTimes.emplace_back(officers.technocratDuration);
+    }
+
+    if (hasGeologist()) {
+        eventTimes.emplace_back(officers.geologistDuration);
+    }
+
+    if (hasAdmiral()) {
+        eventTimes.emplace_back(officers.admiralDuration);
+    }
+
+    std::sort(eventTimes.begin(), eventTimes.end());
 }
 
-float Account::getTimeUntilNextFinishedEvent() const {
-    float time = std::numeric_limits<float>::max();
+void Account::registerNewEvent(std::chrono::seconds when){
+    //std::cerr << "register " << when << '\n';
+    auto it = std::lower_bound(eventTimes.begin(), eventTimes.end(), when);
+    eventTimes.insert(it, when);
+    //std::copy(eventTimes.begin(), eventTimes.end(), std::ostream_iterator<float>(std::cerr, " "));
+   // std::cerr << '\n';
+}
+
+//must not advance further than next finished event
+void Account::advanceTime(std::chrono::seconds timestep) {
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    assert(timestep >= zero);
+    assert(timestep <= getTimeUntilNextFinishedEvent());
+
+    const ogh::Production currentProduction = getCurrentDailyProduction();
+    addResources(currentProduction.produce(timestep));
+
+    for (auto& planet : planets)
+        planet.advanceTime(timestep);
+    researches.advanceTime(timestep);
+    officers.advanceTime(timestep);
+
+    accountTime += timestep;
+
+    //TODO instead of loop, find range to erase, then erase it
+    while(!eventTimes.empty() && eventTimes.front() <= accountTime){
+        eventTimes.erase(eventTimes.begin());
+    }
+    //std::cerr << "after advance " << days << " account time " << time << '\n';
+   // std::copy(eventTimes.begin(), eventTimes.end(), std::ostream_iterator<float>(std::cerr, " "));
+    //std::cerr << '\n';
+}
+
+std::chrono::seconds Account::getTimeUntilNextFinishedEvent() const {
+    std::chrono::seconds timeUntilNext = std::chrono::seconds::max();
+    if(!eventTimes.empty()){
+        timeUntilNext = eventTimes.front() - accountTime;
+    }
+    //return timeUntilNext;
+    std::chrono::seconds time2 = std::chrono::seconds::max();
     bool any = false;
     for (const auto& planet : planets) {
         if (planet.constructionInProgress()) {
-            time = std::min(time, planet.buildingQueue);
+            time2 = std::min(time2, planet.buildingQueue);
             any = true;
         }
 
         if (planet.getMetItem() != ogh::ItemRarity::None) {
-            time = std::min(time, planet.metItemDurationDays);
+            time2 = std::min(time2, planet.metItemDuration);
             any = true;
         }
 
         if (planet.getCrysItem() != ogh::ItemRarity::None) {
-            time = std::min(time, planet.crysItemDurationDays);
+            time2 = std::min(time2, planet.crysItemDuration);
             any = true;
         }
 
         if (planet.getDeutItem() != ogh::ItemRarity::None) {
-            time = std::min(time, planet.deutItemDurationDays);
+            time2 = std::min(time2, planet.deutItemDuration);
             any = true;
         }
     }
 
     if (researches.researchInProgress()) {
-        time = std::min(time, researches.researchQueue);
+        time2 = std::min(time2, researches.researchQueue);
         any = true;
     }
 
     if (hasCommander()) {
-        time = std::min(time, officers.commanderDurationDays);
+        time2 = std::min(time2, officers.commanderDuration);
         any = true;
     }
 
     if (hasEngineer()) {
-        time = std::min(time, officers.engineerDurationDays);
+        time2 = std::min(time2, officers.engineerDuration);
         any = true;
     }
 
     if (hasTechnocrat()) {
-        time = std::min(time, officers.technocratDurationDays);
+        time2 = std::min(time2, officers.technocratDuration);
         any = true;
     }
 
     if (hasGeologist()) {
-        time = std::min(time, officers.geologistDurationDays);
+        time2 = std::min(time2, officers.geologistDuration);
         any = true;
     }
 
     if (hasAdmiral()) {
-        time = std::min(time, officers.admiralDurationDays);
+        time2 = std::min(time2, officers.admiralDuration);
         any = true;
     }
 
     if (any) {
-        assert(time != std::numeric_limits<float>::max());
+        assert(time2 != std::chrono::seconds::max());
+        // if(std::abs(time2 - timeUntilNext) > 1e-4){
+        //     std::cerr << "time2 = " << time2 << ", timeUntilNext = " << timeUntilNext << "\n";
+        // }
+        //assert(std::abs(time2 - timeUntilNext) <= 1e-4);
     }
-
-    return time;
+    
+    return time2;
 }
 
 bool Account::hasUnfinishedConstructionEvent() const {
@@ -769,7 +866,7 @@ void Account::recordPercentageChange(const PlanetState::SetPercentsResult& resul
         pchange.fusionPercent = result.fusionPercent;
         pchange.planetId = result.planetId;
         pchange.finishedLevel = level;
-        pchange.time = time;
+        pchange.time = accountTime;
         pchange.oldDSE = result.oldDSE;
         pchange.newDSE = result.newDSE;
         pchange.oldMineProductionFactor = result.oldMineProductionFactor;
@@ -789,18 +886,20 @@ void Account::recordPercentageChange(const PlanetState::SetPercentsResult& resul
     }
 }
 
-void Account::startConstruction(int planet, float timeDays, const ogh::Entity& entity, const ogh::Resources& constructionCosts) {
+void Account::startConstruction(int planet, std::chrono::seconds duration, const ogh::Entity& entity, const ogh::Resources& constructionCosts) {
     assert(planet >= 0);
     assert(planet < getNumPlanets());
 
-    planets[planet].startConstruction(timeDays, entity);
+    planets[planet].startConstruction(duration, entity);
     updateAccountResourcesAfterConstructionStart(constructionCosts);
+    registerNewEvent(accountTime + duration);
 }
 
-void Account::startResearch(float timeDays, const ogh::Entity& entity, const ogh::Resources& constructionCosts) {
+void Account::startResearch(std::chrono::seconds duration, const ogh::Entity& entity, const ogh::Resources& constructionCosts) {
 
-    researches.startResearch(timeDays, entity);
+    researches.startResearch(duration, entity);
     updateAccountResourcesAfterConstructionStart(constructionCosts);
+    registerNewEvent(accountTime + duration);
 }
 
 int Account::getNumPlanets() const {
@@ -846,10 +945,10 @@ void Account::updateAccountResourcesAfterConstructionStart(const ogh::Resources&
 void Account::printQueues(std::ostream& os) const {
     os << "Building queues (days): [";
     for (const auto& p : planets) {
-        os << std::setprecision(5) << std::fixed << p.buildingQueue << ",";
+        os << std::setprecision(5) << std::fixed << p.buildingQueue.count() << ",";
     }
     os << "]\n";
-    os << "Research queue (days): " << std::setprecision(5) << std::fixed << researches.researchQueue << '\n';
+    os << "Research queue (days): " << std::setprecision(5) << std::fixed << researches.researchQueue.count() << '\n';
 }
 
 void Account::waitForAllConstructions() {
@@ -864,7 +963,7 @@ void Account::waitForAllConstructions() {
         log(sstream.str());
         sstream.str("");
 
-        float timeToSkip = getTimeUntilNextFinishedEvent();
+        std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
 
         advanceTime(timeToSkip);
         b = hasUnfinishedConstructionEvent();
@@ -877,18 +976,18 @@ void Account::waitForAllConstructions() {
     sstream.str("");
 }
 
-float Account::waitUntilCostsAreAvailable(const ogamehelpers::Resources& constructionCosts) {
+std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Resources& constructionCosts) {
     std::stringstream sstream;
     ogamehelpers::Production currentProduction = getCurrentDailyProduction();
-    float saveTimeDaysForJob = 0.0f;
+    std::chrono::seconds saveTimeDaysForJob{0};
 
-    float saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.met, resources.crystal, resources.deut,
+    std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.met, resources.crystal, resources.deut,
                                                                constructionCosts.met, constructionCosts.crystal, constructionCosts.deut,
                                                                currentProduction.met, currentProduction.crystal, currentProduction.deut,
                                                                traderate);
 
     auto makelog = [&]() {
-        sstream << "Saving for job. Elapsed saving time: " << saveTimeDaysForJob << " days. Current production per day: "
+        sstream << "Saving for job. Elapsed saving time: " << saveTimeDaysForJob.count() << " seconds. Current production per day: "
                 << currentProduction.met << " " << currentProduction.crystal << " " << currentProduction.deut << "\n";
 
         log(sstream.str());
@@ -902,10 +1001,10 @@ float Account::waitUntilCostsAreAvailable(const ogamehelpers::Resources& constru
 
     makelog();
 
-    float nextEventFinishedInDays = getTimeUntilNextFinishedEvent();
+    std::chrono::seconds nextEventFinishedInDays = getTimeUntilNextFinishedEvent();
 
     while (saveTimeDays > nextEventFinishedInDays) {
-        const float timeToSkip = nextEventFinishedInDays;
+        const std::chrono::seconds timeToSkip = nextEventFinishedInDays;
 
         saveTimeDaysForJob += timeToSkip;
 
@@ -919,7 +1018,7 @@ float Account::waitUntilCostsAreAvailable(const ogamehelpers::Resources& constru
                                                              currentProduction.met, currentProduction.crystal, currentProduction.deut,
                                                              traderate);
 
-        if (saveTimeDays == std::numeric_limits<float>::max())
+        if (saveTimeDays == std::chrono::seconds::max())
             log("ERROR : PRODUCTION IS NEGATIVE");
 
         makelog();
@@ -937,23 +1036,23 @@ std::vector<Account::PercentageChange> Account::getPercentageChanges() const {
 }
 
 bool Account::hasCommander() const {
-    return officers.commanderDurationDays > 0;
+    return officers.commanderDuration > std::chrono::seconds::zero();
 }
 
 bool Account::hasEngineer() const {
-    return officers.engineerDurationDays > 0;
+    return officers.engineerDuration > std::chrono::seconds::zero();
 }
 
 bool Account::hasTechnocrat() const {
-    return officers.technocratDurationDays > 0;
+    return officers.technocratDuration > std::chrono::seconds::zero();
 }
 
 bool Account::hasGeologist() const {
-    return officers.geologistDurationDays > 0;
+    return officers.geologistDuration > std::chrono::seconds::zero();
 }
 
 bool Account::hasAdmiral() const {
-    return officers.admiralDurationDays > 0;
+    return officers.admiralDuration > std::chrono::seconds::zero();
 }
 
 bool Account::hasStaff() const {
@@ -968,12 +1067,13 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     using ogamehelpers::Production;
     using ogamehelpers::Resources;
 
-    if(!dailyMineProductionInitialized){
+    if(!accountInitialized){
         for(auto& planet : planets){
             planet.calculateDailyProduction();
         }
         calculateDailyProduction();
-        dailyMineProductionInitialized = true;
+        initEventTimes();
+        accountInitialized = true;
     }
 
     std::stringstream sstream;
@@ -997,11 +1097,11 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     log(sstream.str());
     sstream.str("");
 
-    stats.savePeriodDaysBegin = time;
+    stats.savePeriodDaysBegin = accountTime;
 
-    const float saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
+    const std::chrono::seconds saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
 
-    stats.waitingPeriodDaysBegin = time;
+    stats.waitingPeriodDaysBegin = accountTime;
 
     //wait until no research lab is in construction
     auto labInConstruction = [](const auto& p) {
@@ -1011,7 +1111,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     while (std::any_of(planets.begin(), planets.end(), labInConstruction)) {
         log("Waiting for finished construction of research labs. This does not count as saving time\n");
 
-        float timeToSkip = getTimeUntilNextFinishedEvent();
+        std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
         advanceTime(timeToSkip);
 
         printQueues(sstream);
@@ -1022,7 +1122,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
         log("Waiting for previous research to finish. This does not count as saving time\n");
 
         //wait for the next event to complete, this may change the production
-        float timeToSkip = getTimeUntilNextFinishedEvent();
+        std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
         advanceTime(timeToSkip);
 
         printQueues(sstream);
@@ -1034,15 +1134,16 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     const int naniteLevel = 0;   //not used for research
     const int shipyardLevel = 0; //not used for research
     const int totalLabLevel = getTotalLabLevel();
-    const float researchTimeNoOfficer = ogh::getConstructionTimeInDays(entityInfo, upgradeLevel, roboLevel, naniteLevel, shipyardLevel, totalLabLevel, speedfactor);
-    const float researchTime = hasTechnocrat() ? 0.75f * researchTimeNoOfficer : researchTimeNoOfficer;
 
-    sstream << "Research time in days: " << researchTime;
+    const std::chrono::seconds researchTimeNoOfficer = ogh::getConstructionTime(entityInfo, upgradeLevel, roboLevel, naniteLevel, shipyardLevel, totalLabLevel, speedfactor);
+    const std::chrono::seconds researchTime = hasTechnocrat() ? std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{std::ceil(researchTimeNoOfficer.count() * 0.75)}) : researchTimeNoOfficer;
+
+    sstream << "Research time in seconds: " << researchTime.count();
 
     log(sstream.str());
     sstream.str("");
 
-    stats.constructionBeginDays = time;
+    stats.constructionBeginDays = accountTime;
     stats.constructionTimeDays = researchTime;
 
     startResearch(researchTime, entity, constructionCosts);
@@ -1057,7 +1158,8 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
         }
     }
 
-    sstream << "Total Elapsed time: " << time << " days - Starting research. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
+    sstream << "Total Elapsed time: " << accountTime.count() << " seconds - Starting research. Elapsed saving time: " << saveTimeDaysForJob.count() 
+            << " seconds. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin).count() << " seconds\n";
     sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';
     printQueues(sstream);
     sstream << "\n";
@@ -1079,12 +1181,14 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     using ogamehelpers::Production;
     using ogamehelpers::Resources;
 
-    if(!dailyMineProductionInitialized){
+    if(!accountInitialized){
         for(auto& planet : planets){
             planet.calculateDailyProduction();
         }
         calculateDailyProduction();
-        dailyMineProductionInitialized = true;
+        initEventTimes();
+
+        accountInitialized = true;
     }
 
     std::stringstream sstream;
@@ -1113,23 +1217,21 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     stats.level = upgradeLevel;
 
     //calculate saving time
-    stats.savePeriodDaysBegin = time;
-
-    float saveTimeDaysForJob = 0.0f;
+    stats.savePeriodDaysBegin = accountTime;
 
     auto waitForResearchBeforeLabStart = [&]() {
         if (entity == ogh::Entity::Lab && researches.entityInQueue != ogh::Entity::None) {
             log("Waiting for finished research before building research lab. This does not count as saving time\n");
 
-            float timeToSkip = getTimeUntilNextFinishedEvent();
+            const std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
             advanceTime(timeToSkip);
 
             printQueues(sstream);
         }
     };
 
-    saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
-    stats.waitingPeriodDaysBegin = time;
+    const std::chrono::seconds saveTimeDaysForJob = waitUntilCostsAreAvailable(constructionCosts);
+    stats.waitingPeriodDaysBegin = accountTime;
 
     waitForResearchBeforeLabStart();
 
@@ -1140,7 +1242,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
         log("Waiting for previous construction to finish. This does not count as saving time\n");
 
         //wait for the next event to complete, this may change the production
-        const float timeToSkip = getTimeUntilNextFinishedEvent();
+        const std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
         advanceTime(timeToSkip);
 
         printQueues(sstream);
@@ -1148,18 +1250,19 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
         sstream.str("");
     }
 
-    const float constructionTimeDays = getConstructionTimeInDays(entityInfo, upgradeLevel, planetState.roboLevel, planetState.naniteLevel, planetState.shipyardLevel, totalLabLevel, speedfactor);
+    const std::chrono::seconds constructionTime = ogh::getConstructionTime(entityInfo, upgradeLevel, planetState.roboLevel, planetState.naniteLevel, planetState.shipyardLevel, totalLabLevel, speedfactor);
 
-    sstream << "Construction time in days: " << constructionTimeDays;
+    sstream << "Construction time in seconds: " << constructionTime.count();
     log(sstream.str());
     sstream.str("");
 
-    stats.constructionBeginDays = time;
-    stats.constructionTimeDays = constructionTimeDays;
+    stats.constructionBeginDays = accountTime;
+    stats.constructionTimeDays = constructionTime;
 
-    startConstruction(upgradeLocation, constructionTimeDays, entity, constructionCosts);
+    startConstruction(upgradeLocation, constructionTime, entity, constructionCosts);
 
-    sstream << "Total Elapsed time: " << time << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin) << " days\n";
+    sstream << "Total Elapsed time: " << accountTime.count() << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob.count() 
+            << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin).count() << " days\n";
     sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';
     printQueues(sstream);
     sstream << "\n";

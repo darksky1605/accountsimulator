@@ -5,6 +5,9 @@
 #include "json.hpp"
 #include "ogame.hpp"
 
+#include <chrono>
+#include <string>
+
 namespace ogamehelpers {
 
 void to_json(nlohmann::json& j, const Resources& r);
@@ -26,5 +29,11 @@ void from_json(const nlohmann::json& j, OfficerState& s);
 
 void to_json(nlohmann::json& j, const Account& s);
 void from_json(const nlohmann::json& j, Account& s);
+
+
+
+
+std::string secondsToDHM(std::chrono::seconds s);
+std::chrono::seconds secondsFromDHM(const std::string& s);
 
 #endif
