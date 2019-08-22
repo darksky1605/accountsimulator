@@ -227,9 +227,9 @@ Production& Production::operator*=(float f) {
 
 Resources Production::produce(float time) const {
     Resources res;
-    res.met = std::int64_t(met) * time;
-    res.crystal = std::int64_t(crystal) * time;
-    res.deut = std::int64_t(deut) * time;
+    res.met = met * time;
+    res.crystal = crystal * time;
+    res.deut = deut * time;
     return res;
 }
 
@@ -241,9 +241,9 @@ Resources Production::produce(std::chrono::seconds period) const{
     double hours = period.count() / 60.0 / 60.0 / 24.0;
 
     Resources res;
-    res.met = std::int64_t(met) * hours;
-    res.crystal = std::int64_t(crystal) * hours;
-    res.deut = std::int64_t(deut) * hours;
+    res.met = met * hours;
+    res.crystal = crystal * hours;
+    res.deut = deut * hours;
 
     return res;
 }

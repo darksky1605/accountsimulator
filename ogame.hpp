@@ -209,9 +209,9 @@ bool operator!=(const Resources& l, const Resources& r);
 
 //time dependent production
 struct Production {
-    int met = 0;
-    int crystal = 0;
-    int deut = 0;
+    std::int64_t met = 0;
+    std::int64_t crystal = 0;
+    std::int64_t deut = 0;
 
     Production& operator+=(const Production& rhs);
     Production& operator-=(const Production& rhs);
