@@ -5,6 +5,9 @@
 #include "json.hpp"
 #include "ogame.hpp"
 
+#include <chrono>
+#include <string>
+
 namespace ogamehelpers {
 
 void to_json(nlohmann::json& j, const Resources& r);

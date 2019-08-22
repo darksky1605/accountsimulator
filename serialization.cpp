@@ -1,6 +1,7 @@
 #include "account.hpp"
 #include "json.hpp"
 #include "ogame.hpp"
+#include "serialization.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -65,11 +66,11 @@ void to_json(json& j, const PlanetState& p) {
              {"metItem", ogh::itemRarityToName(p.metItem)},
              {"crysItem", ogh::itemRarityToName(p.crysItem)},
              {"deutItem", ogh::itemRarityToName(p.deutItem)},
-             {"metItemDurationSeconds", p.metItemDuration.count()},
-             {"crysItemDurationSeconds", p.crysItemDuration.count()},
-             {"deutItemDurationSeconds", p.deutItemDuration.count()},
+             {"metItemDuration", secondsToDHM(p.metItemDuration)},
+             {"crysItemDuration", secondsToDHM(p.crysItemDuration)},
+             {"deutItemDuration", secondsToDHM(p.deutItemDuration)},
              {"sats", p.sats},
-             {"buildingQueueSeconds", p.buildingQueue.count()},
+             {"buildingQueueDuration", secondsToDHM(p.buildingQueue)},
              {"inQueue", ogh::getEntityName(p.entityInQueue)}};
 }
 
@@ -97,10 +98,10 @@ void from_json(const json& j, PlanetState& p) {
     p.metItem = ogh::parseItemRarityName(j.at("metItem"));
     p.crysItem = ogh::parseItemRarityName(j.at("crysItem"));
     p.deutItem = ogh::parseItemRarityName(j.at("deutItem"));
-    p.metItemDuration = std::chrono::seconds(j.at("metItemDurationSeconds"));
-    p.crysItemDuration = std::chrono::seconds(j.at("crysItemDurationSeconds"));
-    p.deutItemDuration = std::chrono::seconds(j.at("deutItemDurationSeconds"));
-    p.buildingQueue = std::chrono::seconds(j.at("buildingQueueSeconds"));
+    p.metItemDuration = secondsFromDHM(j.at("metItemDuration"));
+    p.crysItemDuration = secondsFromDHM(j.at("crysItemDuration"));
+    p.deutItemDuration = secondsFromDHM(j.at("deutItemDuration"));
+    p.buildingQueue = secondsFromDHM(j.at("buildingQueueDuration"));
     j.at("sats").get_to(p.sats);
     p.entityInQueue = ogh::parseEntityName(j.at("inQueue")).entity;
 }
@@ -122,7 +123,7 @@ void to_json(json& j, const ResearchState& s) {
              {"plasmaLevel", s.plasmaLevel},
              {"igrnLevel", s.igrnLevel},
              {"astroLevel", s.astroLevel},
-             {"researchQueueSeconds", s.researchQueue.count()},
+             {"researchQueueDuration", secondsToDHM(s.researchQueue)},
              {"inQueue", ogh::getEntityName(s.entityInQueue)}};
 }
 
@@ -142,24 +143,24 @@ void from_json(const nlohmann::json& j, ResearchState& s) {
     j.at("plasmaLevel").get_to(s.plasmaLevel);
     j.at("igrnLevel").get_to(s.igrnLevel);
     j.at("astroLevel").get_to(s.astroLevel);
-    s.researchQueue = std::chrono::seconds(j.at("researchQueueSeconds"));
+    s.researchQueue = secondsFromDHM(j.at("researchQueueDuration"));
     s.entityInQueue = ogh::parseEntityName(j.at("inQueue")).entity;
 }
 
 void to_json(nlohmann::json& j, const OfficerState& s) {
-    j = json{{"commanderDurationSeconds", s.commanderDuration.count()},
-             {"engineerDurationSeconds", s.engineerDuration.count()},
-             {"technocratDurationSeconds", s.technocratDuration.count()},
-             {"geologistDurationSeconds", s.geologistDuration.count()},
-             {"admiralDurationSeconds", s.admiralDuration.count()}};
+    j = json{{"commanderDuration", secondsToDHM(s.commanderDuration)},
+             {"engineerDuration", secondsToDHM(s.engineerDuration)},
+             {"technocratDuration", secondsToDHM(s.technocratDuration)},
+             {"geologistDuration", secondsToDHM(s.geologistDuration)},
+             {"admiralDuration", secondsToDHM(s.admiralDuration)}};
 }
 
 void from_json(const nlohmann::json& j, OfficerState& s) {
-    s.commanderDuration = std::chrono::seconds(j.at("commanderDurationSeconds"));
-    s.engineerDuration = std::chrono::seconds(j.at("engineerDurationSeconds"));
-    s.technocratDuration = std::chrono::seconds(j.at("technocratDurationSeconds"));
-    s.geologistDuration = std::chrono::seconds(j.at("geologistDurationSeconds"));
-    s.admiralDuration = std::chrono::seconds(j.at("admiralDurationSeconds"));
+    s.commanderDuration = secondsFromDHM(j.at("commanderDuration"));
+    s.engineerDuration = secondsFromDHM(j.at("engineerDuration"));
+    s.technocratDuration = secondsFromDHM(j.at("technocratDuration"));
+    s.geologistDuration = secondsFromDHM(j.at("geologistDuration"));
+    s.admiralDuration = secondsFromDHM(j.at("admiralDuration"));
 }
 
 void to_json(nlohmann::json& j, const Account& a) {
