@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <iomanip>
 #include <string>
 #include <sstream>
@@ -233,5 +234,35 @@ std::string secondsToDHM(std::chrono::seconds time){
 }
 
 std::chrono::seconds secondsFromDHM(const std::string& s){
-    return std::chrono::seconds::zero();
+    auto split = [](const std::string& str, char c){
+        std::vector<std::string> result;
+
+        std::stringstream ss(str);
+        std::string s;
+
+        while (std::getline(ss, s, c)) {
+                result.emplace_back(s);
+        }
+
+        return result;
+    };
+
+    auto tokens = split(s, ':');
+    if(tokens.size() > 4){
+        return std::chrono::seconds::zero();
+    }
+
+    std::int64_t seconds = 0;
+    std::int64_t factor = 1;
+    for(int i = int(tokens.size()) - 1; i >= 0; i--){
+        auto num = std::stoi(tokens[i]);
+        seconds += num * factor;
+        if(factor != 3600){
+            factor *= 60;
+        }else{
+            factor *= 24;
+        }
+    }
+
+    return std::chrono::seconds{seconds};
 }
