@@ -4,7 +4,9 @@
 
 #include <algorithm>
 #include <chrono>
+#include <iomanip>
 #include <string>
+#include <sstream>
 
 using json = nlohmann::json;
 
@@ -213,4 +215,23 @@ void from_json(const nlohmann::json& j, Account& a) {
 
     a.updateDailyFarmIncome();
     a.updateDailyExpeditionIncome();
+}
+
+
+std::string secondsToDHM(std::chrono::seconds time){
+    std::stringstream ss;
+    auto days = std::chrono::duration_cast<std::chrono::hours>(time) / 24;
+    time -= days * 24;
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(time);
+    time -= hours;
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(time);
+    time -= minutes;
+    auto seconds = time;
+
+    ss << days.count() << ":" << std::setfill('0') << std::setw(2) << hours.count() << ":" << std::setfill('0') << std::setw(2) << minutes.count() << ":" << std::setfill('0') << std::setw(2) << seconds.count();
+    return ss.str();
+}
+
+std::chrono::seconds secondsFromDHM(const std::string& s){
+    return std::chrono::seconds::zero();
 }

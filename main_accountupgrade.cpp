@@ -225,22 +225,9 @@ std::string convert_time(float daysfloat) {
     return ss.str();
 }
 
-std::string convert_time(std::chrono::seconds time) {
-    std::stringstream ss;
-    auto days = std::chrono::duration_cast<std::chrono::hours>(time) / 24;
-    time -= days * 24;
-    auto hours = std::chrono::duration_cast<std::chrono::hours>(time);
-    time -= hours;
-    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(time);
-    time -= minutes;
-    auto seconds = time;
-
-    ss << days.count() << "d " << hours.count() << "h " << minutes.count() << "m " << seconds.count() << "s";
-    return ss.str();
-}
 
 void printLogRecord(std::ostream& os, const Account::LogRecord& record) {
-    os << convert_time(record.time) << ": " << record.msg << '\n';
+    os << secondsToDHM(record.time) << ": " << record.msg << '\n';
 }
 
 void createAccountFile(const std::string& filename) {
@@ -455,10 +442,10 @@ int detailedmultiupgrade(int argc, char** argv) {
             logFile.flush();
             std::cout << std::endl;
 
-            std::cout << "The selected upgrades take " << convert_time(result.constructionFinishedInDays) << " days.\n";
-            std::cout << "Last upgrade started after " << convert_time(result.lastConstructionStartedAfterDays) << " days.\n";
-            std::cout << "The required saving time is " << convert_time(result.savingFinishedInDays) << " days.\n";
-            std::cout << "Days lost because a queue was full: " << convert_time(result.previousUpgradeDelay) << " days.\n";
+            std::cout << "The selected upgrades take " << secondsToDHM(result.constructionFinishedInDays) << " days.\n";
+            std::cout << "Last upgrade started after " << secondsToDHM(result.lastConstructionStartedAfterDays) << " days.\n";
+            std::cout << "The required saving time is " << secondsToDHM(result.savingFinishedInDays) << " days.\n";
+            std::cout << "Days lost because a queue was full: " << secondsToDHM(result.previousUpgradeDelay) << " days.\n";
 
 
             std::cout << '\n';
@@ -472,9 +459,9 @@ int detailedmultiupgrade(int argc, char** argv) {
                     const auto& entity = res.entity;
                     const int upgradeLevel = stat.level;
                     const int upgradeLocation = res.location;
-                    std::cout << "Planet " << (upgradeLocation + 1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
-                                << ", Waiting period begin: " << convert_time(stat.waitingPeriodDaysBegin) << ", Construction begin: " << convert_time(stat.constructionBeginDays) << ", Construction time: " << convert_time(stat.constructionTimeDays)
-                                << ", Save time: " << convert_time(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin) << '\n';
+                    std::cout << "Planet " << (upgradeLocation + 1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << secondsToDHM(stat.savePeriodDaysBegin)
+                                << ", Waiting period begin: " << secondsToDHM(stat.waitingPeriodDaysBegin) << ", Construction begin: " << secondsToDHM(stat.constructionBeginDays) << ", Construction time: " << secondsToDHM(stat.constructionTimeDays)
+                                << ", Save time: " << secondsToDHM(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin) << '\n';
                 }
             }
 
@@ -482,7 +469,7 @@ int detailedmultiupgrade(int argc, char** argv) {
                 auto percentageChanges = account.getPercentageChanges();
 
                 auto printChange = [&](const auto& change) {
-                    std::string timestring = convert_time(change.time);
+                    std::string timestring = secondsToDHM(change.time);
                     auto& stream = std::cout;
                     stream << timestring << " Planet " << change.planetId << ": Changed percents to "
                            << "m " << change.metPercent << ", c " << change.crysPercent
@@ -632,22 +619,22 @@ int detailedmultiupgrade(int argc, char** argv) {
             std::int64_t currentProductionPerDayDSE = currentProduction.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deut;
             std::int64_t currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
 
-            std::cout << "Account after " << convert_time(bestAccount.accountTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
+            std::cout << "Account after " << secondsToDHM(bestAccount.accountTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
             
 
             bestAccount.advanceTime(timeToAdvance);
 
-            std::cout << "The selected upgrades take " << convert_time(bestResult.constructionFinishedInDays) << " days.\n";
-            std::cout << "Last upgrade started after " << convert_time(bestResult.lastConstructionStartedAfterDays) << " days.\n";
-            std::cout << "The required saving time is " << convert_time(bestResult.savingFinishedInDays) << " days.\n";
-            std::cout << "Days lost because a queue was full: " << convert_time(bestResult.previousUpgradeDelay) << " days.\n";
+            std::cout << "The selected upgrades take " << secondsToDHM(bestResult.constructionFinishedInDays) << " days.\n";
+            std::cout << "Last upgrade started after " << secondsToDHM(bestResult.lastConstructionStartedAfterDays) << " days.\n";
+            std::cout << "The required saving time is " << secondsToDHM(bestResult.savingFinishedInDays) << " days.\n";
+            std::cout << "Days lost because a queue was full: " << secondsToDHM(bestResult.previousUpgradeDelay) << " days.\n";
 
             currentResourcesDSE = bestAccount.resources.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deut;
             currentProduction = bestAccount.getCurrentDailyProduction();
             currentProductionPerDayDSE = currentProduction.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deut;
             currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
 
-            std::cout << "Account after " << convert_time(longestCompletionTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
+            std::cout << "Account after " << secondsToDHM(longestCompletionTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
 
             std::cout << '\n';
 
@@ -661,9 +648,9 @@ int detailedmultiupgrade(int argc, char** argv) {
                     const int upgradeLevel = stat.level;
                     const int upgradeLocation = res.location;
 
-                    std::cout << "Planet " << (upgradeLocation + 1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << convert_time(stat.savePeriodDaysBegin)
-                                << ", Waiting period begin: " << convert_time(stat.waitingPeriodDaysBegin) << ", Construction begin: " << convert_time(stat.constructionBeginDays) << ", Construction time: " << convert_time(stat.constructionTimeDays)
-                                << ", Save time: " << convert_time(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin) << '\n';
+                    std::cout << "Planet " << (upgradeLocation + 1) << ": " << ogh::getEntityName(entity) << " " << upgradeLevel << ". Saving period begin: " << secondsToDHM(stat.savePeriodDaysBegin)
+                                << ", Waiting period begin: " << secondsToDHM(stat.waitingPeriodDaysBegin) << ", Construction begin: " << secondsToDHM(stat.constructionBeginDays) << ", Construction time: " << secondsToDHM(stat.constructionTimeDays)
+                                << ", Save time: " << secondsToDHM(stat.waitingPeriodDaysBegin - stat.savePeriodDaysBegin) << '\n';
                 }
             }
         }
