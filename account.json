@@ -15,7 +15,7 @@
         "admiralDurationSeconds": 0.0,
         "commanderDurationSeconds": 0.0,
         "engineerDurationSeconds": 0.0,
-        "geologistDurationSeconds": 100000000.0,
+        "geologistDurationSeconds": 1000000000.0,
         "technocratDurationSeconds": 0.0
     },
     "planetType": "identical",
