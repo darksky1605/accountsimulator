@@ -183,7 +183,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 
     const Production oldProd = getCurrentDailyProduction();
     Production bestProd = oldProd;
-    const std::int64_t oldDSE = oldProd.met / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + oldProd.crystal / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + oldProd.deut;
+    const std::int64_t oldDSE = oldProd.metal() / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + oldProd.crystal() / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + oldProd.deuterium();
 
     int bestMetPercent = metPercent;
     int bestCrysPercent = crysPercent;
@@ -249,9 +249,9 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
                     double result_crystal = (simpleProduction_crystal + itemProduction_crystal + plasmaProduction_crystal + extraOfficerProduction_crystal);
                     double result_deut = (simpleProduction_deut + itemProduction_deut + plasmaProduction_deut + extraOfficerProduction_deut);
 
-                    result_met += defaultProduction.met;
-                    result_crystal += defaultProduction.crystal;
-                    result_deut += defaultProduction.deut;
+                    result_met += defaultProduction.metal();
+                    result_crystal += defaultProduction.crystal();
+                    result_deut += defaultProduction.deuterium();
 
                     const std::int64_t fkwdeutconsumption = ogh::getFKWConsumption(fusionLevel, newFusionPercent);
                     result_deut -= fkwdeutconsumption;
@@ -260,14 +260,11 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
                     result_crystal *= accountPtr->speedfactor;
                     result_deut *= accountPtr->speedfactor;
 
-                    Production newProd;
-                    newProd.met = std::round(result_met);
-                    newProd.crystal = std::round(result_crystal);
-                    newProd.deut = std::round(result_deut);
+                    Production newProd = Production::makeProductionPerDay(round(result_met), round(result_crystal), round(result_deut));
 
                     newProd *= 24;
 
-                    const std::int64_t newDSE = newProd.met / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + newProd.crystal / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + newProd.deut;
+                    const std::int64_t newDSE = newProd.metal() / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + newProd.crystal() / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + newProd.deuterium();
                     if (newDSE > bestDSE) {
                         bestDSE = newDSE;
                         bestProd = newProd;
@@ -287,7 +284,9 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     fusionPercent = bestFusionPercent;
 
     std::stringstream ss;
-    ss << dailyProduction.met << " " << dailyProduction.crystal << " " << dailyProduction.deut << " -> " << bestProd.met << " " << bestProd.crystal << " " << bestProd.deut << " ::: " << metLevel << " " << crysLevel << " " << deutLevel << " " << fusionLevel;
+    ss << dailyProduction.metal() << " " << dailyProduction.crystal() << " " << dailyProduction.deuterium() << " -> " 
+        << bestProd.metal() << " " << bestProd.crystal() << " " << bestProd.deuterium() 
+        << " ::: " << metLevel << " " << crysLevel << " " << deutLevel << " " << fusionLevel;
     accountPtr->log(ss.str());
 
     if(dailyProduction != bestProd){
@@ -983,12 +982,12 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
 
     std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.met, resources.crystal, resources.deut,
                                                                constructionCosts.met, constructionCosts.crystal, constructionCosts.deut,
-                                                               currentProduction.met, currentProduction.crystal, currentProduction.deut,
+                                                               currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
                                                                traderate);
 
     auto makelog = [&]() {
         sstream << "Saving for job. Elapsed saving time: " << saveTimeDaysForJob.count() << " seconds. Current production per day: "
-                << currentProduction.met << " " << currentProduction.crystal << " " << currentProduction.deut << "\n";
+                << currentProduction.metal() << " " << currentProduction.crystal() << " " << currentProduction.deuterium() << "\n";
 
         log(sstream.str());
         sstream.str("");
@@ -1014,9 +1013,9 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
         nextEventFinishedInDays = getTimeUntilNextFinishedEvent();
 
         saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.met, resources.crystal, resources.deut,
-                                                             constructionCosts.met, constructionCosts.crystal, constructionCosts.deut,
-                                                             currentProduction.met, currentProduction.crystal, currentProduction.deut,
-                                                             traderate);
+                                                               constructionCosts.met, constructionCosts.crystal, constructionCosts.deut,
+                                                               currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
+                                                               traderate);
 
         if (saveTimeDays == std::chrono::seconds::max())
             log("ERROR : PRODUCTION IS NEGATIVE");

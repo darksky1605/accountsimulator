@@ -210,10 +210,15 @@ bool operator!=(const Resources& l, const Resources& r);
 //time dependent production
 struct Production {
     std::chrono::seconds r{1}; //how many seconds need to pass to produce met amount of metal
-
+private:
     std::int64_t met = 0;
-    std::int64_t crystal = 0;
+    std::int64_t crys = 0;
     std::int64_t deut = 0;
+public:
+    std::int64_t metal() const;
+    std::int64_t crystal() const;
+    std::int64_t deuterium() const;
+    std::int64_t dse(const std::array<float, 3>& traderate) const;
 
     static Production makeProductionPerSeconds();
     static Production makeProductionPerSeconds(std::int64_t m, std::int64_t c, std::int64_t d);

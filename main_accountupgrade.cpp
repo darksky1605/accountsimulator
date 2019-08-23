@@ -616,7 +616,7 @@ int detailedmultiupgrade(int argc, char** argv) {
 
             std::int64_t currentResourcesDSE = bestAccount.resources.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deut;
             auto currentProduction = bestAccount.getCurrentDailyProduction();
-            std::int64_t currentProductionPerDayDSE = currentProduction.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deut;
+            std::int64_t currentProductionPerDayDSE = currentProduction.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deuterium();
             std::int64_t currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
 
             std::cout << "Account after " << secondsToDHM(bestAccount.accountTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
@@ -631,7 +631,7 @@ int detailedmultiupgrade(int argc, char** argv) {
 
             currentResourcesDSE = bestAccount.resources.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deut;
             currentProduction = bestAccount.getCurrentDailyProduction();
-            currentProductionPerDayDSE = currentProduction.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deut;
+            currentProductionPerDayDSE = currentProduction.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deuterium();
             currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
 
             std::cout << "Account after " << secondsToDHM(longestCompletionTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";

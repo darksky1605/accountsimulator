@@ -29,15 +29,17 @@ void from_json(const nlohmann::json& j, Resources& r) {
 }
 
 void to_json(nlohmann::json& j, const Production& p) {
-    j = json{{"metal", p.met},
-             {"crystal", p.crystal},
-             {"deuterium", p.deut}};
+    j = json{{"metal", p.metal()},
+             {"crystal", p.crystal()},
+             {"deuterium", p.deuterium()}};
 }
 
 void from_json(const nlohmann::json& j, Production& p) {
-    j.at("metal").get_to(p.met);
-    j.at("crystal").get_to(p.crystal);
-    j.at("deuterium").get_to(p.deut);
+    std::int64_t m,k,d;
+    j.at("metal").get_to(m);
+    j.at("crystal").get_to(k);
+    j.at("deuterium").get_to(d);
+    p = Production::makeProductionPerHour(m,k,d);
 }
 
 } // namespace ogamehelpers

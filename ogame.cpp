@@ -203,6 +203,22 @@ bool operator!=(const Resources& l, const Resources& r){
     return !operator==(l, r);
 }
 
+std::int64_t Production::metal() const{
+    return met;
+}
+
+std::int64_t Production::crystal() const{
+    return crys;
+}
+
+std::int64_t Production::deuterium() const{
+    return deut;
+}
+
+std::int64_t Production::dse(const std::array<float, 3>& traderate) const{
+    return metal() / traderate[0] * traderate[2] + crystal() / traderate[1] * traderate[2] + deuterium();
+}
+
 Production Production::makeProductionPerSeconds(){
     return makeProductionPerSeconds(0,0,0);
 }
@@ -243,29 +259,29 @@ Production Production::makeProduction(std::chrono::seconds r, std::int64_t m, st
     Production p;
     p.r = r;
     p.met = m;
-    p.crystal = c;
+    p.crys = c;
     p.deut = d;
     return p;
 }
 
 Production& Production::operator+=(const Production& rhs) {
-    met += rhs.met;
-    crystal += rhs.crystal;
-    deut += rhs.deut;
+    met += rhs.metal();
+    crys += rhs.crystal();
+    deut += rhs.deuterium();
     return *this;
 }
 
 Production& Production::operator-=(const Production& rhs) {
-    met -= rhs.met;
-    crystal -= rhs.crystal;
-    deut -= rhs.deut;
+    met -= rhs.metal();
+    crys -= rhs.crystal();
+    deut -= rhs.deuterium();
     return *this;
 }
 
 Production& Production::operator*=(float f) {
-    met = met * f;
-    crystal = crystal * f;
-    deut = deut * f;
+    met = metal() * f;
+    crys = crystal() * f;
+    deut = deuterium() * f;
 
     return *this;
 }
@@ -278,9 +294,9 @@ Resources Production::produce(std::chrono::seconds period) const{
     double hours = period.count() / 60.0 / 60.0 / 24.0;
 
     Resources res;
-    res.met = met * hours;
-    res.crystal = crystal * hours;
-    res.deut = deut * hours;
+    res.met = metal() * hours;
+    res.crystal = crystal() * hours;
+    res.deut = deuterium() * hours;
 
     return res;
 }
@@ -293,9 +309,9 @@ Resources Production::produce2(std::chrono::seconds period) const{
     const double ratio = double(period.count()) / double(r.count());
 
     Resources res;
-    res.met = met * ratio;
-    res.crystal = crystal * ratio;
-    res.deut = deut * ratio;
+    res.met = metal() * ratio;
+    res.crystal = crystal() * ratio;
+    res.deut = deuterium() * ratio;
 
     return res;
 }
@@ -320,7 +336,7 @@ Production operator*(float l, const Production& r) {
 }
 
 bool operator==(const Production& l, const Production& r){
-    return l.met == r.met && l.crystal == r.crystal && l.deut == r.deut;
+    return l.metal() == r.metal() && l.crystal() == r.crystal() && l.deuterium() == r.deuterium();
 }
 
 bool operator!=(const Production& l, const Production& r){
@@ -675,9 +691,9 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     double result_crystal = (simpleProduction_crystal + itemProduction_crystal + plasmaProduction_crystal + extraOfficerProduction_crystal);
     double result_deut = (simpleProduction_deut + itemProduction_deut + plasmaProduction_deut + extraOfficerProduction_deut);
 
-    result_met += defaultProduction.met;
-    result_crystal += defaultProduction.crystal;
-    result_deut += defaultProduction.deut;
+    result_met += defaultProduction.metal();
+    result_crystal += defaultProduction.metal();
+    result_deut += defaultProduction.deuterium();
 
     const std::int64_t fkwdeutconsumption = getFKWConsumption(fusionLevel, fusionPercent);
     result_deut -= fkwdeutconsumption;
@@ -686,16 +702,18 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     result_crystal *= speedfactor;
     result_deut *= speedfactor;
 
-    Production result;
-    result.met = round(result_met);
-    result.crystal = round(result_crystal);
-    result.deut = round(result_deut);
-
-    if (result.met < 0)
-        result.met = std::numeric_limits<int>::max();
-    if (result.crystal < 0)
-        result.crystal = std::numeric_limits<int>::max();
-    //if(result.deut < 0) result.deut = std::numeric_limits<std::int64_t>::max();
+    Production result = Production::makeProductionPerDay(round(result_met), round(result_crystal), round(result_deut));
+    
+    if (result.metal() < 0){
+        std::cerr << "Error, met production is negative\n";
+        assert(false);
+        return result;
+    }
+    if (result.crystal() < 0){
+        std::cerr << "Error, crys production is negative\n";
+        assert(false);
+        return result;
+    }
 
     result *= 24;
 
