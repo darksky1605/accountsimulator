@@ -692,7 +692,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     double result_deut = (simpleProduction_deut + itemProduction_deut + plasmaProduction_deut + extraOfficerProduction_deut);
 
     result_met += defaultProduction.metal();
-    result_crystal += defaultProduction.metal();
+    result_crystal += defaultProduction.crystal();
     result_deut += defaultProduction.deuterium();
 
     const std::int64_t fkwdeutconsumption = getFKWConsumption(fusionLevel, fusionPercent);
