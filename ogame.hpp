@@ -187,10 +187,25 @@ std::string getEntityName(Entity e);
 
 EntityInfo getEntityInfo(Entity entity);
 
+
 struct Resources {
+private:
     std::int64_t met = 0;
-    std::int64_t crystal = 0;
+    std::int64_t crys = 0;
     std::int64_t deut = 0;
+public:
+    std::int64_t metal() const;
+    std::int64_t crystal() const;
+    std::int64_t deuterium() const;
+    std::int64_t dse(const std::array<float, 3>& traderate) const;  
+
+    void setMetal(std::int64_t m);
+    void setCrystal(std::int64_t k);
+    void setDeuterium(std::int64_t d);
+
+    Resources() = default;
+    Resources(const Resources&) = default;  
+    Resources(std::int64_t m, std::int64_t k, std::int64_t d);
 
     Resources& operator+=(const Resources& rhs);
     Resources& operator-=(const Resources& rhs);
@@ -214,11 +229,12 @@ private:
     std::int64_t met = 0;
     std::int64_t crys = 0;
     std::int64_t deut = 0;
+
+    static Production makeProduction(std::chrono::seconds r, std::int64_t m, std::int64_t c, std::int64_t d);
 public:
     std::int64_t metal() const;
     std::int64_t crystal() const;
     std::int64_t deuterium() const;
-    std::int64_t dse(const std::array<float, 3>& traderate) const;
 
     static Production makeProductionPerSeconds();
     static Production makeProductionPerSeconds(std::int64_t m, std::int64_t c, std::int64_t d);
@@ -232,7 +248,7 @@ public:
     static Production makeProductionPerDay();
     static Production makeProductionPerDay(std::int64_t m, std::int64_t c, std::int64_t d);
 
-    static Production makeProduction(std::chrono::seconds r, std::int64_t m, std::int64_t c, std::int64_t d);
+    
 
     Production& operator+=(const Production& rhs);
     Production& operator-=(const Production& rhs);

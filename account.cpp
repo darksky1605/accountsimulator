@@ -933,12 +933,12 @@ void Account::addResources(const ogh::Resources& res) {
 
 void Account::updateAccountResourcesAfterConstructionStart(const ogh::Resources& constructionCosts) {
     //update available account resources
-    const std::int64_t diffm = resources.met - constructionCosts.met;
-    const std::int64_t diffk = resources.crystal + (traderate[1] * diffm) / traderate[0] - constructionCosts.crystal;
-    const std::int64_t diffd = resources.deut + (traderate[2] * diffk) / traderate[1] - constructionCosts.deut;
-    resources.met = 0;
-    resources.crystal = 0;
-    resources.deut = std::max(std::int64_t(0), diffd);
+    const std::int64_t diffm = resources.metal() - constructionCosts.metal();
+    const std::int64_t diffk = resources.crystal() + (traderate[1] * diffm) / traderate[0] - constructionCosts.crystal();
+    const std::int64_t diffd = resources.deuterium() + (traderate[2] * diffk) / traderate[1] - constructionCosts.deuterium();
+    resources.setMetal(0);
+    resources.setCrystal(0);
+    resources.setDeuterium(std::max(std::int64_t(0), diffd));
 }
 
 void Account::printQueues(std::ostream& os) const {
@@ -980,8 +980,8 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
     ogamehelpers::Production currentProduction = getCurrentDailyProduction();
     std::chrono::seconds saveTimeDaysForJob{0};
 
-    std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.met, resources.crystal, resources.deut,
-                                                               constructionCosts.met, constructionCosts.crystal, constructionCosts.deut,
+    std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.metal(), resources.crystal(), resources.deuterium(),
+                                                               constructionCosts.metal(), constructionCosts.crystal(), constructionCosts.deuterium(),
                                                                currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
                                                                traderate);
 
@@ -1012,8 +1012,8 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
 
         nextEventFinishedInDays = getTimeUntilNextFinishedEvent();
 
-        saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.met, resources.crystal, resources.deut,
-                                                               constructionCosts.met, constructionCosts.crystal, constructionCosts.deut,
+        saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.metal(), resources.crystal(), resources.deuterium(),
+                                                               constructionCosts.metal(), constructionCosts.crystal(), constructionCosts.deuterium(),
                                                                currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
                                                                traderate);
 
@@ -1091,7 +1091,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
 
     const Resources constructionCosts = ogh::getBuildCosts(entityInfo, upgradeLevel);
 
-    sstream << "construction costs: " << constructionCosts.met << " " << constructionCosts.crystal << " " << constructionCosts.deut << '\n';
+    sstream << "construction costs: " << constructionCosts.metal() << " " << constructionCosts.crystal() << " " << constructionCosts.deuterium() << '\n';
     printQueues(sstream);
     log(sstream.str());
     sstream.str("");
@@ -1159,7 +1159,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
 
     sstream << "Total Elapsed time: " << accountTime.count() << " seconds - Starting research. Elapsed saving time: " << saveTimeDaysForJob.count() 
             << " seconds. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin).count() << " seconds\n";
-    sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';
+    sstream << "Account resources after start: " << resources.metal() << " " << resources.crystal() << " " << resources.deuterium() << '\n';
     printQueues(sstream);
     sstream << "\n";
     sstream << "--------------------------------------------------\n\n";
@@ -1207,7 +1207,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
 
     const Resources constructionCosts = getBuildCosts(entityInfo, upgradeLevel);
 
-    sstream << "construction costs: " << constructionCosts.met << " " << constructionCosts.crystal << " " << constructionCosts.deut << '\n';
+    sstream << "construction costs: " << constructionCosts.metal() << " " << constructionCosts.crystal() << " " << constructionCosts.deuterium() << '\n';
     printQueues(sstream);
     log(sstream.str());
     sstream.str("");
@@ -1262,7 +1262,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
 
     sstream << "Total Elapsed time: " << accountTime.count() << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob.count() 
             << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin).count() << " days\n";
-    sstream << "Account resources after start: " << resources.met << " " << resources.crystal << " " << resources.deut << '\n';
+    sstream << "Account resources after start: " << resources.metal() << " " << resources.crystal() << " " << resources.deuterium() << '\n';
     printQueues(sstream);
     sstream << "\n";
     sstream << "--------------------------------------------------\n\n";

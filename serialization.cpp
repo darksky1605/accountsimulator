@@ -17,15 +17,17 @@ namespace ogh = ogamehelpers;
 namespace ogamehelpers {
 
 void to_json(nlohmann::json& j, const Resources& r) {
-    j = json{{"metal", r.met},
-             {"crystal", r.crystal},
-             {"deuterium", r.deut}};
+    j = json{{"metal", r.metal()},
+             {"crystal", r.crystal()},
+             {"deuterium", r.deuterium()}};
 }
 
 void from_json(const nlohmann::json& j, Resources& r) {
-    j.at("metal").get_to(r.met);
-    j.at("crystal").get_to(r.crystal);
-    j.at("deuterium").get_to(r.deut);
+    std::int64_t m,k,d;
+    j.at("metal").get_to(m);
+    j.at("crystal").get_to(k);
+    j.at("deuterium").get_to(d);
+    r = Resources(m,k,d);
 }
 
 void to_json(nlohmann::json& j, const Production& p) {

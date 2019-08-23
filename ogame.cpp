@@ -140,17 +140,51 @@ EntityInfo getEntityInfo(Entity entity) {
     }
 }
 
-// struct related functions
+std::int64_t Resources::metal() const{
+    return met;
+}
+
+std::int64_t Resources::crystal() const{
+    return crys;
+}
+
+std::int64_t Resources::deuterium() const{
+    return deut;
+}
+
+std::int64_t Resources::dse(const std::array<float, 3>& traderate) const{
+    return metal() / traderate[0] * traderate[2] + crystal() / traderate[1] * traderate[2] + deuterium();
+}
+
+void Resources::setMetal(std::int64_t m){
+    met = m;
+}
+
+void Resources::setCrystal(std::int64_t k){
+    crys = k;
+}
+
+void Resources::setDeuterium(std::int64_t d){
+    deut = d;
+}
+
+
+Resources::Resources(std::int64_t m, std::int64_t k, std::int64_t d){
+    setMetal(m);
+    setCrystal(k);
+    setDeuterium(d);
+}
+
 Resources& Resources::operator+=(const Resources& rhs) {
     met += rhs.met;
-    crystal += rhs.crystal;
+    crys += rhs.crys;
     deut += rhs.deut;
     return *this;
 }
 
 Resources& Resources::operator-=(const Resources& rhs) {
     met -= rhs.met;
-    crystal -= rhs.crystal;
+    crys -= rhs.crys;
     deut -= rhs.deut;
     return *this;
 }
@@ -161,7 +195,7 @@ Resources& Resources::operator*=(int i) {
 
 Resources& Resources::operator*=(float f) {
     met = std::int64_t(met * f);
-    crystal = std::int64_t(crystal * f);
+    crys = std::int64_t(crys * f);
     deut = std::int64_t(deut * f);
 
     return *this;
@@ -196,12 +230,21 @@ Resources operator*(int l, Resources r) {
 }
 
 bool operator==(const Resources& l, const Resources& r){
-    return l.met == r.met && l.crystal == r.crystal && l.deut == r.deut;
+    return l.metal() == r.metal() && l.crystal() == r.crystal() && l.deuterium() == r.deuterium();
 }
 
 bool operator!=(const Resources& l, const Resources& r){
     return !operator==(l, r);
 }
+
+
+
+
+
+
+
+
+
 
 std::int64_t Production::metal() const{
     return met;
@@ -215,9 +258,6 @@ std::int64_t Production::deuterium() const{
     return deut;
 }
 
-std::int64_t Production::dse(const std::array<float, 3>& traderate) const{
-    return metal() / traderate[0] * traderate[2] + crystal() / traderate[1] * traderate[2] + deuterium();
-}
 
 Production Production::makeProductionPerSeconds(){
     return makeProductionPerSeconds(0,0,0);
@@ -293,11 +333,8 @@ Resources Production::produce(std::chrono::seconds period) const{
 
     double hours = period.count() / 60.0 / 60.0 / 24.0;
 
-    Resources res;
-    res.met = metal() * hours;
-    res.crystal = crystal() * hours;
-    res.deut = deuterium() * hours;
-
+    Resources res(metal() * hours, crystal() * hours, deuterium() * hours);
+    
     return res;
 }
 
@@ -308,10 +345,7 @@ Resources Production::produce2(std::chrono::seconds period) const{
 
     const double ratio = double(period.count()) / double(r.count());
 
-    Resources res;
-    res.met = metal() * ratio;
-    res.crystal = crystal() * ratio;
-    res.deut = deuterium() * ratio;
+    Resources res(metal() * ratio, crystal() * ratio, deuterium() * ratio);
 
     return res;
 }
@@ -359,22 +393,22 @@ Resources getBuildCosts(const EntityInfo& info, int level) {
         return result;
 
     if (info.type == EntityType::Ship) {
-        result.met = info.metBaseCosts * level;
-        result.crystal = info.crysBaseCosts * level;
-        result.deut = info.deutBaseCosts * level;
+        result.setMetal(info.metBaseCosts * level);
+        result.setCrystal(info.crysBaseCosts * level);
+        result.setDeuterium(info.deutBaseCosts * level);
     } else {
-        result.met = (std::int64_t)(info.metBaseCosts * std::pow(info.costFactor, level - 1));
-        result.crystal = (std::int64_t)(info.crysBaseCosts * std::pow(info.costFactor, level - 1));
-        result.deut = (std::int64_t)(info.deutBaseCosts * std::pow(info.costFactor, level - 1));
+        result.setMetal((std::int64_t)(info.metBaseCosts * std::pow(info.costFactor, level - 1)));
+        result.setCrystal((std::int64_t)(info.crysBaseCosts * std::pow(info.costFactor, level - 1)));
+        result.setDeuterium((std::int64_t)(info.deutBaseCosts * std::pow(info.costFactor, level - 1)));
         //result.energy = (std::int64_t)(info.energyBaseCosts * std::pow(info.costFactor, level-1));
     }
 
-    if (result.met < 0)
-        result.met = std::numeric_limits<std::int64_t>::max();
-    if (result.crystal < 0)
-        result.crystal = std::numeric_limits<std::int64_t>::max();
-    if (result.deut < 0)
-        result.deut = std::numeric_limits<std::int64_t>::max();
+    if (result.metal() < 0)
+        result.setMetal(std::numeric_limits<std::int64_t>::max());
+    if (result.crystal() < 0)
+        result.setCrystal(std::numeric_limits<std::int64_t>::max());
+    if (result.deuterium() < 0)
+        result.setDeuterium(std::numeric_limits<std::int64_t>::max());
 
     return result;
 }
@@ -386,17 +420,17 @@ Resources getTotalCosts(const EntityInfo& info, int level) {
     if (level <= 0)
         return result;
 
-    result.met = (std::int64_t)(info.metBaseCosts * (1 - std::pow(info.costFactor, level)) / (-(info.costFactor - 1)));
-    result.crystal = (std::int64_t)(info.crysBaseCosts * (1 - std::pow(info.costFactor, level)) / (-(info.costFactor - 1)));
-    result.deut = (std::int64_t)(info.deutBaseCosts * (1 - std::pow(info.costFactor, level)) / (-(info.costFactor - 1)));
+    result.setMetal((std::int64_t)(info.metBaseCosts * (1 - std::pow(info.costFactor, level)) / (-(info.costFactor - 1))));
+    result.setCrystal((std::int64_t)(info.crysBaseCosts * (1 - std::pow(info.costFactor, level)) / (-(info.costFactor - 1))));
+    result.setDeuterium((std::int64_t)(info.deutBaseCosts * (1 - std::pow(info.costFactor, level)) / (-(info.costFactor - 1))));
     //result.energy = (std::int64_t)(info.energyBaseCosts * (1 - std::pow(info.costFactor, level)) / (-info.costFactor - 1));
 
-    if (result.met < 0)
-        result.met = std::numeric_limits<std::int64_t>::max();
-    if (result.crystal < 0)
-        result.crystal = std::numeric_limits<std::int64_t>::max();
-    if (result.deut < 0)
-        result.deut = std::numeric_limits<std::int64_t>::max();
+    if (result.metal() < 0)
+        result.setMetal(std::numeric_limits<std::int64_t>::max());
+    if (result.crystal() < 0)
+        result.setCrystal(std::numeric_limits<std::int64_t>::max());
+    if (result.deuterium() < 0)
+        result.setDeuterium(std::numeric_limits<std::int64_t>::max());
 
     return result;
 }
@@ -418,7 +452,7 @@ std::chrono::seconds getConstructionTime(const EntityInfo& info, int level, int 
         if (shipyardLevel == 0) {
             return std::chrono::seconds::max();
         } else {
-            const double hours = (costs.met + costs.crystal) / (2500.f * (1 + shipyardLevel) * std::pow(2, naniLevel)) / speedfactor;
+            const double hours = (costs.metal() + costs.crystal()) / (2500.f * (1 + shipyardLevel) * std::pow(2, naniLevel)) / speedfactor;
             const double seconds = hours * 60 * 60;
 
             duration = seconds;
@@ -428,7 +462,7 @@ std::chrono::seconds getConstructionTime(const EntityInfo& info, int level, int 
     case EntityType::Building: {
         const bool exceptionalBuilding = std::find(buildingTimeExceptions.begin(), buildingTimeExceptions.end(), info.entity) != buildingTimeExceptions.end();
         const float factor = exceptionalBuilding ? 1.0f : std::max(4.f - level / 2.f, 1.0f);
-        const double seconds = (costs.met + costs.crystal) * 1.44f / factor / (1 + roboLevel) / std::pow(2, naniLevel) / speedfactor;
+        const double seconds = (costs.metal() + costs.crystal()) * 1.44f / factor / (1 + roboLevel) / std::pow(2, naniLevel) / speedfactor;
         duration = seconds;
 
         break;
@@ -437,7 +471,7 @@ std::chrono::seconds getConstructionTime(const EntityInfo& info, int level, int 
         if (flabLevel == 0) {
             return std::chrono::seconds::max();
         }else{
-            const double hours = (costs.met + costs.crystal) / (1000.f * (1 + flabLevel)) / speedfactor;
+            const double hours = (costs.metal() + costs.crystal()) / (1000.f * (1 + flabLevel)) / speedfactor;
             const double seconds = std::ceil(hours * 60 * 60);
 
             duration = seconds;

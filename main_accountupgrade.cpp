@@ -614,7 +614,7 @@ int detailedmultiupgrade(int argc, char** argv) {
 
             std::chrono::seconds timeToAdvance = std::max(std::chrono::seconds::zero(), longestCompletionTime - bestAccount.accountTime);
 
-            std::int64_t currentResourcesDSE = bestAccount.resources.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deut;
+            std::int64_t currentResourcesDSE = bestAccount.resources.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deuterium();
             auto currentProduction = bestAccount.getCurrentDailyProduction();
             std::int64_t currentProductionPerDayDSE = currentProduction.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deuterium();
             std::int64_t currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
@@ -629,7 +629,7 @@ int detailedmultiupgrade(int argc, char** argv) {
             std::cout << "The required saving time is " << secondsToDHM(bestResult.savingFinishedInDays) << " days.\n";
             std::cout << "Days lost because a queue was full: " << secondsToDHM(bestResult.previousUpgradeDelay) << " days.\n";
 
-            currentResourcesDSE = bestAccount.resources.met / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deut;
+            currentResourcesDSE = bestAccount.resources.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deuterium();
             currentProduction = bestAccount.getCurrentDailyProduction();
             currentProductionPerDayDSE = currentProduction.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deuterium();
             currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
