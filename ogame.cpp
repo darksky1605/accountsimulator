@@ -775,35 +775,27 @@ std::chrono::seconds get_save_duration_symmetrictrade(const Resources& have, /*h
     return secs;
 }
 
-float get_save_duration_notrade(const std::int64_t hm, const std::int64_t hk, const std::int64_t hd, /*have*/
-                                const std::int64_t wm, const std::int64_t wk, const std::int64_t wd, /*want*/
-                                const std::int64_t pm, const std::int64_t pk, const std::int64_t pd /*production*/) {
+std::chrono::seconds get_save_duration_notrade(const Resources& have,
+                                       const Resources& want,
+                                       const Production& production){
 
-    assert(hm >= 0);
-    assert(hk >= 0);
-    assert(hd >= 0);
-    assert(wm >= 0);
-    assert(wk >= 0);
-    assert(wd >= 0);
-    assert(pm >= 0);
-    assert(pk >= 0);
-    assert(pd >= 0);
+    const Resources need = want - have;
 
-    const std::int64_t nm = wm - hm;
-    const std::int64_t nk = wk - hk;
-    const std::int64_t nd = wd - hd;
-
-    if (nm + nk + nd == 0) {
-        return 0.0f;
+    if(need.metal() + need.crystal() + need.deuterium() <= 0){
+        return std::chrono::seconds::zero();
     }
 
-    const float tm = pm == 0 ? (nm == 0 ? 0 : std::numeric_limits<float>::max()) : float(nm) / pm;
-    const float tk = pk == 0 ? (nk == 0 ? 0 : std::numeric_limits<float>::max()) : float(nk) / pk;
-    const float td = pd == 0 ? (nd == 0 ? 0 : std::numeric_limits<float>::max()) : float(nd) / pd;
+    const Resources resPerSecond = production.produce(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::seconds{1}));
 
-    const float save_duration = std::max(tm, std::max(tk, td));
+    const double tm = resPerSecond.metal() == 0 ? (need.metal() == 0 ? 0 : std::numeric_limits<double>::max()) : double(need.metal()) / resPerSecond.metal();
+    const double tk = resPerSecond.crystal() == 0 ? (need.crystal() == 0 ? 0 : std::numeric_limits<double>::max()) : double(need.crystal()) / resPerSecond.crystal();
+    const double td = resPerSecond.deuterium() == 0 ? (need.deuterium() == 0 ? 0 : std::numeric_limits<double>::max()) : double(need.deuterium()) / resPerSecond.deuterium();
 
-    return save_duration;
+    const double seconds = std::max(tm, std::max(tk,td));
+
+    const auto secs = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
+
+    return secs;
 }
 
 std::int64_t getConstructionTimeReductionDM(float totalConstructionTimeDays) {
