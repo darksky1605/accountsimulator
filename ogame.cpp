@@ -747,36 +747,6 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     return result;
 }
 
-std::chrono::seconds get_save_duration_symmetrictrade(const std::int64_t hm, const std::uint64_t hk, const std::int64_t hd, /*have*/
-                                       const std::int64_t wm, const std::int64_t wk, const std::int64_t wd,  /*want*/
-                                       const std::int64_t pm, const std::int64_t pk, const std::int64_t pd,  /*production*/
-                                       const std::array<float, 3>& traderate /*e.g 3:2:1*/) {
-    assert(traderate[0] > 0);
-    assert(traderate[1] > 0);
-    assert(traderate[2] > 0);
-
-    const std::int64_t nm = wm - hm;
-    const std::int64_t nk = wk - hk;
-    const std::int64_t nd = wd - hd;
-
-    const std::int64_t n_dse = nm / traderate[0] * traderate[2] + nk / traderate[1] * traderate[2] + nd;
-
-    if (n_dse <= 0.0f)
-        return std::chrono::seconds::zero();
-
-    const std::int64_t p_dse = pm / traderate[0] * traderate[2] + pk / traderate[1] * traderate[2] + pd;
-
-    if (p_dse <= 0.0f)
-        return std::chrono::seconds::max();
-
-    double save_duration_days = double(n_dse) / p_dse;
-
-    double seconds = std::ceil(save_duration_days * 24 * 60 * 60);
-    auto secs = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
-
-    return secs;
-}
-
 
 std::chrono::seconds get_save_duration_symmetrictrade(const Resources& have, /*have*/
                                        const Resources& want,  /*want*/
