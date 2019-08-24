@@ -328,7 +328,7 @@ Production& Production::operator*=(float f) {
     return *this;
 }
 
-Resources Production::produce2(std::chrono::seconds period) const{
+Resources Production::produce(std::chrono::seconds period) const{
     constexpr auto zero = std::chrono::seconds::zero();
     
     assert(period >= zero);
@@ -793,7 +793,7 @@ std::chrono::seconds get_save_duration_symmetrictrade(const Resources& have, /*h
     if (n_dse <= 0.0)
         return std::chrono::seconds::zero();
 
-    const double p_dse = production.produce2(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::seconds{1})).dse(traderate);
+    const double p_dse = production.produce(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::seconds{1})).dse(traderate);
 
     if (p_dse <= 0.0)
         return std::chrono::seconds::max();

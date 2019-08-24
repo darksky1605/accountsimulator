@@ -257,7 +257,7 @@ public:
     //multiply production by unitless factor, e.g. double production
     Production& operator*=(float f);
 
-    Resources produce2(std::chrono::seconds time) const;
+    Resources produce(std::chrono::seconds time) const;
 };
 
 Production operator+(Production l, const Production& r);

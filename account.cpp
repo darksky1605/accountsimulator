@@ -183,7 +183,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 
     const Production oldProd = getCurrentDailyProduction();
     Production bestProd = oldProd;
-    const double oldDSE = oldProd.produce2(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
+    const double oldDSE = oldProd.produce(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
 
     int bestMetPercent = metPercent;
     int bestCrysPercent = crysPercent;
@@ -264,7 +264,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 
                     newProd *= 24;
 
-                    const double newDSE = newProd.produce2(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
+                    const double newDSE = newProd.produce(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
                     if (newDSE > bestDSE) {
                         bestDSE = newDSE;
                         bestProd = newProd;
@@ -685,7 +685,7 @@ void Account::advanceTime(std::chrono::seconds timestep) {
     assert(timestep <= getTimeUntilNextFinishedEvent());
 
     const ogh::Production currentProduction = getCurrentDailyProduction();
-    addResources(currentProduction.produce2(timestep));
+    addResources(currentProduction.produce(timestep));
 
     for (auto& planet : planets)
         planet.advanceTime(timestep);
