@@ -328,21 +328,6 @@ Production& Production::operator*=(float f) {
     return *this;
 }
 
-Resources Production::produce(std::chrono::seconds period) const{
-    constexpr auto zero = std::chrono::seconds::zero();
-    
-    assert(period >= zero);
-
-    double hours = period.count() / 60.0 / 60.0 / 24.0;
-
-    Resources res;
-    res.met = met * hours;
-    res.crys = crys * hours;
-    res.deut = deut * hours;
-    
-    return res;
-}
-
 Resources Production::produce2(std::chrono::seconds period) const{
     constexpr auto zero = std::chrono::seconds::zero();
     
