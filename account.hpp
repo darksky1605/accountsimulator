@@ -26,8 +26,8 @@ struct PlanetState {
         int deutPercent;
         int fusionPercent;
         int planetId;
-        std::int64_t oldDSE;
-        std::int64_t newDSE;
+        double oldDSE;
+        double newDSE;
         double oldMineProductionFactor;
         double newMineProductionFactor;
     };
