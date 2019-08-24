@@ -183,13 +183,13 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 
     const Production oldProd = getCurrentDailyProduction();
     Production bestProd = oldProd;
-    const std::int64_t oldDSE = oldProd.metal() / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + oldProd.crystal() / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + oldProd.deuterium();
+    const double oldDSE = oldProd.produce2(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
 
     int bestMetPercent = metPercent;
     int bestCrysPercent = crysPercent;
     int bestDeutPercent = deutPercent;
     int bestFusionPercent = fusionPercent;
-    std::int64_t bestDSE = 0;
+    double bestDSE = 0;
 
     const int etechLevel = accountPtr->getResearchLevel(ogh::Entity::Energy);
     const int plasmaLevel = accountPtr->getResearchLevel(ogh::Entity::Plasma);
@@ -264,7 +264,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 
                     newProd *= 24;
 
-                    const std::int64_t newDSE = newProd.metal() / (accountPtr->traderate)[0] * (accountPtr->traderate)[2] + newProd.crystal() / (accountPtr->traderate)[1] * (accountPtr->traderate)[2] + newProd.deuterium();
+                    const double newDSE = newProd.produce2(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
                     if (newDSE > bestDSE) {
                         bestDSE = newDSE;
                         bestProd = newProd;
@@ -685,7 +685,7 @@ void Account::advanceTime(std::chrono::seconds timestep) {
     assert(timestep <= getTimeUntilNextFinishedEvent());
 
     const ogh::Production currentProduction = getCurrentDailyProduction();
-    addResources(currentProduction.produce(timestep));
+    addResources(currentProduction.produce2(timestep));
 
     for (auto& planet : planets)
         planet.advanceTime(timestep);
@@ -980,9 +980,13 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
     ogamehelpers::Production currentProduction = getCurrentDailyProduction();
     std::chrono::seconds saveTimeDaysForJob{0};
 
-    std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.metal(), resources.crystal(), resources.deuterium(),
-                                                               constructionCosts.metal(), constructionCosts.crystal(), constructionCosts.deuterium(),
-                                                               currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
+    // std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.metal(), resources.crystal(), resources.deuterium(),
+    //                                                            constructionCosts.metal(), constructionCosts.crystal(), constructionCosts.deuterium(),
+    //                                                            currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
+    //                                                            traderate);
+    std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources,
+                                                               constructionCosts,
+                                                               currentProduction,
                                                                traderate);
 
     auto makelog = [&]() {
@@ -1012,9 +1016,13 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
 
         nextEventFinishedInDays = getTimeUntilNextFinishedEvent();
 
-        saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.metal(), resources.crystal(), resources.deuterium(),
-                                                               constructionCosts.metal(), constructionCosts.crystal(), constructionCosts.deuterium(),
-                                                               currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
+        // std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.metal(), resources.crystal(), resources.deuterium(),
+        //                                                            constructionCosts.metal(), constructionCosts.crystal(), constructionCosts.deuterium(),
+        //                                                            currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
+        //                                                            traderate);
+        saveTimeDays = ogh::get_save_duration_symmetrictrade(resources,
+                                                               constructionCosts,
+                                                               currentProduction,
                                                                traderate);
 
         if (saveTimeDays == std::chrono::seconds::max())

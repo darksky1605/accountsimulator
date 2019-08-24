@@ -141,19 +141,19 @@ EntityInfo getEntityInfo(Entity entity) {
 }
 
 std::int64_t Resources::metal() const{
-    return met;
+    return std::floor(met);
 }
 
 std::int64_t Resources::crystal() const{
-    return crys;
+    return std::floor(crys);
 }
 
 std::int64_t Resources::deuterium() const{
-    return deut;
+    return std::floor(deut);
 }
 
-std::int64_t Resources::dse(const std::array<float, 3>& traderate) const{
-    return metal() / traderate[0] * traderate[2] + crystal() / traderate[1] * traderate[2] + deuterium();
+double Resources::dse(const std::array<float, 3>& traderate) const{
+    return met / traderate[0] * traderate[2] + crys / traderate[1] * traderate[2] + deut;
 }
 
 void Resources::setMetal(std::int64_t m){
@@ -194,9 +194,9 @@ Resources& Resources::operator*=(int i) {
 }
 
 Resources& Resources::operator*=(float f) {
-    met = std::int64_t(met * f);
-    crys = std::int64_t(crys * f);
-    deut = std::int64_t(deut * f);
+    met = met * f;
+    crys = crys * f;
+    deut = deut * f;
 
     return *this;
 }
@@ -305,23 +305,25 @@ Production Production::makeProduction(std::chrono::seconds r, std::int64_t m, st
 }
 
 Production& Production::operator+=(const Production& rhs) {
-    met += rhs.metal();
-    crys += rhs.crystal();
-    deut += rhs.deuterium();
+    const double ratio = double(r.count()) / double(rhs.r.count());
+    met += rhs.met * ratio;
+    crys += rhs.crys * ratio;
+    deut += rhs.deut * ratio;
     return *this;
 }
 
 Production& Production::operator-=(const Production& rhs) {
-    met -= rhs.metal();
-    crys -= rhs.crystal();
-    deut -= rhs.deuterium();
+    const double ratio = double(r.count()) / double(rhs.r.count());
+    met -= rhs.met * ratio;
+    crys -= rhs.crys * ratio;
+    deut -= rhs.deut * ratio;
     return *this;
 }
 
 Production& Production::operator*=(float f) {
-    met = metal() * f;
-    crys = crystal() * f;
-    deut = deuterium() * f;
+    met = met * f;
+    crys = crys * f;
+    deut = deut * f;
 
     return *this;
 }
@@ -333,7 +335,10 @@ Resources Production::produce(std::chrono::seconds period) const{
 
     double hours = period.count() / 60.0 / 60.0 / 24.0;
 
-    Resources res(metal() * hours, crystal() * hours, deuterium() * hours);
+    Resources res;
+    res.met = met * hours;
+    res.crys = crys * hours;
+    res.deut = deut * hours;
     
     return res;
 }
@@ -345,7 +350,10 @@ Resources Production::produce2(std::chrono::seconds period) const{
 
     const double ratio = double(period.count()) / double(r.count());
 
-    Resources res(metal() * ratio, crystal() * ratio, deuterium() * ratio);
+    Resources res;
+    res.met = met * ratio;
+    res.crys = crys * ratio;
+    res.deut = deut * ratio;
 
     return res;
 }
@@ -780,6 +788,34 @@ std::chrono::seconds get_save_duration_symmetrictrade(const std::int64_t hm, con
 
     double seconds = std::ceil(save_duration_days * 24 * 60 * 60);
     auto secs = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{seconds});
+
+    return secs;
+}
+
+
+std::chrono::seconds get_save_duration_symmetrictrade(const Resources& have, /*have*/
+                                       const Resources& want,  /*want*/
+                                       const Production& production,  /*production*/
+                                       const std::array<float, 3>& traderate /*e.g 3:2:1*/){
+    assert(traderate[0] > 0);
+    assert(traderate[1] > 0);
+    assert(traderate[2] > 0);
+
+    const Resources need = want - have;
+
+    const double n_dse = need.dse(traderate);
+
+    if (n_dse <= 0.0)
+        return std::chrono::seconds::zero();
+
+    const double p_dse = production.produce2(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::seconds{1})).dse(traderate);
+
+    if (p_dse <= 0.0)
+        return std::chrono::seconds::max();
+
+    double save_duration_seconds = std::ceil(n_dse / p_dse);
+
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{save_duration_seconds});
 
     return secs;
 }

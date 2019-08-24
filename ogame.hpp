@@ -187,17 +187,19 @@ std::string getEntityName(Entity e);
 
 EntityInfo getEntityInfo(Entity entity);
 
+struct Production;
 
 struct Resources {
+friend struct Production;    
 private:
-    std::int64_t met = 0;
-    std::int64_t crys = 0;
-    std::int64_t deut = 0;
+    double met = 0;
+    double crys = 0;
+    double deut = 0;
 public:
     std::int64_t metal() const;
     std::int64_t crystal() const;
     std::int64_t deuterium() const;
-    std::int64_t dse(const std::array<float, 3>& traderate) const;  
+    double dse(const std::array<float, 3>& traderate) const;  
 
     void setMetal(std::int64_t m);
     void setCrystal(std::int64_t k);
@@ -226,9 +228,9 @@ bool operator!=(const Resources& l, const Resources& r);
 struct Production {
     std::chrono::seconds r{1}; //how many seconds need to pass to produce met amount of metal
 private:
-    std::int64_t met = 0;
-    std::int64_t crys = 0;
-    std::int64_t deut = 0;
+    double met = 0;
+    double crys = 0;
+    double deut = 0;
 
     static Production makeProduction(std::chrono::seconds r, std::int64_t m, std::int64_t c, std::int64_t d);
 public:
@@ -372,6 +374,11 @@ std::chrono::seconds get_save_duration_symmetrictrade(const std::int64_t hm, con
                                        const std::int64_t wm, const std::int64_t wk, const std::int64_t wd,  /*want*/
                                        const std::int64_t pm, const std::int64_t pk, const std::int64_t pd,  /*production*/
                                        const std::array<float, 3>& traderate /*e.g 3:2:1*/);
+
+std::chrono::seconds get_save_duration_symmetrictrade(const Resources& have, /*have*/
+                                       const Resources& want,  /*want*/
+                                       const Production& production,  /*production*/
+                                       const std::array<float, 3>& traderate /*e.g 3:2:1*/);                                       
 
 float get_save_duration_notrade(const std::int64_t hm, const std::int64_t hk, const std::int64_t hd, /*have*/
                                 const std::int64_t wm, const std::int64_t wk, const std::int64_t wd, /*want*/
