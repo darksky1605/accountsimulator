@@ -100,12 +100,12 @@ int PlanetState::getLevel(const ogh::Entity& entity) const {
     }
 }
 
-PlanetState::Levels PlanetState::getAllCurrentLevels() const{
+BuildingLevels PlanetState::getAllCurrentLevels() const{
     return buildingLevels;
 }
 
-PlanetState::Levels PlanetState::getAllLevelsAfterConstruction() const{
-    Levels l = buildingLevels;
+BuildingLevels PlanetState::getAllLevelsAfterConstruction() const{
+    BuildingLevels l = buildingLevels;
 
     switch (entityInQueue) {
     case ogh::Entity::Metalmine:
@@ -965,6 +965,20 @@ int Account::getBuildingLevel(int planetId, ogamehelpers::Entity entity) const {
     //planetId is 1-based
     const int index = planetId - 1;
     return planets[index].getLevel(entity);
+}
+
+BuildingLevels Account::getAllCurrentLevelsOfPlanet(int planetId) const {
+    assert(planetId > 0 && planetId <= getNumPlanets());
+    //planetId is 1-based
+    const int index = planetId - 1;
+    return planets[index].getAllCurrentLevels();
+}
+
+BuildingLevels Account::getAllLevelsOfPlanetAfterConstruction(int planetId) const{
+    assert(planetId > 0 && planetId <= getNumPlanets());
+    //planetId is 1-based
+    const int index = planetId - 1;
+    return planets[index].getAllLevelsAfterConstruction();
 }
 
 ogamehelpers::Entity Account::getResearchInConstruction() const{
