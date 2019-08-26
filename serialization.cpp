@@ -48,20 +48,20 @@ void from_json(const nlohmann::json& j, Production& p) {
 
 void to_json(json& j, const PlanetState& p) {
     j = json{{"planetId", p.planetId},
-             {"metLevel", p.metLevel},
-             {"crysLevel", p.crysLevel},
-             {"deutLevel", p.deutLevel},
-             {"solarLevel", p.solarLevel},
-             {"fusionLevel", p.fusionLevel},
-             {"labLevel", p.labLevel},
-             {"roboLevel", p.roboLevel},
-             {"naniteLevel", p.naniteLevel},
-             {"shipyardLevel", p.shipyardLevel},
-             {"metalStorageLevel", p.metalStorageLevel},
-             {"crystalStorageLevel", p.crystalStorageLevel},
-             {"deutStorageLevel", p.deutStorageLevel},
-             {"allianceDepotLevel", p.allianceDepotLevel},
-             {"missileSiloLevel", p.missileSiloLevel},
+             {"metLevel", p.buildingLevels.metLevel},
+             {"crysLevel", p.buildingLevels.crysLevel},
+             {"deutLevel", p.buildingLevels.deutLevel},
+             {"solarLevel", p.buildingLevels.solarLevel},
+             {"fusionLevel", p.buildingLevels.fusionLevel},
+             {"labLevel", p.buildingLevels.labLevel},
+             {"roboLevel", p.buildingLevels.roboLevel},
+             {"naniteLevel", p.buildingLevels.naniteLevel},
+             {"shipyardLevel", p.buildingLevels.shipyardLevel},
+             {"metalStorageLevel", p.buildingLevels.metalStorageLevel},
+             {"crystalStorageLevel", p.buildingLevels.crystalStorageLevel},
+             {"deutStorageLevel", p.buildingLevels.deutStorageLevel},
+             {"allianceDepotLevel", p.buildingLevels.allianceDepotLevel},
+             {"missileSiloLevel", p.buildingLevels.missileSiloLevel},
              {"temperature", p.temperature},
              {"metPercent", p.metPercent},
              {"crysPercent", p.crysPercent},
@@ -80,20 +80,20 @@ void to_json(json& j, const PlanetState& p) {
 
 void from_json(const json& j, PlanetState& p) {
     j.at("planetId").get_to(p.planetId);
-    j.at("metLevel").get_to(p.metLevel);
-    j.at("crysLevel").get_to(p.crysLevel);
-    j.at("deutLevel").get_to(p.deutLevel);
-    j.at("solarLevel").get_to(p.solarLevel);
-    j.at("fusionLevel").get_to(p.fusionLevel);
-    j.at("labLevel").get_to(p.labLevel);
-    j.at("roboLevel").get_to(p.roboLevel);
-    j.at("naniteLevel").get_to(p.naniteLevel);
-    j.at("shipyardLevel").get_to(p.shipyardLevel);
-    j.at("metalStorageLevel").get_to(p.metalStorageLevel);
-    j.at("crystalStorageLevel").get_to(p.crystalStorageLevel);
-    j.at("deutStorageLevel").get_to(p.deutStorageLevel);
-    j.at("allianceDepotLevel").get_to(p.allianceDepotLevel);
-    j.at("missileSiloLevel").get_to(p.missileSiloLevel);
+    j.at("metLevel").get_to(p.buildingLevels.metLevel);
+    j.at("crysLevel").get_to(p.buildingLevels.crysLevel);
+    j.at("deutLevel").get_to(p.buildingLevels.deutLevel);
+    j.at("solarLevel").get_to(p.buildingLevels.solarLevel);
+    j.at("fusionLevel").get_to(p.buildingLevels.fusionLevel);
+    j.at("labLevel").get_to(p.buildingLevels.labLevel);
+    j.at("roboLevel").get_to(p.buildingLevels.roboLevel);
+    j.at("naniteLevel").get_to(p.buildingLevels.naniteLevel);
+    j.at("shipyardLevel").get_to(p.buildingLevels.shipyardLevel);
+    j.at("metalStorageLevel").get_to(p.buildingLevels.metalStorageLevel);
+    j.at("crystalStorageLevel").get_to(p.buildingLevels.crystalStorageLevel);
+    j.at("deutStorageLevel").get_to(p.buildingLevels.deutStorageLevel);
+    j.at("allianceDepotLevel").get_to(p.buildingLevels.allianceDepotLevel);
+    j.at("missileSiloLevel").get_to(p.buildingLevels.missileSiloLevel);
     j.at("temperature").get_to(p.temperature);
     j.at("metPercent").get_to(p.metPercent);
     j.at("crysPercent").get_to(p.crysPercent);

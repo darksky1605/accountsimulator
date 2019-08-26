@@ -32,22 +32,27 @@ struct PlanetState {
         double newMineProductionFactor;
     };
 
+    struct Levels{
+        int metLevel = 0;
+        int crysLevel = 0;
+        int deutLevel = 0;
+        int solarLevel = 0;
+        int fusionLevel = 0;
+        int labLevel = 0;
+        int roboLevel = 0;
+        int naniteLevel = 0;
+        int shipyardLevel = 0;
+        int metalStorageLevel = 0;
+        int crystalStorageLevel = 0;
+        int deutStorageLevel = 0;
+        int allianceDepotLevel = 0;
+        int missileSiloLevel = 0;
+    };
+
     int planetId = 0;
 
-    int metLevel = 0;
-    int crysLevel = 0;
-    int deutLevel = 0;
-    int solarLevel = 0;
-    int fusionLevel = 0;
-    int labLevel = 0;
-    int roboLevel = 0;
-    int naniteLevel = 0;
-    int shipyardLevel = 0;
-    int metalStorageLevel = 0;
-    int crystalStorageLevel = 0;
-    int deutStorageLevel = 0;
-    int allianceDepotLevel = 0;
-    int missileSiloLevel = 0;
+    Levels buildingLevels;
+
     int temperature = 0;
     int metPercent = 0;
     int crysPercent = 0;
@@ -81,6 +86,8 @@ struct PlanetState {
     bool constructionInProgress() const;
 
     int getLevel(const ogamehelpers::Entity& entity) const;
+    Levels getAllCurrentLevels() const;
+    Levels getAllLevelsAfterConstruction() const;
 
     //increase level by one and return new level;
     int increaseLevel(ogamehelpers::Entity entity);

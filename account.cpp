@@ -66,33 +66,33 @@ bool PlanetState::constructionInProgress() const {
 int PlanetState::getLevel(const ogh::Entity& entity) const {
     switch (entity) {
     case ogh::Entity::Metalmine:
-        return metLevel;
+        return buildingLevels.metLevel;
     case ogh::Entity::Crystalmine:
-        return crysLevel;
+        return buildingLevels.crysLevel;
     case ogh::Entity::Deutsynth:
-        return deutLevel;
+        return buildingLevels.deutLevel;
     case ogh::Entity::Solar:
-        return solarLevel;
+        return buildingLevels.solarLevel;
     case ogh::Entity::Fusion:
-        return fusionLevel;
+        return buildingLevels.fusionLevel;
     case ogh::Entity::Lab:
-        return labLevel;
+        return buildingLevels.labLevel;
     case ogh::Entity::Robo:
-        return roboLevel;
+        return buildingLevels.roboLevel;
     case ogh::Entity::Nanite:
-        return naniteLevel;
+        return buildingLevels.naniteLevel;
     case ogh::Entity::Shipyard:
-        return shipyardLevel;
+        return buildingLevels.shipyardLevel;
     case ogh::Entity::Metalstorage:
-        return metalStorageLevel;
+        return buildingLevels.metalStorageLevel;
     case ogh::Entity::Crystalstorage:
-        return crystalStorageLevel;
+        return buildingLevels.crystalStorageLevel;
     case ogh::Entity::Deutstorage:
-        return deutStorageLevel;
+        return buildingLevels.deutStorageLevel;
     case ogh::Entity::Alliancedepot:
-        return allianceDepotLevel;
+        return buildingLevels.allianceDepotLevel;
     case ogh::Entity::Silo:
-        return missileSiloLevel;
+        return buildingLevels.missileSiloLevel;
     case ogh::Entity::None:
         return 0;
     default:
@@ -100,41 +100,86 @@ int PlanetState::getLevel(const ogh::Entity& entity) const {
     }
 }
 
+PlanetState::Levels PlanetState::getAllCurrentLevels() const{
+    return buildingLevels;
+}
+
+PlanetState::Levels PlanetState::getAllLevelsAfterConstruction() const{
+    Levels l = buildingLevels;
+
+    switch (entityInQueue) {
+    case ogh::Entity::Metalmine:
+        l.metLevel++; break;
+    case ogh::Entity::Crystalmine:
+        l.crysLevel++; break;
+    case ogh::Entity::Deutsynth:
+        l.deutLevel++; break;
+    case ogh::Entity::Solar:
+        l.solarLevel++; break;
+    case ogh::Entity::Fusion:
+        l.fusionLevel++; break;
+    case ogh::Entity::Lab:
+        l.labLevel++; break;
+    case ogh::Entity::Robo:
+        l.roboLevel++; break;
+    case ogh::Entity::Nanite:
+        l.naniteLevel++; break;
+    case ogh::Entity::Shipyard:
+        l.shipyardLevel++; break;
+    case ogh::Entity::Metalstorage:
+        l.metalStorageLevel++; break;
+    case ogh::Entity::Crystalstorage:
+        l.crystalStorageLevel++; break;
+    case ogh::Entity::Deutstorage:
+        l.deutStorageLevel++; break;
+    case ogh::Entity::Alliancedepot:
+        l.allianceDepotLevel++; break;
+    case ogh::Entity::Silo:
+        l.missileSiloLevel++; break;
+    case ogh::Entity::None:
+        break;
+    default:
+        break;
+    }
+
+    return l;
+}
+
 //increase level by one and return new level;
 int PlanetState::increaseLevel(ogamehelpers::Entity entity) {
     switch (entity) {
     case ogh::Entity::Metalmine:
-        return ++metLevel;
+        return ++buildingLevels.metLevel;
     case ogh::Entity::Crystalmine:
-        return ++crysLevel;
+        return ++buildingLevels.crysLevel;
     case ogh::Entity::Deutsynth:
-        return ++deutLevel;
+        return ++buildingLevels.deutLevel;
     case ogh::Entity::Solar:
-        return ++solarLevel;
+        return ++buildingLevels.solarLevel;
     case ogh::Entity::Fusion:
-        return ++fusionLevel;
+        return ++buildingLevels.fusionLevel;
     case ogh::Entity::Lab:
-        return ++labLevel;
+        return ++buildingLevels.labLevel;
     case ogh::Entity::Robo:
-        return ++roboLevel;
+        return ++buildingLevels.roboLevel;
     case ogh::Entity::Nanite:
-        return ++naniteLevel;
+        return ++buildingLevels.naniteLevel;
     case ogh::Entity::Shipyard:
-        return ++shipyardLevel;
+        return ++buildingLevels.shipyardLevel;
     case ogh::Entity::Metalstorage:
-        return ++metalStorageLevel;
+        return ++buildingLevels.metalStorageLevel;
     case ogh::Entity::Crystalstorage:
-        return ++crystalStorageLevel;
+        return ++buildingLevels.crystalStorageLevel;
     case ogh::Entity::Deutstorage:
-        return ++deutStorageLevel;
+        return ++buildingLevels.deutStorageLevel;
     case ogh::Entity::Alliancedepot:
-        return ++allianceDepotLevel;
+        return ++buildingLevels.allianceDepotLevel;
     case ogh::Entity::Silo:
-        return ++missileSiloLevel;
+        return ++buildingLevels.missileSiloLevel;
     case ogh::Entity::None:
         return 0;
     default:
-        throw std::runtime_error("planetstate getLevel error " + ogh::getEntityName(entity));
+        throw std::runtime_error("planetstate increaseLevel error " + ogh::getEntityName(entity));
     }
 }
 
@@ -153,11 +198,11 @@ ogamehelpers::Entity PlanetState::getBuildingInConstruction() const{
 }
 
 void PlanetState::calculateDailyProduction() {
-    dailyProduction = ogh::getDailyProduction(metLevel, getMetItem(), metPercent,
-                                                crysLevel, getCrysItem(), crysPercent,
-                                                deutLevel, getDeutItem(), deutPercent,
-                                                solarLevel, solarplantPercent,
-                                                fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
+    dailyProduction = ogh::getDailyProduction(getLevel(ogh::Entity::Metalmine), getMetItem(), metPercent,
+                                                getLevel(ogh::Entity::Crystalmine), getCrysItem(), crysPercent,
+                                                getLevel(ogh::Entity::Deutsynth), getDeutItem(), deutPercent,
+                                                getLevel(ogh::Entity::Solar), solarplantPercent,
+                                                getLevel(ogh::Entity::Fusion), fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                 temperature, sats, satsPercent,
                                                 accountPtr->getResearchLevel(ogh::Entity::Plasma), accountPtr->speedfactor,
                                                 accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff());
@@ -202,6 +247,12 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     const double officerfactor = (geologistpercent + staffpercent) / 100.;
 
     const Production defaultProduction = ogh::getDefaultProduction();
+
+    const int metLevel = getLevel(ogh::Entity::Metalmine);
+    const int crysLevel = getLevel(ogh::Entity::Crystalmine);
+    const int deutLevel = getLevel(ogh::Entity::Deutsynth);
+    const int solarLevel = getLevel(ogh::Entity::Solar);
+    const int fusionLevel = getLevel(ogh::Entity::Fusion);
 
     const double metBaseProd = 30 * metLevel * std::pow(1.1, metLevel);
     const double crysBaseProd = 20 * crysLevel * std::pow(1.1, crysLevel);
@@ -787,7 +838,7 @@ int Account::getTotalLabLevel() const {
     std::vector<int> labsPerPlanet;
     labsPerPlanet.reserve(getNumPlanets());
     for (const auto& p : planets)
-        labsPerPlanet.emplace_back(p.labLevel);
+        labsPerPlanet.emplace_back(p.getLevel(ogh::Entity::Lab));
 
     return ogh::getTotalLabLevel(labsPerPlanet, getResearchLevel(ogh::Entity::Researchnetwork));
 }
@@ -1257,7 +1308,13 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
         sstream.str("");
     }
 
-    const std::chrono::seconds constructionTime = ogh::getConstructionTime(entityInfo, upgradeLevel, planetState.roboLevel, planetState.naniteLevel, planetState.shipyardLevel, totalLabLevel, speedfactor);
+    const std::chrono::seconds constructionTime = ogh::getConstructionTime(entityInfo, 
+                                                                            upgradeLevel, 
+                                                                            planetState.getLevel(ogh::Entity::Robo), 
+                                                                            planetState.getLevel(ogh::Entity::Nanite), 
+                                                                            planetState.getLevel(ogh::Entity::Shipyard), 
+                                                                            totalLabLevel, 
+                                                                            speedfactor);
 
     sstream << "Construction time in seconds: " << constructionTime.count();
     log(sstream.str());
