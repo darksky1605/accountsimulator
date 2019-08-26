@@ -86,8 +86,13 @@ struct UpgradeListResult {
     }
 };
 
+struct PerformUpgradeOptions{
+    int astroMode = 0;
+};
+
 UpgradeListResult perform_upgrades(Account& account,
-                                   const std::vector<PermutationGroup>& planned_upgrades) {
+                                   const std::vector<PermutationGroup>& planned_upgrades,
+                                   const PerformUpgradeOptions& options) {
 
     using ogh::EntityType;
 
@@ -254,6 +259,9 @@ void usage(int argc, char** argv) {
     std::cout << "--logfile file: Write program trace to file.\n\n";
     std::cout << "--speed ecospeedfactor: Economy speed factor of universe. Overwrites account setting.\n\n";
     std::cout << "--threads num_threads: Number of CPU threads to use for permutations. Default 1.\n\n";
+    std::cout << "--astromode mode: Default 0.\n\n";
+    std::cout << "  mode = 0: A new planet is automatically upgraded to the levels of the second newest planet. This is not done in optimal manner.\n";
+    std::cout << "  mode = 1: All buildings on the new planet have to be specified explicitly in the upgrade file. Otherwise the new planet will remain at 0.\n";
     std::cout << "--permute mode: Default 0.\n\n";
     std::cout << "  mode = 0: No permutation.\n";
     std::cout << "  mode = 1: Find permutation with shortest completion time.\n";
@@ -314,6 +322,7 @@ int detailedmultiupgrade(int argc, char** argv) {
     bool use_dhm_format = false;
     bool appendLog = false;
     bool showPercentageChanges = false;
+    int astroMode = 0;
 
     for (int i = 1; i < argc; i++) {
         if (std::string(argv[i]) == "--printlist") {
@@ -374,6 +383,13 @@ int detailedmultiupgrade(int argc, char** argv) {
             continue;
         }
 
+        if (std::string(argv[i]) == "--astromode") {
+            assert(i + 1 < argc);
+            astroMode = std::atoi(argv[i + 1]);
+            i++;
+            continue;
+        }
+
         if (std::string(argv[i]) == "--permutations") {
             assert(i + 1 < argc);
             num_best_permutations = std::atoi(argv[i + 1]);
@@ -396,6 +412,8 @@ int detailedmultiupgrade(int argc, char** argv) {
         std::cout << "Speed factor: " << speedfactor << '\n';
     }
     std::cout << "Permutation mode: " << permutationMode << '\n';
+    std::cout << "Show the n best permutations: " << num_best_permutations << '\n';
+    std::cout << "Astro mode: " << astroMode << '\n';
     std::cout << "printList: " << printList << '\n';
     std::cout << "printAllLists: " << printAllLists << '\n';
     std::cout << "showPercentageChanges: " << showPercentageChanges << '\n';
@@ -433,8 +451,11 @@ int detailedmultiupgrade(int argc, char** argv) {
             std::cout << x << std::endl;
     }
 
+    PerformUpgradeOptions upOpts;
+    upOpts.astroMode = astroMode;
+
     if (permutationMode == 0) {
-        auto result = perform_upgrades(account, planned_upgrades);
+        auto result = perform_upgrades(account, planned_upgrades, upOpts);
 
         if (result.success) {
 
@@ -535,7 +556,7 @@ int detailedmultiupgrade(int argc, char** argv) {
             auto permutationAccount = account;
 
             //perform permutation of upgrades on permutation account
-            UpgradeListResult nextResult = perform_upgrades(permutationAccount, upgradepermutation);
+            UpgradeListResult nextResult = perform_upgrades(permutationAccount, upgradepermutation, upOpts);
 
             if (nextResult.success) {
 
