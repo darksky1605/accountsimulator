@@ -90,6 +90,102 @@ struct PerformUpgradeOptions{
     int astroMode = 0;
 };
 
+UpgradeListResult upgradeNewPlanetAfterAstro(Account& account){
+    UpgradeListResult result;
+    result.upgradeResults.reserve(200);
+
+    const int newPlanetId = account.getNumPlanets();
+    const int planetReferenceId = newPlanetId - 1;
+    if(planetReferenceId == 0){
+        return {};
+    }
+    
+    BuildingLevels referenceLevels = account.getAllLevelsOfPlanetAfterConstruction(planetReferenceId);
+
+    auto process = [&](ogh::Entity entity){
+        auto stats = account.processBuildingJob(newPlanetId, entity);
+        UpgradeResult upgradeResult{
+            stats,
+            entity,
+            newPlanetId,
+        };
+        result.upgradeResults.emplace_back(std::move(upgradeResult));
+
+        if (account.accountTime == std::chrono::seconds::max() || !stats.success)
+            assert(false);
+    };
+
+    /*
+    Upgrade plan: 
+    Robo 
+    Nani
+    Shipyard
+    Sats
+    Met Crys Deut Solar. use Fusion plant instead of solar if max solar level is reached.
+    Build remaining buildings in any order
+    */
+
+    for(int level = 1; level <= referenceLevels.roboLevel; level++){
+        process(ogh::Entity::Robo);
+    }
+    for(int level = 1; level <= referenceLevels.naniteLevel; level++){
+        process(ogh::Entity::Nanite);
+    }
+    for(int level = 1; level <= referenceLevels.shipyardLevel; level++){
+        process(ogh::Entity::Shipyard);
+    }
+
+    int m = 0;
+    int k = 0; 
+    int d = 0;
+    int s = 0;
+    int f = 0;
+    while(m < referenceLevels.metLevel || k < referenceLevels.crysLevel || d < referenceLevels.deutLevel || s < referenceLevels.solarLevel || f < referenceLevels.fusionLevel){
+        if(m < referenceLevels.metLevel){
+            process(ogh::Entity::Metalmine);
+            m++;
+        }
+        if(k < referenceLevels.crysLevel){
+            process(ogh::Entity::Crystalmine);
+            k++;
+        }
+        if(d < referenceLevels.deutLevel){
+            process(ogh::Entity::Deutsynth);
+            d++;
+        }
+        if(s < referenceLevels.solarLevel){
+            process(ogh::Entity::Solar);
+            s++;
+        }else{
+            if(f < referenceLevels.fusionLevel){
+                process(ogh::Entity::Fusion);
+                f++;
+            }
+        }
+    }
+
+    for(int level = 1; level <= referenceLevels.labLevel; level++){
+        process(ogh::Entity::Lab);
+    }
+    for(int level = 1; level <= referenceLevels.metalStorageLevel; level++){
+        process(ogh::Entity::Metalstorage);
+    }
+    for(int level = 1; level <= referenceLevels.crystalStorageLevel; level++){
+        process(ogh::Entity::Crystalstorage);
+    }
+    for(int level = 1; level <= referenceLevels.deutStorageLevel; level++){
+        process(ogh::Entity::Deutstorage);
+    }
+    for(int level = 1; level <= referenceLevels.allianceDepotLevel; level++){
+        process(ogh::Entity::Alliancedepot);
+    }
+    for(int level = 1; level <= referenceLevels.missileSiloLevel; level++){
+        process(ogh::Entity::Silo);
+    }
+
+    return result;
+}
+
 UpgradeListResult perform_upgrades(Account& account,
                                    const std::vector<PermutationGroup>& planned_upgrades,
                                    const PerformUpgradeOptions& options) {
