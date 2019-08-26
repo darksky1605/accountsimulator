@@ -92,6 +92,9 @@ struct PlanetState {
     //increase level by one and return new level;
     int increaseLevel(ogamehelpers::Entity entity);
 
+    void buildSats(int numsats);
+    int getSats() const;
+
     void startConstruction(std::chrono::seconds timeDays, const ogamehelpers::Entity& entity);
 
     ogamehelpers::Entity getBuildingInConstruction() const;
@@ -285,7 +288,7 @@ struct Account {
     int getBuildingLevel(int planetId, ogamehelpers::Entity entity) const;
 
     BuildingLevels getAllCurrentLevelsOfPlanet(int planetId) const;
-    
+
     BuildingLevels getAllLevelsOfPlanetAfterConstruction(int planetId) const;
 
     ogamehelpers::Entity getResearchInConstruction() const;
@@ -313,6 +316,10 @@ struct Account {
     bool hasAdmiral() const;
 
     bool hasStaff() const;
+
+    void buildSats(int planetId, int numsats);
+
+    int getSats(int planetId) const;
 
     UpgradeStats processResearchJob(ogamehelpers::Entity entity);
 

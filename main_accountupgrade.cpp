@@ -135,6 +135,8 @@ UpgradeListResult upgradeNewPlanetAfterAstro(Account& account){
         process(ogh::Entity::Shipyard);
     }
 
+    account.buildSats(planetReferenceId, account.getSats(planetReferenceId));
+
     int m = 0;
     int k = 0; 
     int d = 0;

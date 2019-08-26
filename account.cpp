@@ -183,6 +183,15 @@ int PlanetState::increaseLevel(ogamehelpers::Entity entity) {
     }
 }
 
+void PlanetState::buildSats(int numsats){
+    assert(numsats >= 0);
+    sats += numsats;
+}
+
+int PlanetState::getSats() const{
+    return sats;
+}
+
 void PlanetState::startConstruction(std::chrono::seconds durationOfConstruction, const ogh::Entity& entity) {
     constexpr auto zero = std::chrono::seconds::zero();
 
@@ -1129,6 +1138,20 @@ bool Account::hasAdmiral() const {
 
 bool Account::hasStaff() const {
     return hasCommander() && hasEngineer() && hasTechnocrat() && hasGeologist() && hasAdmiral();
+}
+
+void Account::buildSats(int planetId, int numsats){
+    assert(planetId > 0 && planetId <= getNumPlanets());
+    //planetId is 1-based
+    const int index = planetId - 1;
+    return planets[index].buildSats(numsats); 
+}
+
+int Account::getSats(int planetId) const{
+    assert(planetId > 0 && planetId <= getNumPlanets());
+    //planetId is 1-based
+    const int index = planetId - 1;
+    return planets[index].getSats(); 
 }
 
 Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
