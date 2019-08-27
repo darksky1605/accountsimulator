@@ -328,7 +328,7 @@ Production& Production::operator*=(float f) {
     return *this;
 }
 
-Resources Production::produce(std::chrono::seconds period) const{
+Resources Production::produceForSeconds(std::chrono::seconds period) const{
     constexpr auto zero = std::chrono::seconds::zero();
     
     assert(period >= zero);
@@ -342,6 +342,23 @@ Resources Production::produce(std::chrono::seconds period) const{
 
     return res;
 }
+
+Resources Production::produce(std::chrono::seconds period) const{
+    const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(period);
+    return produceForSeconds(seconds);
+}
+
+Resources Production::produce(std::chrono::minutes period) const{
+    const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(period);
+    return produceForSeconds(seconds);
+}
+
+Resources Production::produce(std::chrono::hours period) const{
+    const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(period);
+    return produceForSeconds(seconds);
+}
+
+
 
 Production operator+(Production l, const Production& r) {
     l += r;

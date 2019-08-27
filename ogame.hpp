@@ -233,6 +233,7 @@ private:
     double deut = 0;
 
     static Production makeProduction(std::chrono::seconds r, std::int64_t m, std::int64_t c, std::int64_t d);
+    Resources produceForSeconds(std::chrono::seconds period) const;
 public:
     std::int64_t metal() const;
     std::int64_t crystal() const;
@@ -257,7 +258,9 @@ public:
     //multiply production by unitless factor, e.g. double production
     Production& operator*=(float f);
 
-    Resources produce(std::chrono::seconds time) const;
+    Resources produce(std::chrono::seconds period) const;
+    Resources produce(std::chrono::minutes period) const;
+    Resources produce(std::chrono::hours period) const;
 };
 
 Production operator+(Production l, const Production& r);
