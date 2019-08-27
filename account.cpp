@@ -237,7 +237,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 
     const Production oldProd = getCurrentDailyProduction();
     Production bestProd = oldProd;
-    const double oldDSE = oldProd.produce(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
+    const double oldDSE = oldProd.produce(std::chrono::hours{24}).dse(accountPtr->traderate);
 
     int bestMetPercent = metPercent;
     int bestCrysPercent = crysPercent;
@@ -322,7 +322,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 
                     const Production newProd = Production::makeProductionPerHour(round(result_met), round(result_crystal), round(result_deut));
 
-                    const double newDSE = newProd.produce(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
+                    const double newDSE = newProd.produce(std::chrono::hours{24}).dse(accountPtr->traderate);
                     if (newDSE > bestDSE) {
                         bestDSE = newDSE;
                         bestProd = newProd;
