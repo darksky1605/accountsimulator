@@ -286,7 +286,7 @@ std::vector<PermutationGroup> parseUpgradeFile(const std::string& filename) {
                             upgradeGroup = UpgradeGroup{};
                         }
                     } else if (is_number(tokens[i])) {
-                        int loc = std::stoi(tokens[i]) - 1;
+                        int loc = std::stoi(tokens[i]);
                         assert(loc >= 0);
                         locations.emplace_back(loc);
                     } else {

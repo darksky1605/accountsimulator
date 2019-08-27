@@ -71,8 +71,8 @@ struct UpgradeTask {
         };
 
         if (locations[0] == allCurrentPlanetsLocation) {
-            for (int i = 0; i < numPlanets; i++) {
-                makeJob(i);
+            for (int planetNumber = 1; planetNumber <= numPlanets; planetNumber++) {
+                makeJob(planetNumber);
             }
         } else {
             std::for_each(locations.begin(), locations.end(), makeJob);
@@ -125,11 +125,11 @@ struct UpgradeGroup {
 
             if (tasks[0].getLocations()[0] == UpgradeTask::allCurrentPlanetsLocation) {
                 std::vector<UpgradeTask> result;
-                int maxPos = numPlanets;
-                for (int pos = 0; pos < maxPos; pos++) {
+                
+                for (int planetNumber = 1; planetNumber <= numPlanets; planetNumber++) {
                     for (const auto& task : tasks) {
                         result.emplace_back(task);
-                        result.back().locations = std::vector<int>{pos};
+                        result.back().locations = std::vector<int>{planetNumber};
                     }
                 }
                 return result;
@@ -147,11 +147,10 @@ struct UpgradeGroup {
         } else {
             if (tasks[0].getLocations()[0] == UpgradeTask::allCurrentPlanetsLocation) {
                 std::vector<UpgradeTask> result;
-                int maxPos = numPlanets;
                 for (const auto& task : tasks) {
-                    for (int pos = 0; pos < maxPos; pos++) {
+                    for (int planetNumber = 1; planetNumber <= numPlanets; planetNumber++) {
                         result.emplace_back(task);
-                        result.back().locations = std::vector<int>{pos};
+                        result.back().locations = std::vector<int>{planetNumber};
                     }
                 }
                 return result;

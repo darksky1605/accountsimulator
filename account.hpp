@@ -277,7 +277,7 @@ struct Account {
 
     std::vector<PercentageChange> getPercentageChanges() const;
 
-    void startConstruction(int planet, std::chrono::seconds timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
+    void startConstruction(int planetNumber, std::chrono::seconds timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
 
     void startResearch(std::chrono::seconds timeDays, const ogamehelpers::Entity& entity, const ogamehelpers::Resources& constructionCosts);
 
@@ -285,15 +285,15 @@ struct Account {
 
     int getResearchLevel(ogamehelpers::Entity entity) const;
 
-    int getBuildingLevel(int planetId, ogamehelpers::Entity entity) const;
+    int getBuildingLevel(int planetNumber, ogamehelpers::Entity entity) const;
 
-    BuildingLevels getAllCurrentLevelsOfPlanet(int planetId) const;
+    BuildingLevels getAllCurrentLevelsOfPlanet(int planetNumber) const;
 
-    BuildingLevels getAllLevelsOfPlanetAfterConstruction(int planetId) const;
+    BuildingLevels getAllLevelsOfPlanetAfterConstruction(int planetNumber) const;
 
     ogamehelpers::Entity getResearchInConstruction() const;
 
-    ogamehelpers::Entity getBuildingInConstruction(int planetId) const;
+    ogamehelpers::Entity getBuildingInConstruction(int planetNumber) const;
 
     void addResources(const ogamehelpers::Resources& res);
 
@@ -317,13 +317,13 @@ struct Account {
 
     bool hasStaff() const;
 
-    void buildSats(int planetId, int numsats);
+    void buildSats(int planetNumber, int numsats);
 
-    int getSats(int planetId) const;
+    int getSats(int planetNumber) const;
 
     UpgradeStats processResearchJob(ogamehelpers::Entity entity);
 
-    UpgradeStats processBuildingJob(int planetId, ogamehelpers::Entity entity);
+    UpgradeStats processBuildingJob(int planetNumber, ogamehelpers::Entity entity);
 };
 
 #endif

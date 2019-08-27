@@ -243,7 +243,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     int bestCrysPercent = crysPercent;
     int bestDeutPercent = deutPercent;
     int bestFusionPercent = fusionPercent;
-    double bestDSE = 0;
+    double bestDSE = oldDSE;
 
     const int etechLevel = accountPtr->getResearchLevel(ogh::Entity::Energy);
     const int plasmaLevel = accountPtr->getResearchLevel(ogh::Entity::Plasma);
@@ -383,6 +383,8 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
             bestDSE,
             oldmineproductionfactor,
             newmineproductionfactor};
+
+        assert(oldDSE <= bestDSE);
 
         return result;
 
@@ -945,11 +947,11 @@ void Account::recordPercentageChange(const PlanetState::SetPercentsResult& resul
     }
 }
 
-void Account::startConstruction(int planet, std::chrono::seconds duration, const ogh::Entity& entity, const ogh::Resources& constructionCosts) {
-    assert(planet >= 0);
-    assert(planet < getNumPlanets());
+void Account::startConstruction(int planetNumber, std::chrono::seconds duration, const ogh::Entity& entity, const ogh::Resources& constructionCosts) {
+    assert(planetNumber > 0);
+    assert(planetNumber <= getNumPlanets());
 
-    planets[planet].startConstruction(duration, entity);
+    planets[planetNumber-1].startConstruction(duration, entity);
     updateAccountResourcesAfterConstructionStart(constructionCosts);
     registerNewEvent(accountTime + duration);
 }
@@ -969,24 +971,27 @@ int Account::getResearchLevel(ogamehelpers::Entity entity) const {
     return researches.getLevel(entity);
 }
 
-int Account::getBuildingLevel(int planetId, ogamehelpers::Entity entity) const {
-    assert(planetId > 0 && planetId <= getNumPlanets());
-    //planetId is 1-based
-    const int index = planetId - 1;
+int Account::getBuildingLevel(int planetNumber, ogamehelpers::Entity entity) const {
+    assert(planetNumber > 0);
+    assert(planetNumber <= getNumPlanets());
+    //planetNumber is 1-based
+    const int index = planetNumber - 1;
     return planets[index].getLevel(entity);
 }
 
-BuildingLevels Account::getAllCurrentLevelsOfPlanet(int planetId) const {
-    assert(planetId > 0 && planetId <= getNumPlanets());
-    //planetId is 1-based
-    const int index = planetId - 1;
+BuildingLevels Account::getAllCurrentLevelsOfPlanet(int planetNumber) const {
+    assert(planetNumber > 0);
+    assert(planetNumber <= getNumPlanets());
+    //planetNumber is 1-based
+    const int index = planetNumber - 1;
     return planets[index].getAllCurrentLevels();
 }
 
-BuildingLevels Account::getAllLevelsOfPlanetAfterConstruction(int planetId) const{
-    assert(planetId > 0 && planetId <= getNumPlanets());
-    //planetId is 1-based
-    const int index = planetId - 1;
+BuildingLevels Account::getAllLevelsOfPlanetAfterConstruction(int planetNumber) const{
+    assert(planetNumber > 0);
+    assert(planetNumber <= getNumPlanets());
+    //planetNumber is 1-based
+    const int index = planetNumber - 1;
     return planets[index].getAllLevelsAfterConstruction();
 }
 
@@ -994,10 +999,11 @@ ogamehelpers::Entity Account::getResearchInConstruction() const{
     return researches.entityInQueue;
 }
 
-ogamehelpers::Entity Account::getBuildingInConstruction(int planetId) const{
-    assert(planetId > 0 && planetId <= getNumPlanets());
-    //planetId is 1-based
-    const int index = planetId - 1;
+ogamehelpers::Entity Account::getBuildingInConstruction(int planetNumber) const{
+    assert(planetNumber > 0);
+    assert(planetNumber <= getNumPlanets());
+    //planetNumber is 1-based
+    const int index = planetNumber - 1;
     return planets[index].getBuildingInConstruction();
 }
 
@@ -1140,17 +1146,19 @@ bool Account::hasStaff() const {
     return hasCommander() && hasEngineer() && hasTechnocrat() && hasGeologist() && hasAdmiral();
 }
 
-void Account::buildSats(int planetId, int numsats){
-    assert(planetId > 0 && planetId <= getNumPlanets());
+void Account::buildSats(int planetNumber, int numsats){
+    assert(planetNumber > 0);
+    assert(planetNumber <= getNumPlanets());
     //planetId is 1-based
-    const int index = planetId - 1;
+    const int index = planetNumber - 1;
     return planets[index].buildSats(numsats); 
 }
 
-int Account::getSats(int planetId) const{
-    assert(planetId > 0 && planetId <= getNumPlanets());
+int Account::getSats(int planetNumber) const{
+    assert(planetNumber > 0);
+    assert(planetNumber <= getNumPlanets());
     //planetId is 1-based
-    const int index = planetId - 1;
+    const int index = planetNumber - 1;
     return planets[index].getSats(); 
 }
 
@@ -1268,7 +1276,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     return stats;
 }
 
-Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity entity) {
+Account::UpgradeStats Account::processBuildingJob(int planetNumber, ogh::Entity entity) {
     using ogamehelpers::Entity;
     using ogamehelpers::EntityInfo;
     using ogamehelpers::EntityType;
@@ -1289,13 +1297,13 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     std::stringstream sstream;
 
     const EntityInfo entityInfo = ogh::getEntityInfo(entity);
-    const int upgradeLocation = planetId;
+    const int upgradeLocation = planetNumber-1;
 
     assert(entityInfo.type == EntityType::Building && upgradeLocation >= 0 && upgradeLocation < getNumPlanets());
 
     const int upgradeLevel = 1 + planets[upgradeLocation].getLevel(entity) + (planets[upgradeLocation].entityInQueue == entity ? 1 : 0);
 
-    sstream << "Planet " << (upgradeLocation + 1) << " processing " << ogh::getEntityName(entity) << " " << upgradeLevel << '\n';
+    sstream << "Planet " << planetNumber << " processing " << ogh::getEntityName(entity) << " " << upgradeLevel << '\n';
     log(sstream.str());
     sstream.str("");
 
@@ -1360,7 +1368,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetId, ogh::Entity enti
     stats.constructionBeginDays = accountTime;
     stats.constructionTimeDays = constructionTime;
 
-    startConstruction(upgradeLocation, constructionTime, entity, constructionCosts);
+    startConstruction(planetNumber, constructionTime, entity, constructionCosts);
 
     sstream << "Total Elapsed time: " << accountTime.count() << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob.count() 
             << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin).count() << " days\n";
