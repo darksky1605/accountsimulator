@@ -320,9 +320,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
                     result_crystal *= accountPtr->speedfactor;
                     result_deut *= accountPtr->speedfactor;
 
-                    Production newProd = Production::makeProductionPerDay(round(result_met), round(result_crystal), round(result_deut));
-
-                    newProd *= 24;
+                    const Production newProd = Production::makeProductionPerHour(round(result_met), round(result_crystal), round(result_deut));
 
                     const double newDSE = newProd.produce(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{24})).dse(accountPtr->traderate);
                     if (newDSE > bestDSE) {
