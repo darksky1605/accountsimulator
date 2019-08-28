@@ -746,12 +746,11 @@ int detailedmultiupgrade(int argc, char** argv) {
 
             std::chrono::seconds timeToAdvance = std::max(std::chrono::seconds::zero(), longestCompletionTime - bestAccount.accountTime);
 
-            std::int64_t currentResourcesDSE = bestAccount.resources.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deuterium();
+            std::int64_t currentResourcesDSE = bestAccount.resources.dse(bestAccount.traderate);
             auto currentProduction = bestAccount.getCurrentDailyProduction();
-            std::int64_t currentProductionPerDayDSE = currentProduction.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deuterium();
-            std::int64_t currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
+            std::int64_t currentProductionDSE = currentProduction.produce(std::chrono::hours{1}).dse(bestAccount.traderate);
 
-            std::cout << "Account after " << secondsToDHM(bestAccount.accountTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
+            std::cout << "Account after " << secondsToDHM(bestAccount.accountTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionDSE << " DSE/h.\n";
             
 
             bestAccount.advanceTime(timeToAdvance);
@@ -761,12 +760,11 @@ int detailedmultiupgrade(int argc, char** argv) {
             std::cout << "The required saving time is " << secondsToDHM(bestResult.savingFinishedInDays) << " days.\n";
             std::cout << "Days lost because a queue was full: " << secondsToDHM(bestResult.previousUpgradeDelay) << " days.\n";
 
-            currentResourcesDSE = bestAccount.resources.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + bestAccount.resources.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + bestAccount.resources.deuterium();
+            currentResourcesDSE = bestAccount.resources.dse(bestAccount.traderate);
             currentProduction = bestAccount.getCurrentDailyProduction();
-            currentProductionPerDayDSE = currentProduction.metal() / (bestAccount.traderate)[0] * (bestAccount.traderate)[2] + currentProduction.crystal() / (bestAccount.traderate)[1] * (bestAccount.traderate)[2] + currentProduction.deuterium();
-            currentProductionPerHourDSE = currentProductionPerDayDSE / 24.0f;
+            currentProductionDSE = currentProduction.produce(std::chrono::hours{1}).dse(bestAccount.traderate);
 
-            std::cout << "Account after " << secondsToDHM(longestCompletionTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionPerHourDSE << " DSE/h.\n";
+            std::cout << "Account after " << secondsToDHM(longestCompletionTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionDSE << " DSE/h.\n";
 
             std::cout << '\n';
 
