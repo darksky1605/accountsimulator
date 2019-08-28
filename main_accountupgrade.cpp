@@ -603,10 +603,23 @@ int detailedmultiupgrade(int argc, char** argv) {
                 auto printChange = [&](const auto& change) {
                     std::string timestring = secondsToDHM(change.time);
                     auto& stream = std::cout;
-                    stream << timestring << " Planet " << change.planetId << ": Changed percents to "
-                           << "m " << change.metPercent << ", c " << change.crysPercent
-                           << ", d " << change.deutPercent << ", f " << change.fusionPercent
-                           << " after construction of " << change.finishedName << " " << change.finishedLevel
+                    stream << timestring << " Planet " << change.planetId << ": ";
+                    
+                    if(change.oldMetPercent != change.metPercent 
+                            || change.oldCrysPercent != change.crysPercent 
+                            || change.oldDeutPercent != change.deutPercent 
+                            || change.oldFusionPercent != change.fusionPercent){
+
+                        stream << "Changed percents from m " << change.oldMetPercent << ", c " << change.oldCrysPercent
+                            << ", d " << change.oldDeutPercent << ", f " << change.oldFusionPercent
+                            << " to m " << change.metPercent << ", c " << change.crysPercent
+                            << ", d " << change.deutPercent << ", f " << change.fusionPercent;
+
+                    }else{
+                        stream << "Production factor changed";
+                    }
+
+                    stream << " after construction of " << change.finishedName << " " << change.finishedLevel
                            << ". Production factor: " << change.oldMineProductionFactor
                            << "->" << change.newMineProductionFactor
                            << ". Production increased by " << (change.oldDSE != 0 ? (((double(change.newDSE) / change.oldDSE) - 1) * 100) : 0)

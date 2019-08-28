@@ -222,7 +222,7 @@ ogh::Production PlanetState::getCurrentDailyProduction() const {
     return dailyProduction;
 }
 
-PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
+PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh::Production& oldProd, double oldProductionFactor) {
     constexpr int metPercentBegin = 70;
     constexpr int crysPercentBegin = 70;
     constexpr int deutPercentBegin = 70;
@@ -235,15 +235,14 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     const int oldDeutPercent = deutPercent;
     const int oldFusionPercent = fusionPercent;
 
-    const Production oldProd = getCurrentDailyProduction();
-    Production bestProd = oldProd;
     const double oldDSE = oldProd.produce(std::chrono::hours{24}).dse(accountPtr->traderate);
 
     int bestMetPercent = metPercent;
     int bestCrysPercent = crysPercent;
     int bestDeutPercent = deutPercent;
     int bestFusionPercent = fusionPercent;
-    double bestDSE = oldDSE;
+    double bestDSE = std::numeric_limits<double>::min();
+    Production bestProd{};
 
     const int etechLevel = accountPtr->getResearchLevel(ogh::Entity::Energy);
     const int plasmaLevel = accountPtr->getResearchLevel(ogh::Entity::Plasma);
@@ -342,25 +341,82 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
     fusionPercent = bestFusionPercent;
 
     std::stringstream ss;
-    ss << dailyProduction.metal() << " " << dailyProduction.crystal() << " " << dailyProduction.deuterium() << " -> " 
-        << bestProd.metal() << " " << bestProd.crystal() << " " << bestProd.deuterium() 
+    const auto ressOldProd = oldProd.produce(std::chrono::hours{24});
+    const auto ressBestProd = bestProd.produce(std::chrono::hours{24});
+    ss << ressOldProd.metal() << " " << ressOldProd.crystal() << " " << ressOldProd.deuterium() << " -> " 
+        << ressBestProd.metal() << " " << ressBestProd.crystal() << " " << ressBestProd.deuterium() 
         << " ::: " << metLevel << " " << crysLevel << " " << deutLevel << " " << fusionLevel;
     accountPtr->log(ss.str());
 
-    if(dailyProduction != bestProd){
-        dailyProduction = bestProd;
+    //if(dailyProduction != bestProd){
+    //    dailyProduction = bestProd;
         accountPtr->planetProductionChanged(oldProd, bestProd);
-    }
+    //}
 
-    if (metPercent != oldMetPercent || crysPercent != oldCrysPercent || deutPercent != oldDeutPercent || fusionPercent != oldFusionPercent) {
+    if(oldDSE == 0){
 
-        const double oldmineproductionfactor = ogh::getMineProductionFactor(metLevel, oldMetPercent,
-                                                                            crysLevel, oldCrysPercent,
-                                                                            deutLevel, oldDeutPercent,
+        if(bestDSE > 0){
+            const double newmineproductionfactor = ogh::getMineProductionFactor(metLevel, metPercent,
+                                                                    crysLevel, crysPercent,
+                                                                    deutLevel, deutPercent,
+                                                                    solarLevel, solarplantPercent,
+                                                                    fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
+                                                                    sats, satsPercent, temperature,
+                                                                    accountPtr->hasEngineer(), accountPtr->hasStaff());
+            SetPercentsResult result{
+                true,
+                oldMetPercent,
+                oldCrysPercent,
+                oldDeutPercent,
+                oldFusionPercent,
+                metPercent,
+                crysPercent,
+                deutPercent,
+                fusionPercent,
+                planetId,
+                oldDSE,
+                bestDSE,
+                oldProductionFactor,
+                newmineproductionfactor};
+
+            return result;
+        }else{
+            SetPercentsResult result;
+            result.changedPercents = false;
+            return result;
+        }                                                                         
+    }else if(oldProductionFactor == 0){
+        const double newmineproductionfactor = ogh::getMineProductionFactor(metLevel, metPercent,
+                                                                            crysLevel, crysPercent,
+                                                                            deutLevel, deutPercent,
                                                                             solarLevel, solarplantPercent,
-                                                                            fusionLevel, oldFusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
+                                                                            fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                                             sats, satsPercent, temperature,
                                                                             accountPtr->hasEngineer(), accountPtr->hasStaff());
+        if(newmineproductionfactor > 0){
+            SetPercentsResult result{
+                true,
+                oldMetPercent,
+                oldCrysPercent,
+                oldDeutPercent,
+                oldFusionPercent,
+                metPercent,
+                crysPercent,
+                deutPercent,
+                fusionPercent,
+                planetId,
+                oldDSE,
+                bestDSE,
+                oldProductionFactor,
+                newmineproductionfactor};
+
+            return result;
+        }else{
+            SetPercentsResult result;
+            result.changedPercents = false;
+            return result;
+        }                                                                         
+    }else if (metPercent != oldMetPercent || crysPercent != oldCrysPercent || deutPercent != oldDeutPercent || fusionPercent != oldFusionPercent || ressOldProd.dse(accountPtr->traderate) > ressBestProd.dse(accountPtr->traderate)) {
 
         const double newmineproductionfactor = ogh::getMineProductionFactor(metLevel, metPercent,
                                                                             crysLevel, crysPercent,
@@ -372,6 +428,10 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
 
         SetPercentsResult result{
             true,
+            oldMetPercent,
+            oldCrysPercent,
+            oldDeutPercent,
+            oldFusionPercent,
             metPercent,
             crysPercent,
             deutPercent,
@@ -379,10 +439,8 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction() {
             planetId,
             oldDSE,
             bestDSE,
-            oldmineproductionfactor,
+            oldProductionFactor,
             newmineproductionfactor};
-
-        assert(oldDSE <= bestDSE);
 
         return result;
 
@@ -554,13 +612,27 @@ void Account::log(const std::string& msg) {
 }
 
 void Account::buildingFinishedCallback(PlanetState& p) {
+
     auto handleProductionChangingBuilding = [&]() {
-        auto result = p.setPercentToMaxProduction();
+        const ogh::Production oldProd = p.getCurrentDailyProduction();
+        const double oldmineproductionfactor = ogh::getMineProductionFactor(p.getLevel(ogh::Entity::Metalmine), p.metPercent,
+                                                                            p.getLevel(ogh::Entity::Crystalmine), p.crysPercent,
+                                                                            p.getLevel(ogh::Entity::Deutsynth), p.deutPercent,
+                                                                            p.getLevel(ogh::Entity::Solar), p.solarplantPercent,
+                                                                            p.getLevel(ogh::Entity::Fusion), p.fusionPercent, getResearchLevel(ogh::Entity::Energy),
+                                                                            p.getSats(), p.satsPercent, p.temperature,
+                                                                            hasEngineer(), hasStaff());
+        p.increaseLevel(p.entityInQueue);
+        auto result = p.setPercentToMaxProduction(oldProd, oldmineproductionfactor);
         const int level = p.getLevel(p.entityInQueue);
         recordPercentageChange(result, p.entityInQueue, level);
+    }; 
+
+    auto handleNormalBuilding = [&](){
+        p.increaseLevel(p.entityInQueue);
     };
 
-    p.increaseLevel(p.entityInQueue);
+    
 
     switch (p.entityInQueue) {
     case ogh::Entity::Metalmine:
@@ -579,22 +651,31 @@ void Account::buildingFinishedCallback(PlanetState& p) {
         handleProductionChangingBuilding();
         break;
     case ogh::Entity::Lab:
+        handleNormalBuilding();
         break;
     case ogh::Entity::Robo:
+        handleNormalBuilding();
         break;
     case ogh::Entity::Nanite:
+        handleNormalBuilding();
         break;
     case ogh::Entity::Shipyard:
+        handleNormalBuilding();
         break;
     case ogh::Entity::Metalstorage:
+        handleNormalBuilding();
         break;
     case ogh::Entity::Crystalstorage:
+        handleNormalBuilding();
         break;
     case ogh::Entity::Deutstorage:
+        handleNormalBuilding();
         break;
     case ogh::Entity::Alliancedepot:
+        handleNormalBuilding();
         break;
     case ogh::Entity::Silo:
+        handleNormalBuilding();
         break;
     case ogh::Entity::None:
         break;
@@ -606,24 +687,45 @@ void Account::buildingFinishedCallback(PlanetState& p) {
 }
 
 void Account::researchFinishedCallback() {
+
+    auto& r = researches;
+
     auto handleMineProductionChangingResearch = [&]() {
+        std::vector<ogh::Production> oldProductions(getNumPlanets());
+        std::vector<double> oldProductionFactors(getNumPlanets());
+
+        for(int i = 0; i < getNumPlanets(); i++){
+            const auto& p = planets[i];
+            oldProductions[i] = p.getCurrentDailyProduction();
+            oldProductionFactors[i] = ogh::getMineProductionFactor(p.getLevel(ogh::Entity::Metalmine), p.metPercent,
+                                                                    p.getLevel(ogh::Entity::Crystalmine), p.crysPercent,
+                                                                    p.getLevel(ogh::Entity::Deutsynth), p.deutPercent,
+                                                                    p.getLevel(ogh::Entity::Solar), p.solarplantPercent,
+                                                                    p.getLevel(ogh::Entity::Fusion), p.fusionPercent, getResearchLevel(ogh::Entity::Energy),
+                                                                    p.getSats(), p.satsPercent, p.temperature,
+                                                                    hasEngineer(), hasStaff());
+        }
+
+        r.increaseLevel(r.entityInQueue);
+
         const int level = getResearchLevel(researches.entityInQueue);
 
-        auto handlePlanet = [&](auto& planet) {
-            auto result = planet.setPercentToMaxProduction();
+        for(int i = 0; i < getNumPlanets(); i++){
+            auto& planet = planets[i];
+            auto result = planet.setPercentToMaxProduction(oldProductions[i], oldProductionFactors[i]);
             recordPercentageChange(result, researches.entityInQueue, level);
-        };
-
-        std::for_each(planets.begin(), planets.end(), handlePlanet);
+        }
     };
 
     auto handleFleetIncomeChangingResearch = [&]() {
+        r.increaseLevel(r.entityInQueue);
         updateDailyFarmIncome();
         updateDailyExpeditionIncome();
     };
 
-    auto& r = researches;
-    r.increaseLevel(r.entityInQueue);
+    auto handleNormalResearch = [&](){
+        r.increaseLevel(r.entityInQueue);
+    };
 
     //update state after research is finished
     switch (r.entityInQueue) {
@@ -634,32 +736,45 @@ void Account::researchFinishedCallback() {
         handleMineProductionChangingResearch();
         break;
     case ogh::Entity::Researchnetwork:
+        handleNormalResearch();
         break;
     case ogh::Entity::Astro:
         handleFleetIncomeChangingResearch();
+
+        planets.back().calculateDailyProduction();
         break;
     case ogh::Entity::Computer:
         handleFleetIncomeChangingResearch();
         break;
     case ogh::Entity::Espionage:
+        handleNormalResearch();
         break;
     case ogh::Entity::Weapons:
+        handleNormalResearch();
         break;
     case ogh::Entity::Shielding:
+        handleNormalResearch();
         break;
     case ogh::Entity::Armour:
+        handleNormalResearch();
         break;
     case ogh::Entity::Hyperspacetech:
+        handleNormalResearch();
         break;
     case ogh::Entity::Combustion:
+        handleNormalResearch();
         break;
     case ogh::Entity::Impulse:
+        handleNormalResearch();
         break;
     case ogh::Entity::Hyperspacedrive:
+        handleNormalResearch();
         break;
     case ogh::Entity::Laser:
+        handleNormalResearch();
         break;
     case ogh::Entity::Ion:
+        handleNormalResearch();
         break;
     case ogh::Entity::None:
         break;
@@ -919,6 +1034,10 @@ void Account::recordPercentageChange(const PlanetState::SetPercentsResult& resul
     if (result.changedPercents) {
 
         PercentageChange pchange;
+        pchange.oldMetPercent = result.oldMetPercent;
+        pchange.oldCrysPercent = result.oldCrysPercent;
+        pchange.oldDeutPercent = result.oldDeutPercent;
+        pchange.oldFusionPercent = result.oldFusionPercent;
         pchange.metPercent = result.metPercent;
         pchange.crysPercent = result.crysPercent;
         pchange.deutPercent = result.deutPercent;
@@ -1068,8 +1187,9 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
                                                                traderate);
 
     auto makelog = [&]() {
+        const auto producedRess = currentProduction.produce(std::chrono::hours{24});
         sstream << "Saving for job. Elapsed saving time: " << saveTimeDaysForJob.count() << " seconds. Current production per day: "
-                << currentProduction.metal() << " " << currentProduction.crystal() << " " << currentProduction.deuterium() << "\n";
+                << producedRess.metal() << " " << producedRess.crystal() << " " << producedRess.deuterium() << "\n";
 
         log(sstream.str());
         sstream.str("");

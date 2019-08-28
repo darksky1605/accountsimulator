@@ -38,6 +38,10 @@ struct PlanetState {
 
     struct SetPercentsResult {
         bool changedPercents;
+        int oldMetPercent;
+        int oldCrysPercent;
+        int oldDeutPercent;
+        int oldFusionPercent;
         int metPercent;
         int crysPercent;
         int deutPercent;
@@ -102,7 +106,7 @@ struct PlanetState {
     void calculateDailyProduction();
     ogamehelpers::Production getCurrentDailyProduction() const;
 
-    SetPercentsResult setPercentToMaxProduction();
+    SetPercentsResult setPercentToMaxProduction(const ogamehelpers::Production& oldProd, double oldProductionFactor);
 };
 
 struct ResearchState {
@@ -177,6 +181,10 @@ struct Account {
     };
 
     struct PercentageChange {
+        int oldMetPercent;
+        int oldCrysPercent;
+        int oldDeutPercent;
+        int oldFusionPercent;
         int metPercent;
         int crysPercent;
         int deutPercent;
@@ -184,8 +192,8 @@ struct Account {
         int planetId;
         int finishedLevel;
         std::chrono::seconds time;
-        std::int64_t oldDSE;
-        std::int64_t newDSE;
+        double oldDSE;
+        double newDSE;
         double oldMineProductionFactor;
         double newMineProductionFactor;
         std::string finishedName;
