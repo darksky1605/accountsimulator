@@ -223,10 +223,10 @@ ogh::Production PlanetState::getCurrentDailyProduction() const {
 }
 
 PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh::Production& oldProd, double oldProductionFactor) {
-    constexpr int metPercentBegin = 70;
-    constexpr int crysPercentBegin = 70;
-    constexpr int deutPercentBegin = 70;
-    constexpr int fusionPercentBegin = 70;
+    constexpr int metPercentBegin = 0;
+    constexpr int crysPercentBegin = 0;
+    constexpr int deutPercentBegin = 0;
+    constexpr int fusionPercentBegin = 0;
 
     using ogh::Production;
 
@@ -349,7 +349,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
     accountPtr->log(ss.str());
 
     //if(dailyProduction != bestProd){
-    //    dailyProduction = bestProd;
+        dailyProduction = bestProd;
         accountPtr->planetProductionChanged(oldProd, bestProd);
     //}
 
