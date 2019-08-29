@@ -574,10 +574,10 @@ int detailedmultiupgrade(int argc, char** argv) {
             logFile.flush();
             std::cout << std::endl;
 
-            std::cout << "The selected upgrades take " << secondsToDHM(result.constructionFinishedInDays) << " days.\n";
-            std::cout << "Last upgrade started after " << secondsToDHM(result.lastConstructionStartedAfterDays) << " days.\n";
-            std::cout << "The required saving time is " << secondsToDHM(result.savingFinishedInDays) << " days.\n";
-            std::cout << "Days lost because a queue was full: " << secondsToDHM(result.previousUpgradeDelay) << " days.\n";
+            std::cout << "The selected upgrades take " << secondsToDHM(result.constructionFinishedInDays) << " days:hours:minutes:seconds.\n";
+            std::cout << "Last upgrade started after " << secondsToDHM(result.lastConstructionStartedAfterDays) << " days:hours:minutes:seconds.\n";
+            std::cout << "The required saving time is " << secondsToDHM(result.savingFinishedInDays) << " days:hours:minutes:seconds.\n";
+            std::cout << "Days lost because a queue was full: " << secondsToDHM(result.previousUpgradeDelay) << " days:hours:minutes:seconds.\n";
 
 
             std::cout << '\n';
