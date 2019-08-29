@@ -22,6 +22,10 @@ Here, the optimal permutation can be optimal with respect to either:
   - No requirements checks
   - Everything else I forgot to mention.
 
+# How to build
+Requires GNU Make and a g++ with support of c++14.
+Run `make accountupgrade`.
+
 # How to use
 The program requires an account file describing the account (buildings, researches,...), and an upgrade file describing the upgrades to be performed.
 In its simplest form, the program can be called with `./accountupgrade --accountfile account.json --upgradefile upgrades.txt`
@@ -108,3 +112,32 @@ met
 Upgrade names are not case-sensitive.
 
 
+# Example output
+### Default
+```
+The selected upgrades take 123:02:49:44 days:hours:minutes:seconds.
+Last upgrade started after 118:09:04:13 days:hours:minutes:seconds.
+The required saving time is 118:09:04:13 days:hours:minutes:seconds.
+Days lost because a queue was full: 0:00:00:00 days:hours:minutes:seconds.
+```
+
+### With --percentages
+
+```
+17:10:06:14 Planet 11: Changed percents from m 100, c 100, d 100, f 100 to m 100, c 100, d 100, f 80 after construction of Fusion Reactor 21. Production factor: 0.975287->1. Production increased by 2.82854 % DSE
+18:20:28:21 Planet 12: Changed percents from m 100, c 100, d 100, f 100 to m 100, c 100, d 100, f 80 after construction of Fusion Reactor 21. Production factor: 0.975287->1. Production increased by 2.82854 % DSE
+19:03:56:03 Planet 13: Changed percents from m 100, c 100, d 100, f 100 to m 100, c 100, d 100, f 80 after construction of Fusion Reactor 21. Production factor: 0.975287->1. Production increased by 2.82854 % DSE
+29:03:49:44 Planet 1: Changed percents from m 100, c 100, d 100, f 80 to m 100, c 100, d 100, f 90 after construction of Metal Mine 41. Production factor: 1->1. Production increased by 5.33287 % DSE
+34:07:19:37 Planet 2: Changed percents from m 100, c 100, d 100, f 80 to m 100, c 100, d 100, f 90 after construction of Metal Mine 41. Production factor: 1->1. Production increased by 5.33287 % DSE
+39:10:19:23 Planet 3: Changed percents from m 100, c 100, d 100, f 80 to m 100, c 100, d 100, f 90 after construction of Metal Mine 41. Production factor: 1->1. Production increased by 5.33287 % DSE
+```
+
+### With --printlist
+```
+Planet 11: Fusion Reactor 21. Saving period begin: 14:13:08:51, Waiting period begin: 15:23:39:45, Construction begin: 15:23:39:45, Construction time: 1:17:49:49, Save time: 1:10:30:54
+Planet 12: Fusion Reactor 21. Saving period begin: 15:23:39:45, Waiting period begin: 17:10:06:14, Construction begin: 17:10:06:14, Construction time: 1:17:49:49, Save time: 1:10:26:29
+Planet 13: Fusion Reactor 21. Saving period begin: 17:10:06:14, Waiting period begin: 18:20:28:21, Construction begin: 18:20:28:21, Construction time: 1:17:49:49, Save time: 1:10:22:07
+Planet 1: Metal Mine 41. Saving period begin: 18:20:28:21, Waiting period begin: 24:00:12:10, Construction begin: 24:00:12:10, Construction time: 8:23:57:49, Save time: 5:03:43:49
+Planet 2: Metal Mine 41. Saving period begin: 24:00:12:10, Waiting period begin: 29:03:49:44, Construction begin: 29:03:49:44, Construction time: 8:23:57:49, Save time: 5:03:37:34
+Planet 3: Metal Mine 41. Saving period begin: 29:03:49:44, Waiting period begin: 34:07:19:37, Construction begin: 34:07:19:37, Construction time: 8:23:57:49, Save time: 5:03:29:53
+```
