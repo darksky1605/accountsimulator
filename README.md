@@ -11,6 +11,7 @@ Here, the optimal permutation can be optimal with respect to either:
     shortest save time, or
     shortest blocked time
 
+Tested on Ubuntu and on Windows Subsystem for Linux in Windows 10.
 
 # Restrictions / Limitations / ...
   - No moons
