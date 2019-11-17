@@ -407,10 +407,19 @@ Resources getBuildCosts(const EntityInfo& info, int level) {
         result.setCrystal(info.crysBaseCosts * level);
         result.setDeuterium(info.deutBaseCosts * level);
     } else {
-        result.setMetal((std::int64_t)(info.metBaseCosts * std::pow(info.costFactor, level - 1)));
-        result.setCrystal((std::int64_t)(info.crysBaseCosts * std::pow(info.costFactor, level - 1)));
-        result.setDeuterium((std::int64_t)(info.deutBaseCosts * std::pow(info.costFactor, level - 1)));
-        //result.energy = (std::int64_t)(info.energyBaseCosts * std::pow(info.costFactor, level-1));
+        std::int64_t met = (std::int64_t)(info.metBaseCosts * std::pow(info.costFactor, level - 1));
+        std::int64_t crys = (std::int64_t)(info.crysBaseCosts * std::pow(info.costFactor, level - 1));
+        std::int64_t deut = (std::int64_t)(info.deutBaseCosts * std::pow(info.costFactor, level - 1));
+
+        if(info.entity == Entity::Astro){
+            met = (met / 100) * 100;
+            crys = (crys / 100) * 100;
+            deut = (deut / 100) * 100;
+        }
+
+        result.setMetal(met);
+        result.setCrystal(crys);
+        result.setDeuterium(deut);        
     }
 
     if (result.metal() < 0)
