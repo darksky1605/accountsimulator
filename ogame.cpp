@@ -599,17 +599,20 @@ std::int64_t getEnergyOfFKW(int level, int etechLevel) {
     return energy;
 }
 
-std::int64_t applyEnergyFactor(std::int64_t energy, float productionfactor, bool hasEngineer, bool hasStaff) {
+std::int64_t applyEnergyFactor(std::int64_t energy, float productionfactor, 
+                                bool hasEngineer, bool hasStaff, CharacterClass cclass){
     const int engineerPercent = hasEngineer ? 10 : 0;
     const int staffPercent = hasStaff ? 2 : 0;
-    const float officerfactor = 1.0f + (engineerPercent + staffPercent) / 100.f;
-    return std::int64_t(std::round(energy * productionfactor * officerfactor));
+    const int classPercent = cclass == CharacterClass::Collector ? 10 : 0;
+    const float bonusfactor = 1.0f + (engineerPercent + staffPercent + classPercent) / 100.f;
+    return std::int64_t(std::round(energy * productionfactor * bonusfactor));
 }
 
 std::int64_t getTotalEnergy(int solarplantLevel, int solarplantPercent,
                             int fusionLevel, int fusionPercent, int etechLevel,
                             int sats, int satsPercent, int temperature,
-                            bool engineer, bool staff) {
+                            bool engineer, bool staff,
+                            CharacterClass cclass) {
 
     assert(solarplantPercent >= 0);
     assert(fusionPercent >= 0);
@@ -619,13 +622,13 @@ std::int64_t getTotalEnergy(int solarplantLevel, int solarplantPercent,
     assert(satsPercent <= 100);
 
     std::int64_t solarenergy = getEnergyOfSolarPlant(solarplantLevel);
-    solarenergy = applyEnergyFactor(solarenergy, solarplantPercent / 100.0f, engineer, staff);
+    solarenergy = applyEnergyFactor(solarenergy, solarplantPercent / 100.0f, engineer, staff, cclass);
 
     std::int64_t fusionenergy = getEnergyOfFKW(fusionLevel, etechLevel);
-    fusionenergy = applyEnergyFactor(fusionenergy, fusionPercent / 100.0f, engineer, staff);
+    fusionenergy = applyEnergyFactor(fusionenergy, fusionPercent / 100.0f, engineer, staff, cclass);
 
     std::int64_t satsenergy = getEnergyOfSats(sats, temperature);
-    satsenergy = applyEnergyFactor(satsenergy, satsPercent / 100.0f, engineer, staff);
+    satsenergy = applyEnergyFactor(satsenergy, satsPercent / 100.0f, engineer, staff, cclass);
 
     const std::int64_t totalenergy = solarenergy + fusionenergy + satsenergy;
 
@@ -664,7 +667,8 @@ double getMineProductionFactor(int metLevel, int metPercent,
                                int solarplantLevel, int solarplantPercent,
                                int fusionLevel, int fusionPercent, int etechLevel,
                                int sats, int satsPercent, int temperature,
-                               bool engineer, bool staff) {
+                               bool engineer, bool staff,
+                               CharacterClass cclass) {
     assert(metPercent >= 0);
     assert(crysPercent >= 0);
     assert(deutPercent >= 0);
@@ -683,7 +687,8 @@ double getMineProductionFactor(int metLevel, int metPercent,
     const std::int64_t totalenergy = getTotalEnergy(solarplantLevel, solarplantPercent,
                                                     fusionLevel, fusionPercent, etechLevel,
                                                     sats, satsPercent, temperature,
-                                                    engineer, staff);
+                                                    engineer, staff,
+                                                    cclass);
 
     const double mineproductionfactor = totalenergy == 0 ? 0.0f : std::min(1.0, double(totalenergy) / double(requiredenergy));
     return mineproductionfactor;
@@ -696,7 +701,8 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                               int fusionLevel, int fusionPercent, int etechLevel,
                               int temperature, int sats, int satsPercent,
                               int plasmaLevel, int speedfactor,
-                              bool engineer, bool geologist, bool staff) {
+                              bool engineer, bool geologist, bool staff,
+                              CharacterClass cclass) {
 
     assert(metLevel >= 0);
     assert(crysLevel >= 0);
@@ -723,7 +729,8 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                                                                 solarLevel, solarplantPercent,
                                                                 fusionLevel, fusionPercent, etechLevel,
                                                                 sats, satsPercent, temperature,
-                                                                engineer, staff);
+                                                                engineer, staff,
+                                                                cclass);
     simpleProduction_met *= mineproductionfactor;
     simpleProduction_crystal *= mineproductionfactor;
     simpleProduction_deut *= mineproductionfactor;

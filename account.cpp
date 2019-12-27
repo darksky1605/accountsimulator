@@ -214,7 +214,8 @@ void PlanetState::calculateDailyProduction() {
                                                 getLevel(ogh::Entity::Fusion), fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                 temperature, sats, satsPercent,
                                                 accountPtr->getResearchLevel(ogh::Entity::Plasma), accountPtr->speedfactor,
-                                                accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff());
+                                                accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff(),
+                                                accountPtr->getCharacterClass());
 
 }
 
@@ -287,7 +288,8 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                                                                                      solarLevel, solarplantPercent,
                                                                                      fusionLevel, newFusionPercent, etechLevel,
                                                                                      sats, satsPercent, temperature,
-                                                                                     hasEngineer, hasStaff);
+                                                                                     hasEngineer, hasStaff,
+                                                                                     accountPtr->getCharacterClass());
                     simpleProduction_met *= mineproductionfactor;
                     simpleProduction_crystal *= mineproductionfactor;
                     simpleProduction_deut *= mineproductionfactor;
@@ -362,7 +364,8 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                                                                     solarLevel, solarplantPercent,
                                                                     fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                                     sats, satsPercent, temperature,
-                                                                    accountPtr->hasEngineer(), accountPtr->hasStaff());
+                                                                    accountPtr->hasEngineer(), accountPtr->hasStaff(),
+                                                                    accountPtr->getCharacterClass());
             SetPercentsResult result{
                 true,
                 oldMetPercent,
@@ -392,7 +395,8 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                                                                             solarLevel, solarplantPercent,
                                                                             fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                                             sats, satsPercent, temperature,
-                                                                            accountPtr->hasEngineer(), accountPtr->hasStaff());
+                                                                            accountPtr->hasEngineer(), accountPtr->hasStaff(),
+                                                                            accountPtr->getCharacterClass());
         if(newmineproductionfactor > 0){
             SetPercentsResult result{
                 true,
@@ -424,7 +428,8 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                                                                             solarLevel, solarplantPercent,
                                                                             fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                                             sats, satsPercent, temperature,
-                                                                            accountPtr->hasEngineer(), accountPtr->hasStaff());
+                                                                            accountPtr->hasEngineer(), accountPtr->hasStaff(),
+                                                                            accountPtr->getCharacterClass());
 
         SetPercentsResult result{
             true,
@@ -621,7 +626,8 @@ void Account::buildingFinishedCallback(PlanetState& p) {
                                                                             p.getLevel(ogh::Entity::Solar), p.solarplantPercent,
                                                                             p.getLevel(ogh::Entity::Fusion), p.fusionPercent, getResearchLevel(ogh::Entity::Energy),
                                                                             p.getSats(), p.satsPercent, p.temperature,
-                                                                            hasEngineer(), hasStaff());
+                                                                            hasEngineer(), hasStaff(),
+                                                                            getCharacterClass());
         p.increaseLevel(p.entityInQueue);
         auto result = p.setPercentToMaxProduction(oldProd, oldmineproductionfactor);
         const int level = p.getLevel(p.entityInQueue);
@@ -703,7 +709,8 @@ void Account::researchFinishedCallback() {
                                                                     p.getLevel(ogh::Entity::Solar), p.solarplantPercent,
                                                                     p.getLevel(ogh::Entity::Fusion), p.fusionPercent, getResearchLevel(ogh::Entity::Energy),
                                                                     p.getSats(), p.satsPercent, p.temperature,
-                                                                    hasEngineer(), hasStaff());
+                                                                    hasEngineer(), hasStaff(),
+                                                                    getCharacterClass());
         }
 
         r.increaseLevel(r.entityInQueue);
@@ -1262,6 +1269,10 @@ bool Account::hasAdmiral() const {
 
 bool Account::hasStaff() const {
     return hasCommander() && hasEngineer() && hasTechnocrat() && hasGeologist() && hasAdmiral();
+}
+
+ogh::CharacterClass Account::getCharacterClass() const{
+    return characterClass;
 }
 
 void Account::buildSats(int planetNumber, int numsats){

@@ -326,6 +326,8 @@ struct Account {
 
     bool hasStaff() const;
 
+    ogamehelpers::CharacterClass getCharacterClass() const;
+
     void buildSats(int planetNumber, int numsats);
 
     int getSats(int planetNumber) const;

@@ -356,7 +356,9 @@ std::int64_t getEnergyOfSolarPlant(int level);
 // 100%, no officer
 std::int64_t getEnergyOfFKW(int level, int etechLevel);
 
-std::int64_t applyEnergyFactor(std::int64_t energy, float productionfactor, bool hasEngineer, bool hasStaff);
+std::int64_t applyEnergyFactor(std::int64_t energy, float productionfactor, 
+                                bool hasEngineer, bool hasStaff, 
+                                CharacterClass cclass);
 
 int getItemProductionPercent(ItemRarity item);
 
@@ -369,7 +371,8 @@ double getMineProductionFactor(int metLevel, int metPercent,
                                int solarplantLevel, int solarplantPercent,
                                int fusionLevel, int fusionPercent, int etechLevel,
                                int sats, int satsPercent, int temperature,
-                               bool engineer, bool staff);
+                               bool engineer, bool staff,
+                               CharacterClass cclass);
 
 Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                               int crysLevel, ItemRarity crysItem, int crysPercent,
@@ -378,7 +381,8 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                               int fusionLevel, int fusionPercent, int etechLevel,
                               int temperature, int sats, int satsPercent,
                               int plasmaLevel, int speedfactor,
-                              bool engineer, bool geologist, bool staff);
+                              bool engineer, bool geologist, bool staff,
+                              CharacterClass cclass);
 
 std::chrono::seconds get_save_duration_symmetrictrade(const Resources& have, /*have*/
                                        const Resources& want,  /*want*/
