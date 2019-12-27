@@ -75,6 +75,7 @@ void to_json(json& j, const PlanetState& p) {
              {"deutItemDuration", secondsToDHM(p.deutItemDuration)},
              {"sats", p.sats},
              {"crawler", p.crawler},
+             {"crawlerPercent", p.crawlerPercent},
              {"buildingQueueDuration", secondsToDHM(p.buildingQueue)},
              {"inQueue", ogh::getEntityName(p.entityInQueue)}};
 }
@@ -109,6 +110,7 @@ void from_json(const json& j, PlanetState& p) {
     p.buildingQueue = secondsFromDHM(j.at("buildingQueueDuration"));
     j.at("sats").get_to(p.sats);
     j.at("crawler").get_to(p.crawler);
+    j.at("crawlerPercent").get_to(p.crawlerPercent);
     p.entityInQueue = ogh::parseEntityName(j.at("inQueue")).entity;
 }
 
