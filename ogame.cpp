@@ -738,7 +738,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const int totalMineLevel = metLevel + crysLevel + deutLevel;
     numcrawler = std::min(numcrawler, totalMineLevel * crawler_y_factor);
 
-    constexpr int crawler_boost_factor = 0.0002;
+    constexpr double crawler_boost_factor = 0.0002;
     const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;    
     const double crawlerFactor = crawler_boost_factor * crawlerClassFactor;
 
