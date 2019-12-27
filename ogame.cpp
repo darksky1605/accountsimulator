@@ -552,7 +552,8 @@ std::int64_t getDailyFKWConsumption(int fusionLevel, int fusionPercent) {
 std::int64_t getEnergyConsumption(int metlvl, int metPercent,
                                   int cryslvl, int crysPercent,
                                   int deutlvl, int deutPercent,
-                                  int numcrawler, int crawlerPercent) {
+                                  int numcrawler, int crawlerPercent,
+                                  CharacterClass cclass) {
     assert(metlvl >= 0);
     assert(cryslvl >= 0);
     assert(deutlvl >= 0);
@@ -576,9 +577,15 @@ std::int64_t getEnergyConsumption(int metlvl, int metPercent,
     const auto& deutInfo = Deutsynth;
     const auto& crawlerInfo = Crawler;
 
+    constexpr double crawler_maxTotalBoost = 0.5;
+    constexpr double crawler_boost_factor = 0.0002;
+    const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;
+    const int maxCrawlersByProduction = std::ceil(crawler_maxTotalBoost / (crawler_boost_factor * crawlerClassFactor));
+
     constexpr int crawler_y_factor = 8;
     const int totalMineLevel = metlvl + cryslvl + deutlvl;
     numcrawler = std::min(numcrawler, totalMineLevel * crawler_y_factor);
+    numcrawler = std::min(numcrawler, maxCrawlersByProduction);
 
     const std::int64_t metConsumption = std::ceil(metInfo.energyFactor * metlvl * std::pow(1.1, metlvl) * metFactor);
     const std::int64_t crysConsumption = std::ceil(crysInfo.energyFactor * cryslvl * std::pow(1.1, cryslvl) * crysFactor);
@@ -698,7 +705,8 @@ double getMineProductionFactor(int metLevel, int metPercent,
         metLevel, metPercent, 
         crysLevel, crysPercent, 
         deutLevel, deutPercent,
-        crawler, crawlerPercent
+        crawler, crawlerPercent,
+        cclass
     );
 
     const std::int64_t totalenergy = getTotalEnergy(solarplantLevel, solarplantPercent,

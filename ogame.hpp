@@ -348,7 +348,8 @@ std::int64_t getDailyFKWConsumption(int fusionLevel, int fusionPercent);
 std::int64_t getEnergyConsumption(int metlvl, int metPercent,
                                   int cryslvl, int crysPercent,
                                   int deutlvl, int deutPercent,
-                                  int crawler, int crawlerPercent);
+                                  int crawler, int crawlerPercent,
+                                  CharacterClass cclass);
 
 // 100%, no officer
 std::int64_t getEnergyOfSats(int count, int planetTemperatur);
