@@ -1062,4 +1062,33 @@ std::string itemRarityToName(const ItemRarity& r) {
         return "none";
     }
 }
+
+CharacterClass parseCharacterClassName(const std::string& classname){
+    std::string s(classname);
+    std::transform(s.begin(), s.end(), s.begin(), [](auto c) { return std::tolower(c); });
+
+    if(s == "collector")
+        return CharacterClass::Collector;
+    else if(s == "discoverer")
+        return CharacterClass::Discoverer;
+    else if(s == "general")
+        return CharacterClass::General;
+    else
+        return CharacterClass::None;
+}
+
+std::string characterClassToName(const CharacterClass& cclass){
+    switch(cclass){
+    case CharacterClass::Collector:
+            return "Collector";
+    case CharacterClass::Discoverer:
+        return "Discoverer";
+    case CharacterClass::General:
+        return "General";
+    default:
+        return "None";
+    }
+}
+
+
 } // namespace ogamehelpers

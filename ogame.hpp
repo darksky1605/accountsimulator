@@ -415,6 +415,9 @@ ItemRarity parseItemRarityName(const std::string& rarityname);
 
 std::string itemRarityToName(const ItemRarity& r);
 
+CharacterClass parseCharacterClassName(const std::string& classname);
+std::string characterClassToName(const CharacterClass& cclass);
+
 } //end namespace ogamehelpers
 
 #endif

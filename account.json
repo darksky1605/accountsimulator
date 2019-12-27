@@ -18,6 +18,7 @@
         "geologistDuration": "10000:0:0:0",
         "technocratDuration": "0"
     },
+    "characterClass": "Collector",
     "planetType": "identical",
     "planets": [
         {
