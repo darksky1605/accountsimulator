@@ -371,6 +371,7 @@ double getMineProductionFactor(int metLevel, int metPercent,
                                int solarplantLevel, int solarplantPercent,
                                int fusionLevel, int fusionPercent, int etechLevel,
                                int sats, int satsPercent, int temperature,
+                               int crawler, int crawlerPercent,
                                bool engineer, bool staff,
                                CharacterClass cclass);
 
@@ -380,6 +381,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                               int solarLevel, int solarplantPercent,
                               int fusionLevel, int fusionPercent, int etechLevel,
                               int temperature, int sats, int satsPercent,
+                              int crawler, int crawlerPercent,
                               int plasmaLevel, int speedfactor,
                               bool engineer, bool geologist, bool staff,
                               CharacterClass cclass);

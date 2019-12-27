@@ -222,6 +222,7 @@ void PlanetState::calculateDailyProduction() {
                                                 getLevel(ogh::Entity::Solar), solarplantPercent,
                                                 getLevel(ogh::Entity::Fusion), fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                 temperature, sats, satsPercent,
+                                                crawler, crawlerPercent,
                                                 accountPtr->getResearchLevel(ogh::Entity::Plasma), accountPtr->speedfactor,
                                                 accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff(),
                                                 accountPtr->getCharacterClass());
@@ -237,6 +238,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
     constexpr int crysPercentBegin = 0;
     constexpr int deutPercentBegin = 0;
     constexpr int fusionPercentBegin = 0;
+    constexpr int crawlerPercentBegin = 0;
 
     using ogh::Production;
 
@@ -244,6 +246,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
     const int oldCrysPercent = crysPercent;
     const int oldDeutPercent = deutPercent;
     const int oldFusionPercent = fusionPercent;
+    const int oldCrawlerPercent = crawlerPercent;
 
     const double oldDSE = oldProd.produce(std::chrono::hours{24}).dse(accountPtr->traderate);
 
@@ -251,6 +254,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
     int bestCrysPercent = crysPercent;
     int bestDeutPercent = deutPercent;
     int bestFusionPercent = fusionPercent;
+    int bestCrawlerPercent = crawlerPercent;
     double bestDSE = std::numeric_limits<double>::min();
     Production bestProd{};
 
@@ -291,55 +295,60 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                 double simpleProduction_deut = deutBaseProd * newDeutPercent / 100.;
 
                 for (int newFusionPercent = 100; newFusionPercent >= fusionPercentBegin; newFusionPercent -= 10) {
-                    const double mineproductionfactor = ogh::getMineProductionFactor(metLevel, newMetPercent,
-                                                                                     crysLevel, newCrysPercent,
-                                                                                     deutLevel, newDeutPercent,
-                                                                                     solarLevel, solarplantPercent,
-                                                                                     fusionLevel, newFusionPercent, etechLevel,
-                                                                                     sats, satsPercent, temperature,
-                                                                                     hasEngineer, hasStaff,
-                                                                                     accountPtr->getCharacterClass());
-                    simpleProduction_met *= mineproductionfactor;
-                    simpleProduction_crystal *= mineproductionfactor;
-                    simpleProduction_deut *= mineproductionfactor;
 
-                    const double itemProduction_met = simpleProduction_met * getItemProductionPercent(metItem) / 100.;
-                    const double itemProduction_crystal = simpleProduction_crystal * getItemProductionPercent(crysItem) / 100.;
-                    const double itemProduction_deut = simpleProduction_deut * getItemProductionPercent(deutItem) / 100.;
+                    for(int newCrawlerPercent = 100; newCrawlerPercent >= crawlerPercentBegin; newCrawlerPercent -= 10) {
+                        const double mineproductionfactor = ogh::getMineProductionFactor(metLevel, newMetPercent,
+                                                                                        crysLevel, newCrysPercent,
+                                                                                        deutLevel, newDeutPercent,
+                                                                                        solarLevel, solarplantPercent,
+                                                                                        fusionLevel, newFusionPercent, etechLevel,
+                                                                                        sats, satsPercent, temperature,
+                                                                                        crawler, newCrawlerPercent,
+                                                                                        hasEngineer, hasStaff,
+                                                                                        accountPtr->getCharacterClass());
+                        simpleProduction_met *= mineproductionfactor;
+                        simpleProduction_crystal *= mineproductionfactor;
+                        simpleProduction_deut *= mineproductionfactor;
 
-                    const double plasmaProduction_met = simpleProduction_met / 100. * ogh::plasma_factor_met * plasmaLevel;
-                    const double plasmaProduction_crystal = simpleProduction_crystal / 100. * ogh::plasma_factor_crys * plasmaLevel;
-                    const double plasmaProduction_deut = simpleProduction_deut / 100. * ogh::plasma_factor_deut * plasmaLevel;
+                        const double itemProduction_met = simpleProduction_met * getItemProductionPercent(metItem) / 100.;
+                        const double itemProduction_crystal = simpleProduction_crystal * getItemProductionPercent(crysItem) / 100.;
+                        const double itemProduction_deut = simpleProduction_deut * getItemProductionPercent(deutItem) / 100.;
 
-                    const double extraOfficerProduction_met = simpleProduction_met * officerfactor;
-                    const double extraOfficerProduction_crystal = simpleProduction_crystal * officerfactor;
-                    const double extraOfficerProduction_deut = simpleProduction_deut * officerfactor;
+                        const double plasmaProduction_met = simpleProduction_met / 100. * ogh::plasma_factor_met * plasmaLevel;
+                        const double plasmaProduction_crystal = simpleProduction_crystal / 100. * ogh::plasma_factor_crys * plasmaLevel;
+                        const double plasmaProduction_deut = simpleProduction_deut / 100. * ogh::plasma_factor_deut * plasmaLevel;
 
-                    double result_met = (simpleProduction_met + itemProduction_met + plasmaProduction_met + extraOfficerProduction_met);
-                    double result_crystal = (simpleProduction_crystal + itemProduction_crystal + plasmaProduction_crystal + extraOfficerProduction_crystal);
-                    double result_deut = (simpleProduction_deut + itemProduction_deut + plasmaProduction_deut + extraOfficerProduction_deut);
+                        const double extraOfficerProduction_met = simpleProduction_met * officerfactor;
+                        const double extraOfficerProduction_crystal = simpleProduction_crystal * officerfactor;
+                        const double extraOfficerProduction_deut = simpleProduction_deut * officerfactor;
 
-                    result_met += defaultProduction.metal();
-                    result_crystal += defaultProduction.crystal();
-                    result_deut += defaultProduction.deuterium();
+                        double result_met = (simpleProduction_met + itemProduction_met + plasmaProduction_met + extraOfficerProduction_met);
+                        double result_crystal = (simpleProduction_crystal + itemProduction_crystal + plasmaProduction_crystal + extraOfficerProduction_crystal);
+                        double result_deut = (simpleProduction_deut + itemProduction_deut + plasmaProduction_deut + extraOfficerProduction_deut);
 
-                    const std::int64_t fkwdeutconsumption = ogh::getFKWConsumption(fusionLevel, newFusionPercent);
-                    result_deut -= fkwdeutconsumption;
+                        result_met += defaultProduction.metal();
+                        result_crystal += defaultProduction.crystal();
+                        result_deut += defaultProduction.deuterium();
 
-                    result_met *= accountPtr->speedfactor;
-                    result_crystal *= accountPtr->speedfactor;
-                    result_deut *= accountPtr->speedfactor;
+                        const std::int64_t fkwdeutconsumption = ogh::getFKWConsumption(fusionLevel, newFusionPercent);
+                        result_deut -= fkwdeutconsumption;
 
-                    const Production newProd = Production::makeProductionPerHour(round(result_met), round(result_crystal), round(result_deut));
+                        result_met *= accountPtr->speedfactor;
+                        result_crystal *= accountPtr->speedfactor;
+                        result_deut *= accountPtr->speedfactor;
 
-                    const double newDSE = newProd.produce(std::chrono::hours{24}).dse(accountPtr->traderate);
-                    if (newDSE > bestDSE) {
-                        bestDSE = newDSE;
-                        bestProd = newProd;
-                        bestMetPercent = newMetPercent;
-                        bestCrysPercent = newCrysPercent;
-                        bestDeutPercent = newDeutPercent;
-                        bestFusionPercent = newFusionPercent;
+                        const Production newProd = Production::makeProductionPerHour(round(result_met), round(result_crystal), round(result_deut));
+
+                        const double newDSE = newProd.produce(std::chrono::hours{24}).dse(accountPtr->traderate);
+                        if (newDSE > bestDSE) {
+                            bestDSE = newDSE;
+                            bestProd = newProd;
+                            bestMetPercent = newMetPercent;
+                            bestCrysPercent = newCrysPercent;
+                            bestDeutPercent = newDeutPercent;
+                            bestFusionPercent = newFusionPercent;
+                            bestCrawlerPercent = newCrawlerPercent;
+                        }
                     }
                 }
             }
@@ -350,6 +359,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
     crysPercent = bestCrysPercent;
     deutPercent = bestDeutPercent;
     fusionPercent = bestFusionPercent;
+    crawlerPercent = bestCrawlerPercent;
 
     std::stringstream ss;
     const auto ressOldProd = oldProd.produce(std::chrono::hours{24});
@@ -373,6 +383,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                                                                     solarLevel, solarplantPercent,
                                                                     fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                                     sats, satsPercent, temperature,
+                                                                    crawler, crawlerPercent,
                                                                     accountPtr->hasEngineer(), accountPtr->hasStaff(),
                                                                     accountPtr->getCharacterClass());
             SetPercentsResult result{
@@ -381,10 +392,12 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                 oldCrysPercent,
                 oldDeutPercent,
                 oldFusionPercent,
+                oldCrawlerPercent,
                 metPercent,
                 crysPercent,
                 deutPercent,
                 fusionPercent,
+                crawlerPercent,
                 planetId,
                 oldDSE,
                 bestDSE,
@@ -404,6 +417,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                                                                             solarLevel, solarplantPercent,
                                                                             fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                                             sats, satsPercent, temperature,
+                                                                            crawler, crawlerPercent,
                                                                             accountPtr->hasEngineer(), accountPtr->hasStaff(),
                                                                             accountPtr->getCharacterClass());
         if(newmineproductionfactor > 0){
@@ -413,10 +427,12 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                 oldCrysPercent,
                 oldDeutPercent,
                 oldFusionPercent,
+                oldCrawlerPercent,
                 metPercent,
                 crysPercent,
                 deutPercent,
                 fusionPercent,
+                crawlerPercent,
                 planetId,
                 oldDSE,
                 bestDSE,
@@ -437,6 +453,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                                                                             solarLevel, solarplantPercent,
                                                                             fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                                             sats, satsPercent, temperature,
+                                                                            crawler, crawlerPercent,
                                                                             accountPtr->hasEngineer(), accountPtr->hasStaff(),
                                                                             accountPtr->getCharacterClass());
 
@@ -446,10 +463,12 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
             oldCrysPercent,
             oldDeutPercent,
             oldFusionPercent,
+            oldCrawlerPercent,
             metPercent,
             crysPercent,
             deutPercent,
             fusionPercent,
+            crawlerPercent,
             planetId,
             oldDSE,
             bestDSE,
@@ -636,6 +655,7 @@ void Account::buildingFinishedCallback(PlanetState& p) {
                                                                             p.getLevel(ogh::Entity::Solar), p.solarplantPercent,
                                                                             p.getLevel(ogh::Entity::Fusion), p.fusionPercent, getResearchLevel(ogh::Entity::Energy),
                                                                             p.getSats(), p.satsPercent, p.temperature,
+                                                                            p.getCrawler(), p.crawlerPercent,
                                                                             hasEngineer(), hasStaff(),
                                                                             getCharacterClass());
         p.increaseLevel(p.entityInQueue);
@@ -719,6 +739,7 @@ void Account::researchFinishedCallback() {
                                                                     p.getLevel(ogh::Entity::Solar), p.solarplantPercent,
                                                                     p.getLevel(ogh::Entity::Fusion), p.fusionPercent, getResearchLevel(ogh::Entity::Energy),
                                                                     p.getSats(), p.satsPercent, p.temperature,
+                                                                    p.getCrawler(), p.crawlerPercent,
                                                                     hasEngineer(), hasStaff(),
                                                                     getCharacterClass());
         }
@@ -1075,10 +1096,12 @@ void Account::recordPercentageChange(const PlanetState::SetPercentsResult& resul
         pchange.oldCrysPercent = result.oldCrysPercent;
         pchange.oldDeutPercent = result.oldDeutPercent;
         pchange.oldFusionPercent = result.oldFusionPercent;
+        pchange.oldCrawlerPercent = result.oldCrawlerPercent;
         pchange.metPercent = result.metPercent;
         pchange.crysPercent = result.crysPercent;
         pchange.deutPercent = result.deutPercent;
         pchange.fusionPercent = result.fusionPercent;
+        pchange.crawlerPercent = result.crawlerPercent;
         pchange.planetId = result.planetId;
         pchange.finishedLevel = level;
         pchange.time = accountTime;
@@ -1092,7 +1115,8 @@ void Account::recordPercentageChange(const PlanetState::SetPercentsResult& resul
 
         std::stringstream sstream;
         sstream << "Planet " << pchange.planetId << ": Changed percents to "
-                << "m " << pchange.metPercent << ", c " << pchange.crysPercent << ", d " << pchange.deutPercent << ", f " << pchange.fusionPercent
+                << "m " << pchange.metPercent << ", c " << pchange.crysPercent << ", d " 
+                << pchange.deutPercent << ", f " << pchange.fusionPercent << ", cr " << pchange.crawlerPercent
                 << " after construction of " << pchange.finishedName << " " << pchange.finishedLevel
                 << ". Production factor: " << pchange.oldMineProductionFactor << "->" << pchange.newMineProductionFactor
                 << ". Production increased by " << (((double(pchange.newDSE) / pchange.oldDSE) - 1) * 100) << " %" << '\n';

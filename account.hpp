@@ -42,10 +42,12 @@ struct PlanetState {
         int oldCrysPercent;
         int oldDeutPercent;
         int oldFusionPercent;
+        int oldCrawlerPercent;
         int metPercent;
         int crysPercent;
         int deutPercent;
         int fusionPercent;
+        int crawlerPercent;
         int planetId;
         double oldDSE;
         double newDSE;
@@ -60,6 +62,7 @@ struct PlanetState {
     int crysPercent = 0;
     int deutPercent = 0;
     int fusionPercent = 0;
+    int crawlerPercent = 0;
     ogamehelpers::ItemRarity metItem = ogamehelpers::ItemRarity::None;
     ogamehelpers::ItemRarity crysItem = ogamehelpers::ItemRarity::None;
     ogamehelpers::ItemRarity deutItem = ogamehelpers::ItemRarity::None;
@@ -189,10 +192,12 @@ struct Account {
         int oldCrysPercent;
         int oldDeutPercent;
         int oldFusionPercent;
+        int oldCrawlerPercent;
         int metPercent;
         int crysPercent;
         int deutPercent;
         int fusionPercent;
+        int crawlerPercent;
         int planetId;
         int finishedLevel;
         std::chrono::seconds time;
