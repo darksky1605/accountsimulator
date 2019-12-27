@@ -56,6 +56,7 @@ enum class Entity { Metalmine,
                     Astro,
                     Graviton,
                     Coloship,
+                    Crawler,
                     None };
 enum class ItemRarity { Bronze,
                         Silver,
@@ -184,7 +185,8 @@ constexpr EntityInfo Researchnetwork = EntityInfo(240000, 400000, 160000, 0, 0, 
 constexpr EntityInfo Astro = EntityInfo(4000, 8000, 4000, 0, 0, 1.75, EntityType::Research, Entity::Astro, "Astrophysics");
 constexpr EntityInfo Graviton = EntityInfo(0, 0, 0, 300000, 0, 3, EntityType::Research, Entity::Graviton, "Graviton Technology");
 
-constexpr EntityInfo Coloship = EntityInfo(10000, 20000, 10000, 0, 0, 0, EntityType::Ship, Entity::Coloship, "Colonization Ship");
+constexpr EntityInfo Coloship = EntityInfo(10000, 20000, 10000, 0, 0, 0, EntityType::Ship, Entity::Coloship, "Colony Ship");
+constexpr EntityInfo Crawler = EntityInfo(2000, 2000, 1000, 0, 50, 0, EntityType::Ship, Entity::Crawler, "Crawler");
 
 constexpr EntityInfo Noentity = EntityInfo();
 
@@ -345,7 +347,8 @@ std::int64_t getDailyFKWConsumption(int fusionLevel, int fusionPercent);
 
 std::int64_t getEnergyConsumption(int metlvl, int metPercent,
                                   int cryslvl, int crysPercent,
-                                  int deutlvl, int deutPercent);
+                                  int deutlvl, int deutPercent,
+                                  int crawler, int crawlerPercent);
 
 // 100%, no officer
 std::int64_t getEnergyOfSats(int count, int planetTemperatur);

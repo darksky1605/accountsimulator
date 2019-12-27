@@ -551,30 +551,37 @@ std::int64_t getDailyFKWConsumption(int fusionLevel, int fusionPercent) {
 
 std::int64_t getEnergyConsumption(int metlvl, int metPercent,
                                   int cryslvl, int crysPercent,
-                                  int deutlvl, int deutPercent) {
+                                  int deutlvl, int deutPercent,
+                                  int numcrawler, int crawlerPercent) {
     assert(metlvl >= 0);
     assert(cryslvl >= 0);
     assert(deutlvl >= 0);
+    assert(numcrawler >= 0);
     assert(metPercent >= 0);
     assert(crysPercent >= 0);
     assert(deutPercent >= 0);
+    assert(crawlerPercent >= 0);
     assert(metPercent <= 100);
     assert(crysPercent <= 100);
     assert(deutPercent <= 100);
+    assert(crawlerPercent <= 100);
 
     const double metFactor = metPercent / 100.0;
     const double crysFactor = crysPercent / 100.0;
     const double deutFactor = deutPercent / 100.0;
+    const double crawlerFactor = crawlerPercent / 100.0;
 
     const auto& metInfo = Metalmine;
     const auto& crysInfo = Crystalmine;
     const auto& deutInfo = Deutsynth;
+    const auto& crawlerInfo = Crawler;
 
-    const std::int64_t metConsumption = ceil(metInfo.energyFactor * metlvl * std::pow(1.1, metlvl) * metFactor);
-    const std::int64_t crysConsumption = ceil(crysInfo.energyFactor * cryslvl * std::pow(1.1, cryslvl) * crysFactor);
-    const std::int64_t deutConsumption = ceil(deutInfo.energyFactor * deutlvl * std::pow(1.1, deutlvl) * deutFactor);
+    const std::int64_t metConsumption = std::ceil(metInfo.energyFactor * metlvl * std::pow(1.1, metlvl) * metFactor);
+    const std::int64_t crysConsumption = std::ceil(crysInfo.energyFactor * cryslvl * std::pow(1.1, cryslvl) * crysFactor);
+    const std::int64_t deutConsumption = std::ceil(deutInfo.energyFactor * deutlvl * std::pow(1.1, deutlvl) * deutFactor);
+    const std::int64_t crawlerConsumption = std::ceil(crawlerInfo.energyFactor * numcrawler * crawlerFactor);
 
-    const std::int64_t consumption = metConsumption + crysConsumption + deutConsumption;
+    const std::int64_t consumption = metConsumption + crysConsumption + deutConsumption + crawlerConsumption;
 
     assert(consumption >= 0);
 
@@ -683,7 +690,12 @@ double getMineProductionFactor(int metLevel, int metPercent,
     assert(fusionPercent <= 100);
     assert(satsPercent <= 100);
 
-    const std::int64_t requiredenergy = getEnergyConsumption(metLevel, metPercent, crysLevel, crysPercent, deutLevel, deutPercent);
+    const std::int64_t requiredenergy = getEnergyConsumption(
+        metLevel, metPercent, 
+        crysLevel, crysPercent, 
+        deutLevel, deutPercent,
+        crawler, crawlerPercent
+    );
 
     const std::int64_t totalenergy = getTotalEnergy(solarplantLevel, solarplantPercent,
                                                     fusionLevel, fusionPercent, etechLevel,
@@ -952,6 +964,8 @@ std::map<Entity, std::string> getEntityToNameMap() {
     map[Entity::Researchnetwork] = "Intergalactic Research Network";
     map[Entity::Astro] = "Astrophysics";
     map[Entity::Graviton] = "Graviton Technology";
+    map[Entity::Coloship] = "Colony Ship";
+    map[Entity::Crawler] = "Crawler";
     map[Entity::None] = "None";
     return map;
 }
@@ -1034,8 +1048,10 @@ EntityInfo parseEntityName(const std::string& name) {
         entity = Astro;
     } else if (name == "Graviton Technology") {
         entity = Graviton;
-    } else if (name == "Colonization Ship") {
+    } else if (name == "Colony Ship") {
         entity = Coloship;
+    } else if (name == "Crawler") {
+        entity = Crawler;  
     } else if (name == "none" || name == "") {
         entity = Noentity;
     } else {
