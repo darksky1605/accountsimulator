@@ -192,6 +192,15 @@ int PlanetState::getSats() const{
     return sats;
 }
 
+void PlanetState::buildCrawler(int numcrawler){
+    assert(numcrawler >= 0);
+    crawler += numcrawler;
+}
+
+int PlanetState::getCrawler() const{
+    return crawler;
+}
+
 void PlanetState::startConstruction(std::chrono::seconds durationOfConstruction, const ogh::Entity& entity) {
     constexpr auto zero = std::chrono::seconds::zero();
 

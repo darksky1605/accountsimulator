@@ -67,6 +67,7 @@ struct PlanetState {
     std::chrono::seconds crysItemDuration{0};
     std::chrono::seconds deutItemDuration{0};
     int sats = 0;
+    int crawler = 0;
 
     std::chrono::seconds buildingQueue{0};
     ogamehelpers::Entity entityInQueue{};
@@ -98,6 +99,9 @@ struct PlanetState {
 
     void buildSats(int numsats);
     int getSats() const;
+
+    void buildCrawler(int numCrawler);
+    int getCrawler() const;
 
     void startConstruction(std::chrono::seconds timeDays, const ogamehelpers::Entity& entity);
 
