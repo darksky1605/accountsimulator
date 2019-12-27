@@ -25,6 +25,7 @@
             "allianceDepotLevel": 0,
             "buildingQueueDuration": "0",
             "crawler": 5,
+            "crawlerPercent": 100,
             "crysItem": "none",
             "crysItemDuration": "0",
             "crysLevel": 39,
