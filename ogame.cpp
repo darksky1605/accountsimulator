@@ -777,9 +777,9 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const double classProduction_crystal = simpleProduction_crystal * classFactor;
     const double classProduction_deut = simpleProduction_deut * classFactor;
 
-    const double crawlerProduction_met = std::round(simpleProduction_met * crawlerFactor * numcrawler);
-    const double crawlerProduction_crystal = std::round(simpleProduction_crystal * crawlerFactor * numcrawler);
-    const double crawlerProduction_deut = std::round(simpleProduction_deut * crawlerFactor * numcrawler);
+    const double crawlerProduction_met = (simpleProduction_met * crawlerFactor * numcrawler);
+    const double crawlerProduction_crystal = (simpleProduction_crystal * crawlerFactor * numcrawler);
+    const double crawlerProduction_deut = (simpleProduction_deut * crawlerFactor * numcrawler);
 
     double result_met = (simpleProduction_met 
                         + itemProduction_met 
