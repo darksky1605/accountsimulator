@@ -713,7 +713,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                               int solarLevel, int solarplantPercent,
                               int fusionLevel, int fusionPercent, int etechLevel,
                               int temperature, int sats, int satsPercent,
-                              int crawler, int crawlerPercent,
+                              int numcrawler, int crawlerPercent,
                               int plasmaLevel, int speedfactor,
                               bool engineer, bool geologist, bool staff,
                               CharacterClass cclass) {
@@ -734,6 +734,14 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const int classPercent = cclass == CharacterClass::Collector ? 25 : 0;
     const double classFactor = (classPercent) / 100.;
 
+    constexpr int crawler_y_factor = 8;
+    const int totalMineLevel = metLevel + crysLevel + deutLevel;
+    numcrawler = std::min(numcrawler, totalMineLevel * crawler_y_factor);
+
+    constexpr int crawler_boost_factor = 0.0002;
+    const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;    
+    const double crawlerFactor = crawler_boost_factor * crawlerClassFactor;
+
     const Production defaultProduction = getDefaultProduction();
 
     double simpleProduction_met = 30 * metLevel * std::pow(1.1, metLevel) * metPercent / 100.;
@@ -746,7 +754,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                                                                 solarLevel, solarplantPercent,
                                                                 fusionLevel, fusionPercent, etechLevel,
                                                                 sats, satsPercent, temperature,
-                                                                crawler, crawlerPercent,
+                                                                numcrawler, crawlerPercent,
                                                                 engineer, staff,
                                                                 cclass);
     simpleProduction_met *= mineproductionfactor;
@@ -769,21 +777,28 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const double classProduction_crystal = simpleProduction_crystal * classFactor;
     const double classProduction_deut = simpleProduction_deut * classFactor;
 
+    const double crawlerProduction_met = std::round(simpleProduction_met * crawlerFactor * numcrawler);
+    const double crawlerProduction_crystal = std::round(simpleProduction_crystal * crawlerFactor * numcrawler);
+    const double crawlerProduction_deut = std::round(simpleProduction_deut * crawlerFactor * numcrawler);
+
     double result_met = (simpleProduction_met 
                         + itemProduction_met 
                         + plasmaProduction_met 
                         + extraOfficerProduction_met
-                        + classProduction_met);
+                        + classProduction_met
+                        + crawlerProduction_met);
     double result_crystal = (simpleProduction_crystal 
                         + itemProduction_crystal 
                         + plasmaProduction_crystal 
                         + extraOfficerProduction_crystal
-                        + classProduction_crystal);
+                        + classProduction_crystal
+                        + crawlerProduction_crystal);
     double result_deut = (simpleProduction_deut 
                         + itemProduction_deut 
                         + plasmaProduction_deut 
                         + extraOfficerProduction_deut
-                        + classProduction_deut);
+                        + classProduction_deut
+                        + crawlerProduction_deut);
 
     result_met += defaultProduction.metal();
     result_crystal += defaultProduction.crystal();
