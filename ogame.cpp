@@ -746,13 +746,19 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const int classPercent = cclass == CharacterClass::Collector ? 25 : 0;
     const double classFactor = (classPercent) / 100.;
 
-    constexpr int crawler_y_factor = 8;
-    const int totalMineLevel = metLevel + crysLevel + deutLevel;
-    numcrawler = std::min(numcrawler, totalMineLevel * crawler_y_factor);
+    
+    
 
     constexpr double crawler_boost_factor = 0.0002;
+    constexpr int crawler_y_factor = 8;
+    constexpr double crawler_maxTotalBoost = 0.5;
+
     const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;    
     const double crawlerFactor = crawler_boost_factor * crawlerClassFactor;
+    const int maxCrawlersByProduction = std::ceil(crawler_maxTotalBoost / (crawler_boost_factor * crawlerClassFactor));
+    const int totalMineLevel = metLevel + crysLevel + deutLevel;
+    numcrawler = std::min(numcrawler, totalMineLevel * crawler_y_factor);
+    numcrawler = std::min(numcrawler, maxCrawlersByProduction);
 
     const Production defaultProduction = getDefaultProduction();
 
