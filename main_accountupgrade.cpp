@@ -364,7 +364,7 @@ void usage(int argc, char** argv) {
     std::cout << "Calculates how long it takes to perform a series of researches and upgrades in an account\n\n";
     std::cout << "Options:\n";
     std::cout << "--help: Show this message.\n\n";
-    std::cout << "--newAccount file. Creates an empty account json file with given name and exists.\n\n";
+    std::cout << "--createAccount file. Creates an empty account json file with given name and exists.\n\n";
     std::cout << "--accountfile file: Load initial account data from file.\n\n";
     std::cout << "--upgradefile file: Load upgrade list from file.\n\n";
     std::cout << "--logfile file: Write program trace to file.\n\n";
