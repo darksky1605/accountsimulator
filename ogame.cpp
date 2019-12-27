@@ -882,26 +882,32 @@ int getNumberOfFleetSlots(int computerLevel) {
     return computerLevel + 1;
 }
 
-int getNumberOfFleetSlotsWithOfficers(int computerLevel, bool hasAdmiral, bool hasStaff) {
+int getNumberOfFleetSlots(int computerLevel, bool hasAdmiral, bool hasStaff, CharacterClass cclass) {
     constexpr int admiralSlots = 2;
     constexpr int staffSlots = 1;
+    constexpr int classGeneralSlots = 2;
 
     const int extraAdmiralSlots = hasAdmiral ? admiralSlots : 0;
     const int extraStaffSlots = hasStaff ? staffSlots : 0;
-    return getNumberOfFleetSlots(computerLevel) + extraAdmiralSlots + extraStaffSlots;
+    const int extraGeneralSlots = cclass == CharacterClass::General ? classGeneralSlots : 0;
+
+    return getNumberOfFleetSlots(computerLevel) + extraAdmiralSlots + extraStaffSlots + extraGeneralSlots;
 }
 
 int getNumberOfExpeditionSlots(int astroLevel) {
     return int(std::sqrt(astroLevel));
 }
 
-int getNumberOfExpeditionSlotsWithOfficers(int astroLevel, bool hasAdmiral, bool hasStaff) {
+int getNumberOfExpeditionSlots(int astroLevel, bool hasAdmiral, bool hasStaff, CharacterClass cclass) {
     constexpr int admiralSlots = 1;
     constexpr int staffSlots = 0;
+    constexpr int classDiscovererSlots = 2;
 
     const int extraAdmiralSlots = hasAdmiral ? admiralSlots : 0;
     const int extraStaffSlots = hasStaff ? staffSlots : 0;
-    return getNumberOfExpeditionSlots(astroLevel) + extraAdmiralSlots + extraStaffSlots;
+    const int extraDiscovererSlots = cclass == CharacterClass::Discoverer ? classDiscovererSlots : 0;
+
+    return getNumberOfExpeditionSlots(astroLevel) + extraAdmiralSlots + extraStaffSlots + extraDiscovererSlots;
 }
 
 std::map<Entity, std::string> entityToNameMap = getEntityToNameMap();

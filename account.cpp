@@ -602,6 +602,7 @@ Account& Account::operator=(const Account& rhs) {
     accountTime = rhs.accountTime;
     logRecords = rhs.logRecords;
     eventTimes = rhs.eventTimes;
+    characterClass = rhs.characterClass;
 
     for (auto& planet : planets) {
         planet.accountPtr = this;
@@ -1020,18 +1021,38 @@ ogh::Production Account::getCurrentDailyProduction() const {
 }
 
 void Account::updateDailyFarmIncome() {
-    const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(getResearchLevel(ogh::Entity::Computer), hasAdmiral(), hasStaff());
+    const int slotsInAccount = ogh::getNumberOfFleetSlots(
+        getResearchLevel(ogh::Entity::Computer), 
+        hasAdmiral(), 
+        hasStaff(), 
+        getCharacterClass()
+    );
     const int fleetSlots = std::max(0, slotsInAccount - saveslots);
-    const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(getResearchLevel(ogh::Entity::Astro), hasAdmiral(), hasStaff());
+    const int expoSlots = ogh::getNumberOfExpeditionSlots(
+        getResearchLevel(ogh::Entity::Astro), 
+        hasAdmiral(), 
+        hasStaff(),
+        getCharacterClass()
+    );
     const int slots = std::max(0, fleetSlots - expoSlots);
 
     dailyFarmIncome = dailyFarmIncomePerSlot * slots;
 }
 
 void Account::updateDailyExpeditionIncome() {
-    const int slotsInAccount = ogh::getNumberOfFleetSlotsWithOfficers(getResearchLevel(ogh::Entity::Computer), hasAdmiral(), hasStaff());
+    const int slotsInAccount = ogh::getNumberOfFleetSlots(
+        getResearchLevel(ogh::Entity::Computer), 
+        hasAdmiral(), 
+        hasStaff(), 
+        getCharacterClass()
+    );
     const int fleetSlots = std::max(0, slotsInAccount - saveslots);
-    const int expoSlots = ogh::getNumberOfExpeditionSlotsWithOfficers(getResearchLevel(ogh::Entity::Astro), hasAdmiral(), hasStaff());
+    const int expoSlots = ogh::getNumberOfExpeditionSlots(
+        getResearchLevel(ogh::Entity::Astro), 
+        hasAdmiral(), 
+        hasStaff(),
+        getCharacterClass()
+    );
     const int slots = std::min(fleetSlots, expoSlots);
 
     dailyExpeditionIncome = dailyExpeditionIncomePerSlot * slots;

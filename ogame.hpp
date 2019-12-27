@@ -404,10 +404,10 @@ int getMaxPossiblePlanets(int astroLevel);
 int getMinPossibleAstro(int num_planets);
 
 int getNumberOfFleetSlots(int computerLevel);
-int getNumberOfFleetSlotsWithOfficers(int computerLevel, bool hasAdmiral, bool hasStaff);
+int getNumberOfFleetSlots(int computerLevel, bool hasAdmiral, bool hasStaff, CharacterClass cclass);
 
 int getNumberOfExpeditionSlots(int astroLevel);
-int getNumberOfExpeditionSlotsWithOfficers(int astroLevel, bool hasAdmiral, bool hasStaff);
+int getNumberOfExpeditionSlots(int astroLevel, bool hasAdmiral, bool hasStaff, CharacterClass cclass);
 
 EntityInfo parseEntityName(const std::string& name);
 
