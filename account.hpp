@@ -210,6 +210,7 @@ struct Account {
     std::vector<PlanetState> planets{};
     ResearchState researches{};
     OfficerState officers{};
+    ogamehelpers::CharacterClass characterClass = ogamehelpers::CharacterClass::None;
 
     ogamehelpers::Resources resources{};
     ogamehelpers::Production dailyFarmIncomePerSlot{};

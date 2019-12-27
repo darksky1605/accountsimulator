@@ -62,6 +62,14 @@ enum class ItemRarity { Bronze,
                         Gold,
                         None };
 
+enum class CharacterClass {
+    None,
+    Collector,
+    General,
+    Discoverer,
+};
+
+
 constexpr float plasma_factor_met = 1.0f;
 constexpr float plasma_factor_crys = 0.66f;
 constexpr float plasma_factor_deut = 0.33f;
