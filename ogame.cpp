@@ -717,6 +717,9 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const int staffpercent = staff ? 2 : 0;
     const double officerfactor = (geologistpercent + staffpercent) / 100.;
 
+    const int classPercent = cclass == CharacterClass::Collector ? 25 : 0;
+    const double classFactor = (classPercent) / 100.;
+
     const Production defaultProduction = getDefaultProduction();
 
     double simpleProduction_met = 30 * metLevel * std::pow(1.1, metLevel) * metPercent / 100.;
@@ -747,9 +750,25 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const double extraOfficerProduction_crystal = simpleProduction_crystal * officerfactor;
     const double extraOfficerProduction_deut = simpleProduction_deut * officerfactor;
 
-    double result_met = (simpleProduction_met + itemProduction_met + plasmaProduction_met + extraOfficerProduction_met);
-    double result_crystal = (simpleProduction_crystal + itemProduction_crystal + plasmaProduction_crystal + extraOfficerProduction_crystal);
-    double result_deut = (simpleProduction_deut + itemProduction_deut + plasmaProduction_deut + extraOfficerProduction_deut);
+    const double classProduction_met = simpleProduction_met * classFactor;
+    const double classProduction_crystal = simpleProduction_crystal * classFactor;
+    const double classProduction_deut = simpleProduction_deut * classFactor;
+
+    double result_met = (simpleProduction_met 
+                        + itemProduction_met 
+                        + plasmaProduction_met 
+                        + extraOfficerProduction_met
+                        + classProduction_met);
+    double result_crystal = (simpleProduction_crystal 
+                        + itemProduction_crystal 
+                        + plasmaProduction_crystal 
+                        + extraOfficerProduction_crystal
+                        + classProduction_crystal);
+    double result_deut = (simpleProduction_deut 
+                        + itemProduction_deut 
+                        + plasmaProduction_deut 
+                        + extraOfficerProduction_deut
+                        + classProduction_deut);
 
     result_met += defaultProduction.metal();
     result_crystal += defaultProduction.crystal();
