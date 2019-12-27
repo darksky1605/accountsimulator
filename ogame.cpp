@@ -576,6 +576,10 @@ std::int64_t getEnergyConsumption(int metlvl, int metPercent,
     const auto& deutInfo = Deutsynth;
     const auto& crawlerInfo = Crawler;
 
+    constexpr int crawler_y_factor = 8;
+    const int totalMineLevel = metlvl + cryslvl + deutlvl;
+    numcrawler = std::min(numcrawler, totalMineLevel * crawler_y_factor);
+
     const std::int64_t metConsumption = std::ceil(metInfo.energyFactor * metlvl * std::pow(1.1, metlvl) * metFactor);
     const std::int64_t crysConsumption = std::ceil(crysInfo.energyFactor * cryslvl * std::pow(1.1, cryslvl) * crysFactor);
     const std::int64_t deutConsumption = std::ceil(deutInfo.energyFactor * deutlvl * std::pow(1.1, deutlvl) * deutFactor);
