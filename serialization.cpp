@@ -48,6 +48,7 @@ void from_json(const nlohmann::json& j, Production& p) {
 
 void to_json(json& j, const PlanetState& p) {
     j = json{{"planetId", p.planetId},
+             {"position", p.position},
              {"metLevel", p.buildingLevels.metLevel},
              {"crysLevel", p.buildingLevels.crysLevel},
              {"deutLevel", p.buildingLevels.deutLevel},
@@ -82,6 +83,7 @@ void to_json(json& j, const PlanetState& p) {
 
 void from_json(const json& j, PlanetState& p) {
     j.at("planetId").get_to(p.planetId);
+    j.at("position").get_to(p.position);
     j.at("metLevel").get_to(p.buildingLevels.metLevel);
     j.at("crysLevel").get_to(p.buildingLevels.crysLevel);
     j.at("deutLevel").get_to(p.buildingLevels.deutLevel);

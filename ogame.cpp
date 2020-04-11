@@ -807,7 +807,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const double crawlerProduction_deut = (simpleProduction_deut * crawlerFactor * numcrawler);
 
     const double positionBonus_met = 0;
-    const double positionBonus_crystal = simpleProduction_crystal * crysBoostByPosition[planetPosition];
+    const double positionBonus_crystal = simpleProduction_crystal * crysBoostByPosition[planetPosition-1];
     const double positionBonus_deut = 0;
 
     double result_met = (simpleProduction_met 

@@ -56,7 +56,7 @@ struct PlanetState {
     };
 
     int planetId = 0;
-
+    int position = 8;
     int temperature = 0;
     int metPercent = 0;
     int crysPercent = 0;

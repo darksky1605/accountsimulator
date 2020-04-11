@@ -222,7 +222,7 @@ void PlanetState::calculateDailyProduction() {
                                                 getLevel(ogh::Entity::Solar), solarplantPercent,
                                                 getLevel(ogh::Entity::Fusion), fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
                                                 temperature, sats, satsPercent,
-                                                12,
+                                                position,
                                                 crawler, crawlerPercent,
                                                 accountPtr->getResearchLevel(ogh::Entity::Plasma), accountPtr->speedfactor,
                                                 accountPtr->hasEngineer(), accountPtr->hasGeologist(), accountPtr->hasStaff(),
