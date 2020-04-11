@@ -727,6 +727,7 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
                               int solarLevel, int solarplantPercent,
                               int fusionLevel, int fusionPercent, int etechLevel,
                               int temperature, int sats, int satsPercent,
+                              int planetPosition, // crys boost for positions 1-3
                               int numcrawler, int crawlerPercent,
                               int plasmaLevel, int speedfactor,
                               bool engineer, bool geologist, bool staff,
@@ -740,6 +741,8 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     assert(deutPercent >= 0);
     assert(plasmaLevel >= 0);
     assert(speedfactor >= 1);
+    assert(planetPosition >= 1);
+    assert(planetPosition <= 15);
 
     const int geologistpercent = geologist ? 10 : 0;
     const int staffpercent = staff ? 2 : 0;
@@ -754,6 +757,8 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     constexpr double crawler_boost_factor = 0.0002;
     constexpr int crawler_y_factor = 8;
     constexpr double crawler_maxTotalBoost = 0.5;
+
+    const std::array<double, 15> crysBoostByPosition{0.3, 0.225, 0.15, 0,0,0,0,0,0,0,0,0,0,0,0};
 
     const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;    
     const double crawlerFactor = crawler_boost_factor * crawlerClassFactor;
@@ -801,24 +806,31 @@ Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
     const double crawlerProduction_crystal = (simpleProduction_crystal * crawlerFactor * numcrawler);
     const double crawlerProduction_deut = (simpleProduction_deut * crawlerFactor * numcrawler);
 
+    const double positionBonus_met = 0;
+    const double positionBonus_crystal = simpleProduction_crystal * crysBoostByPosition[planetPosition];
+    const double positionBonus_deut = 0;
+
     double result_met = (simpleProduction_met 
                         + itemProduction_met 
                         + plasmaProduction_met 
                         + extraOfficerProduction_met
                         + classProduction_met
-                        + crawlerProduction_met);
+                        + crawlerProduction_met
+                        + positionBonus_met);
     double result_crystal = (simpleProduction_crystal 
                         + itemProduction_crystal 
                         + plasmaProduction_crystal 
                         + extraOfficerProduction_crystal
                         + classProduction_crystal
-                        + crawlerProduction_crystal);
+                        + crawlerProduction_crystal
+                        + positionBonus_crystal);
     double result_deut = (simpleProduction_deut 
                         + itemProduction_deut 
                         + plasmaProduction_deut 
                         + extraOfficerProduction_deut
                         + classProduction_deut
-                        + crawlerProduction_deut);
+                        + crawlerProduction_deut
+                        + positionBonus_deut);
 
     result_met += defaultProduction.metal();
     result_crystal += defaultProduction.crystal();
