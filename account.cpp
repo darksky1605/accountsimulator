@@ -626,6 +626,7 @@ Account& Account::operator=(const Account& rhs) {
     dailyMineProduction = rhs.dailyMineProduction;
     researchDurationDivisor = rhs.researchDurationDivisor;
     accountInitialized = rhs.accountInitialized;
+    canTradeResources = rhs.canTradeResources;
     traderate = rhs.traderate;
     speedfactor = rhs.speedfactor;
     saveslots = rhs.saveslots;
@@ -1235,19 +1236,27 @@ void Account::waitForAllConstructions() {
     sstream.str("");
 }
 
+std::chrono::seconds Account::getSaveDuration(
+    const ogamehelpers::Resources& have, /*have*/
+    const ogamehelpers::Resources& want,  /*want*/
+    const ogamehelpers::Production& production  /*production*/
+){
+    if(canTradeResources){
+        return get_save_duration_symmetrictrade(have, want, production, traderate);
+    }else{
+        return get_save_duration_notrade(have, want, production);
+    }
+
+}
+
 std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Resources& constructionCosts) {
     std::stringstream sstream;
     ogamehelpers::Production currentProduction = getCurrentDailyProduction();
     std::chrono::seconds saveTimeDaysForJob{0};
 
-    // std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.metal(), resources.crystal(), resources.deuterium(),
-    //                                                            constructionCosts.metal(), constructionCosts.crystal(), constructionCosts.deuterium(),
-    //                                                            currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
-    //                                                            traderate);
-    std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources,
-                                                               constructionCosts,
-                                                               currentProduction,
-                                                               traderate);
+    std::chrono::seconds saveTimeDays = getSaveDuration(resources,
+                                                        constructionCosts,
+                                                        currentProduction);
 
     auto makelog = [&]() {
         const auto producedRess = currentProduction.produce(std::chrono::hours{24});
@@ -1277,14 +1286,9 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
 
         nextEventFinishedInDays = getTimeUntilNextFinishedEvent();
 
-        // std::chrono::seconds saveTimeDays = ogh::get_save_duration_symmetrictrade(resources.metal(), resources.crystal(), resources.deuterium(),
-        //                                                            constructionCosts.metal(), constructionCosts.crystal(), constructionCosts.deuterium(),
-        //                                                            currentProduction.metal(), currentProduction.crystal(), currentProduction.deuterium(),
-        //                                                            traderate);
-        saveTimeDays = ogh::get_save_duration_symmetrictrade(resources,
-                                                               constructionCosts,
-                                                               currentProduction,
-                                                               traderate);
+        saveTimeDays = getSaveDuration(resources,
+                                        constructionCosts,
+                                        currentProduction);
 
         if (saveTimeDays == std::chrono::seconds::max())
             log("ERROR : PRODUCTION IS NEGATIVE");

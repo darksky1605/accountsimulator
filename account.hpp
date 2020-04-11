@@ -229,6 +229,7 @@ struct Account {
     ogamehelpers::Production dailyMineProduction{};
 
     bool accountInitialized = false;
+    bool canTradeResources = true;
 
     std::array<float, 3> traderate{{3.0f, 2.0f, 1.0f}};
 
@@ -312,6 +313,12 @@ struct Account {
     ogamehelpers::Entity getResearchInConstruction() const;
 
     ogamehelpers::Entity getBuildingInConstruction(int planetNumber) const;
+
+    std::chrono::seconds getSaveDuration(
+        const ogamehelpers::Resources& have,
+        const ogamehelpers::Resources& want,
+        const ogamehelpers::Production& production
+    );
 
     void addResources(const ogamehelpers::Resources& res);
 

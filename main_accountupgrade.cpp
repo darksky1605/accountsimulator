@@ -13,6 +13,7 @@
 #include <cctype>
 #include <fstream>
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -434,6 +435,7 @@ int detailedmultiupgrade(int argc, char** argv) {
     bool appendLog = false;
     bool showPercentageChanges = false;
     int astroMode = 0;
+    bool disableTrade = false;
 
     for (int i = 1; i < argc; i++) {
         if (std::string(argv[i]) == "--printlist") {
@@ -517,7 +519,15 @@ int detailedmultiupgrade(int argc, char** argv) {
             appendLog = true;
             continue;
         }
+
+        // this option is not fully implemented yet
+        // if (std::string(argv[i]) == "--notrade") {
+        //     disableTrade = true;
+        //     continue;
+        // }
     }
+
+    std::cout << std::boolalpha;
 
     if (overwriteSpeed) {
         std::cout << "Speed factor: " << speedfactor << '\n';
@@ -533,7 +543,10 @@ int detailedmultiupgrade(int argc, char** argv) {
     std::cout << "Log file: " << logFileName << '\n';
     std::cout << "Append log file: " << appendLog << '\n';
     std::cout << "DHM time format: " << use_dhm_format << '\n';
+    std::cout << "Trading disabled: " << disableTrade << '\n';
     std::cout << "Threads: " << num_threads << '\n';
+
+    std::cout << std::noboolalpha;
 
     auto openmode = std::ios_base::out;
     if (appendLog)
@@ -554,6 +567,8 @@ int detailedmultiupgrade(int argc, char** argv) {
     if (overwriteSpeed) {
         account.speedfactor = speedfactor;
     }
+
+    account.canTradeResources = !disableTrade;
 
     auto planned_upgrades = parseUpgradeFile(upgradeFile);
 
