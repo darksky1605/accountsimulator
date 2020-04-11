@@ -661,6 +661,8 @@ int getItemProductionPercent(ItemRarity item) {
         return 20;
     case ItemRarity::Gold:
         return 30;
+    case ItemRarity::Platinum:
+        return 40;
     case ItemRarity::None:
         return 0;
     }
@@ -1104,6 +1106,8 @@ ItemRarity parseItemRarityName(const std::string& rarityname) {
         return ItemRarity::Silver;
     else if (s == "g" || s == "gold")
         return ItemRarity::Gold;
+    else if (s == "p" || s == "platinum")
+        return ItemRarity::Platinum;
     else
         return ItemRarity::None;
 }
@@ -1116,6 +1120,8 @@ std::string itemRarityToName(const ItemRarity& r) {
         return "silver";
     case ItemRarity::Gold:
         return "gold";
+    case ItemRarity::Platinum:
+        return "platinum";
     default:
         return "none";
     }

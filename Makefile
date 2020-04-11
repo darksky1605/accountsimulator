@@ -4,7 +4,7 @@ WARNING_FLAG = -Wall -Wextra -Wpedantic
 
 CFLAGS = $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) -fopenmp
 
-formulartests: formulartests.cpp ogame.hpp build/ogame.o
+formulartests: dirs formulartests.cpp ogame.hpp build/ogame.o
 	g++ -std=c++14 $(DEBUG_FLAG) $(WARNING_FLAG) formulartests.cpp build/ogame.o -o formulartests
 	
 dplistcalculator: dplistcalculator.cpp ogame.hpp build/ogame.o util.hpp

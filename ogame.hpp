@@ -61,6 +61,7 @@ enum class Entity { Metalmine,
 enum class ItemRarity { Bronze,
                         Silver,
                         Gold,
+                        Platinum,
                         None };
 
 enum class CharacterClass {
