@@ -623,6 +623,7 @@ Account& Account::operator=(const Account& rhs) {
     dailyFarmIncomePerSlot = rhs.dailyFarmIncomePerSlot;
     dailyExpeditionIncomePerSlot = rhs.dailyExpeditionIncomePerSlot;
     dailyMineProduction = rhs.dailyMineProduction;
+    researchDurationDivisor = rhs.researchDurationDivisor;
     accountInitialized = rhs.accountInitialized;
     traderate = rhs.traderate;
     speedfactor = rhs.speedfactor;
@@ -1422,14 +1423,16 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
     const int totalLabLevel = getTotalLabLevel();
 
     const std::chrono::seconds researchTimeNoOfficer = ogh::getConstructionTime(entityInfo, upgradeLevel, roboLevel, naniteLevel, shipyardLevel, totalLabLevel, speedfactor);
+    // TODO ? Is this the correct place to apply researchDurationDivisor ?
     const double bonusfactor = (hasTechnocrat() ? 0.75 : 1.0) 
-                              * (getCharacterClass() == ogh::CharacterClass::Discoverer ? 0.75 : 1.0);
+                              * (getCharacterClass() == ogh::CharacterClass::Discoverer ? 0.75 : 1.0)
+                              * (1.0 / researchDurationDivisor);
     const std::chrono::seconds researchTime 
-        = bonusfactor != 1.0 
+        =  (bonusfactor != 1.0 
             ? std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>{
                 std::ceil(researchTimeNoOfficer.count() * bonusfactor)
             }) 
-            : researchTimeNoOfficer;
+            : researchTimeNoOfficer);
 
     sstream << "Research time in seconds: " << researchTime.count();
 

@@ -183,7 +183,8 @@ void to_json(nlohmann::json& j, const Account& a) {
              {"ecospeed", a.speedfactor},
              {"characterClass", ogh::characterClassToName(a.characterClass)},
              {"numPlanets", a.planets.size()},
-             {"planetType", "individual"}};
+             {"planetType", "individual"},
+             {"researchDurationDivisor", a.researchDurationDivisor}};
 }
 
 void from_json(const nlohmann::json& j, Account& a) {
@@ -196,6 +197,7 @@ void from_json(const nlohmann::json& j, Account& a) {
     j.at("saveslots").get_to(a.saveslots);
     j.at("traderate").get_to(a.traderate);
     j.at("ecospeed").get_to(a.speedfactor);
+    j.at("researchDurationDivisor").get_to(a.researchDurationDivisor);
     a.characterClass = ogh::parseCharacterClassName(j.at("characterClass"));
     //std::cerr << ogh::characterClassToName(a.characterClass) << "\n";
 

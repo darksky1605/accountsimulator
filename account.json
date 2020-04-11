@@ -74,6 +74,7 @@
         "shieldingLevel": 0,
         "weaponsLevel": 0
     },
+    "researchDurationDivisor": 2,
     "resources": {
         "crystal": 0,
         "deuterium": 0,

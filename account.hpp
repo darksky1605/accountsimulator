@@ -233,7 +233,7 @@ struct Account {
     std::array<float, 3> traderate{{3.0f, 2.0f, 1.0f}};
 
     
-
+    int researchDurationDivisor = 1;
     int speedfactor = 1;
     int saveslots = 1;
 
