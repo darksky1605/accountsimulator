@@ -310,9 +310,9 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                         simpleProduction_crystal *= mineproductionfactor;
                         simpleProduction_deut *= mineproductionfactor;
 
-                        const double itemProduction_met = simpleProduction_met * getItemProductionPercent(metItem) / 100.;
-                        const double itemProduction_crystal = simpleProduction_crystal * getItemProductionPercent(crysItem) / 100.;
-                        const double itemProduction_deut = simpleProduction_deut * getItemProductionPercent(deutItem) / 100.;
+                        const double itemProduction_met = simpleProduction_met * getItemProductionPercent(getMetItem()) / 100.;
+                        const double itemProduction_crystal = simpleProduction_crystal * getItemProductionPercent(getCrysItem()) / 100.;
+                        const double itemProduction_deut = simpleProduction_deut * getItemProductionPercent(getDeutItem()) / 100.;
 
                         const double plasmaProduction_met = simpleProduction_met / 100. * ogh::plasma_factor_met * plasmaLevel;
                         const double plasmaProduction_crystal = simpleProduction_crystal / 100. * ogh::plasma_factor_crys * plasmaLevel;
