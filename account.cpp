@@ -389,6 +389,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                                                                     accountPtr->getCharacterClass());
             SetPercentsResult result{
                 true,
+                false,
                 oldMetPercent,
                 oldCrysPercent,
                 oldDeutPercent,
@@ -409,6 +410,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
         }else{
             SetPercentsResult result;
             result.changedPercents = false;
+            result.changedProductionFactor = false;
             return result;
         }                                                                         
     }else if(oldProductionFactor == 0){
@@ -424,6 +426,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
         if(newmineproductionfactor > 0){
             SetPercentsResult result{
                 true,
+                false,
                 oldMetPercent,
                 oldCrysPercent,
                 oldDeutPercent,
@@ -460,6 +463,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
 
         SetPercentsResult result{
             true,
+            false,
             oldMetPercent,
             oldCrysPercent,
             oldDeutPercent,
@@ -478,10 +482,44 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
 
         return result;
 
-    } else {
-        SetPercentsResult result;
-        result.changedPercents = false;
-        return result;
+    }else{
+        const double newmineproductionfactor = ogh::getMineProductionFactor(metLevel, metPercent,
+                                                                            crysLevel, crysPercent,
+                                                                            deutLevel, deutPercent,
+                                                                            solarLevel, solarplantPercent,
+                                                                            fusionLevel, fusionPercent, accountPtr->getResearchLevel(ogh::Entity::Energy),
+                                                                            sats, satsPercent, temperature,
+                                                                            crawler, crawlerPercent,
+                                                                            accountPtr->hasEngineer(), accountPtr->hasStaff(),
+                                                                            accountPtr->getCharacterClass());
+
+        if(oldProductionFactor != newmineproductionfactor){
+            SetPercentsResult result{
+                false,
+                true,
+                oldMetPercent,
+                oldCrysPercent,
+                oldDeutPercent,
+                oldFusionPercent,
+                oldCrawlerPercent,
+                metPercent,
+                crysPercent,
+                deutPercent,
+                fusionPercent,
+                crawlerPercent,
+                planetId,
+                oldDSE,
+                bestDSE,
+                oldProductionFactor,
+                newmineproductionfactor};
+
+            return result;
+        }else {
+            SetPercentsResult result;
+            result.changedPercents = false;
+            result.changedProductionFactor = false;
+            return result;
+        }
     }
 }
 
@@ -1121,6 +1159,40 @@ void Account::recordPercentageChange(const PlanetState::SetPercentsResult& resul
                 << "m " << pchange.metPercent << ", c " << pchange.crysPercent << ", d " 
                 << pchange.deutPercent << ", f " << pchange.fusionPercent << ", cr " << pchange.crawlerPercent
                 << " after construction of " << pchange.finishedName << " " << pchange.finishedLevel
+                << ". Production factor: " << pchange.oldMineProductionFactor << "->" << pchange.newMineProductionFactor
+                << ". Production increased by " << (((double(pchange.newDSE) / pchange.oldDSE) - 1) * 100) << " %" << '\n';
+
+        log(sstream.str());
+    }
+
+    if (result.changedProductionFactor) {
+
+        PercentageChange pchange;
+        pchange.oldMetPercent = result.oldMetPercent;
+        pchange.oldCrysPercent = result.oldCrysPercent;
+        pchange.oldDeutPercent = result.oldDeutPercent;
+        pchange.oldFusionPercent = result.oldFusionPercent;
+        pchange.oldCrawlerPercent = result.oldCrawlerPercent;
+        pchange.metPercent = result.metPercent;
+        pchange.crysPercent = result.crysPercent;
+        pchange.deutPercent = result.deutPercent;
+        pchange.fusionPercent = result.fusionPercent;
+        pchange.crawlerPercent = result.crawlerPercent;
+        pchange.planetId = result.planetId;
+        pchange.finishedLevel = level;
+        pchange.time = accountTime;
+        pchange.oldDSE = result.oldDSE;
+        pchange.newDSE = result.newDSE;
+        pchange.oldMineProductionFactor = result.oldMineProductionFactor;
+        pchange.newMineProductionFactor = result.newMineProductionFactor;
+        pchange.finishedName = ogh::getEntityName(entity);
+
+        percentageChanges.emplace_back(std::move(pchange));
+
+        std::stringstream sstream;
+        sstream << "Planet " << pchange.planetId << ": ";
+        sstream << "Production factor changed";
+        sstream << " after construction of " << pchange.finishedName << " " << pchange.finishedLevel
                 << ". Production factor: " << pchange.oldMineProductionFactor << "->" << pchange.newMineProductionFactor
                 << ". Production increased by " << (((double(pchange.newDSE) / pchange.oldDSE) - 1) * 100) << " %" << '\n';
 

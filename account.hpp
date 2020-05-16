@@ -38,6 +38,7 @@ struct PlanetState {
 
     struct SetPercentsResult {
         bool changedPercents;
+        bool changedProductionFactor;
         int oldMetPercent;
         int oldCrysPercent;
         int oldDeutPercent;
