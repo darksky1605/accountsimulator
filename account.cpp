@@ -1203,12 +1203,12 @@ void Account::updateAccountResourcesAfterConstructionStart(const ogh::Resources&
 }
 
 void Account::printQueues(std::ostream& os) const {
-    os << "Building queues (days): [";
+    os << "Building queues (seconds): [";
     for (const auto& p : planets) {
         os << std::setprecision(5) << std::fixed << p.buildingQueue.count() << ",";
     }
     os << "]\n";
-    os << "Research queue (days): " << std::setprecision(5) << std::fixed << researches.researchQueue.count() << '\n';
+    os << "Research queue (seconds): " << std::setprecision(5) << std::fixed << researches.researchQueue.count() << '\n';
 }
 
 void Account::waitForAllConstructions() {
@@ -1568,8 +1568,8 @@ Account::UpgradeStats Account::processBuildingJob(int planetNumber, ogh::Entity 
 
     startConstruction(planetNumber, constructionTime, entity, constructionCosts);
 
-    sstream << "Total Elapsed time: " << accountTime.count() << " days - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob.count() 
-            << " days. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin).count() << " days\n";
+    sstream << "Total Elapsed time: " << accountTime.count() << " seconds - Starting building on planet. Elapsed saving time: " << saveTimeDaysForJob.count() 
+            << " seconds. Elapsed waiting time: " << (stats.constructionBeginDays - stats.waitingPeriodDaysBegin).count() << " seconds\n";
     sstream << "Account resources after start: " << resources.metal() << " " << resources.crystal() << " " << resources.deuterium() << '\n';
     printQueues(sstream);
     sstream << "\n";
