@@ -235,11 +235,19 @@ ogh::Production PlanetState::getCurrentDailyProduction() const {
 }
 
 PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh::Production& oldProd, double oldProductionFactor) {
+#if 0
     constexpr int metPercentBegin = 0;
     constexpr int crysPercentBegin = 0;
     constexpr int deutPercentBegin = 0;
     constexpr int fusionPercentBegin = 0;
     constexpr int crawlerPercentBegin = 0;
+#else 
+    constexpr int metPercentBegin = 70;
+    constexpr int crysPercentBegin = 70;
+    constexpr int deutPercentBegin = 70;
+    constexpr int fusionPercentBegin = 70;
+    constexpr int crawlerPercentBegin = 70;    
+#endif
 
     using ogh::Production;
 
@@ -940,13 +948,14 @@ void Account::advanceTime(std::chrono::seconds timestep) {
 
     const ogh::Production currentProduction = getCurrentDailyProduction();
     addResources(currentProduction.produce(timestep));
+    
+    accountTime += timestep;
 
     for (auto& planet : planets)
         planet.advanceTime(timestep);
     researches.advanceTime(timestep);
     officers.advanceTime(timestep);
 
-    accountTime += timestep;
 
     //TODO instead of loop, find range to erase, then erase it
     while(!eventTimes.empty() && eventTimes.front() <= accountTime){
