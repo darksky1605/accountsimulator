@@ -218,10 +218,21 @@ template <class Container, class Func>
 void parallel_for_each_unique_permutation(const Container& container, int num_threads, Func func) {
 
     auto factorial = [](size_t n){
+        bool errorOverflow = false;
+
         size_t f = 1;
         for(size_t i = 2; i <= n; i++){
+            auto oldf = f;
             f *= i;
+            if(f / oldf != i){
+                errorOverflow = true;
+            }            
         }
+
+        if(errorOverflow){
+            throw std::runtime_error("cannot compute factorial " + std::to_string(n) + "! . Abort.");
+        }
+
         return f;
     };
 
@@ -244,6 +255,7 @@ void parallel_for_each_unique_permutation(const Container& container, int num_th
 
     size_t numPermutations = maxNumPermutations;
     for(const auto& p : frequencies){
+        //std::cerr << p.first << " " << p.second << "\n";
         numPermutations /= factorial(p.second);
     }
 
