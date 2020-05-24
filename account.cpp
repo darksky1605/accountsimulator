@@ -231,6 +231,7 @@ void PlanetState::calculateDailyProduction() {
         getLevel(ogh::Entity::Deutsynth), getDeutItem(),
         getLevel(ogh::Entity::Solar),
         getLevel(ogh::Entity::Fusion), accountPtr->getResearchLevel(ogh::Entity::Energy),
+        getEnergyItem(),
         temperature, 
         sats,
         position,
@@ -253,10 +254,24 @@ void PlanetState::calculateDailyProduction() {
         accountPtr->speedfactor
     );
 
+    mineProductionFactor = prodCalc.getMineProductionFactor(
+        metPercent,
+        crysPercent,
+        deutPercent,
+        solarplantPercent,
+        fusionPercent,
+        satsPercent,
+        crawlerPercent
+    );
+
 }
 
 ogh::Production PlanetState::getCurrentDailyProduction() const {
     return dailyProduction;
+}
+
+double PlanetState::getMineProductionFactor() const{
+    return mineProductionFactor;
 }
 
 
@@ -301,6 +316,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
         getLevel(ogh::Entity::Deutsynth), getDeutItem(),
         getLevel(ogh::Entity::Solar),
         getLevel(ogh::Entity::Fusion), accountPtr->getResearchLevel(ogh::Entity::Energy),
+        getEnergyItem(), 
         temperature, 
         sats,
         position,
@@ -398,7 +414,10 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                 oldDSE,
                 bestDSE,
                 oldProductionFactor,
-                newmineproductionfactor};
+                newmineproductionfactor
+            };
+
+            mineProductionFactor = newmineproductionfactor;
 
             return result;
         }else{
@@ -435,7 +454,10 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                 oldDSE,
                 bestDSE,
                 oldProductionFactor,
-                newmineproductionfactor};
+                newmineproductionfactor
+            };
+
+            mineProductionFactor = newmineproductionfactor;
 
             return result;
         }else{
@@ -472,7 +494,10 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
             oldDSE,
             bestDSE,
             oldProductionFactor,
-            newmineproductionfactor};
+            newmineproductionfactor
+        };
+
+        mineProductionFactor = newmineproductionfactor;
 
         return result;
 
@@ -505,7 +530,10 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                 oldDSE,
                 bestDSE,
                 oldProductionFactor,
-                newmineproductionfactor};
+                newmineproductionfactor
+            };
+
+            mineProductionFactor = newmineproductionfactor;
 
             return result;
         }else {
@@ -686,15 +714,8 @@ void Account::buildingFinishedCallback(PlanetState& p) {
 
     auto handleProductionChangingBuilding = [&]() {
         const ogh::Production oldProd = p.getCurrentDailyProduction();
-        const double oldmineproductionfactor = ogh::getMineProductionFactor(p.getLevel(ogh::Entity::Metalmine), p.metPercent,
-                                                                            p.getLevel(ogh::Entity::Crystalmine), p.crysPercent,
-                                                                            p.getLevel(ogh::Entity::Deutsynth), p.deutPercent,
-                                                                            p.getLevel(ogh::Entity::Solar), p.solarplantPercent,
-                                                                            p.getLevel(ogh::Entity::Fusion), p.fusionPercent, getResearchLevel(ogh::Entity::Energy),
-                                                                            p.getSats(), p.satsPercent, p.temperature,
-                                                                            p.getCrawler(), p.crawlerPercent,
-                                                                            hasEngineer(), hasStaff(),
-                                                                            getCharacterClass());
+        const double oldmineproductionfactor = p.getMineProductionFactor();
+
         p.increaseLevel(p.entityInQueue);
         auto result = p.setPercentToMaxProduction(oldProd, oldmineproductionfactor);
         const int level = p.getLevel(p.entityInQueue);
@@ -770,16 +791,8 @@ void Account::researchFinishedCallback() {
         for(int i = 0; i < getNumPlanets(); i++){
             const auto& p = planets[i];
             oldProductions[i] = p.getCurrentDailyProduction();
-            oldProductionFactors[i] = ogh::getMineProductionFactor(p.getLevel(ogh::Entity::Metalmine), p.metPercent,
-                                                                    p.getLevel(ogh::Entity::Crystalmine), p.crysPercent,
-                                                                    p.getLevel(ogh::Entity::Deutsynth), p.deutPercent,
-                                                                    p.getLevel(ogh::Entity::Solar), p.solarplantPercent,
-                                                                    p.getLevel(ogh::Entity::Fusion), p.fusionPercent, getResearchLevel(ogh::Entity::Energy),
-                                                                    p.getSats(), p.satsPercent, p.temperature,
-                                                                    p.getCrawler(), p.crawlerPercent,
-                                                                    hasEngineer(), hasStaff(),
-                                                                    getCharacterClass());
-        }
+            oldProductionFactors[i] = p.getMineProductionFactor();
+        }        
 
         r.increaseLevel(r.entityInQueue);
 

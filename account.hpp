@@ -72,6 +72,7 @@ struct PlanetState {
     std::chrono::seconds crysItemDuration{0};
     std::chrono::seconds deutItemDuration{0};
     std::chrono::seconds energyItemDuration{0};
+    double mineProductionFactor = 0;
     int sats = 0;
     int crawler = 0;
 
@@ -116,6 +117,7 @@ struct PlanetState {
 
     void calculateDailyProduction();
     ogamehelpers::Production getCurrentDailyProduction() const;
+    double getMineProductionFactor() const;
 
     SetPercentsResult setPercentToMaxProduction(const ogamehelpers::Production& oldProd, double oldProductionFactor);
 };

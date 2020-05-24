@@ -362,16 +362,18 @@ std::int64_t getEnergyOfSolarPlant(int level);
 std::int64_t getEnergyOfFKW(int level, int etechLevel);
 
 std::int64_t applyEnergyFactor(std::int64_t energy, float productionfactor, 
-                                bool hasEngineer, bool hasStaff, 
-                                CharacterClass cclass);
+                                ItemRarity energyItem, bool hasEngineer, 
+                                bool hasStaff, CharacterClass cclass);
 
 std::int64_t getTotalEnergy(int solarplantLevel, int solarplantPercent,
                             int fusionLevel, int fusionPercent, int etechLevel,
                             int sats, int satsPercent, int temperature,
+                            ItemRarity energyItem, 
                             bool engineer, bool staff,
                             CharacterClass cclass);                                
 
 int getItemProductionPercent(ItemRarity item);
+int getEnergyItemProductionPercent(ItemRarity item);
 
 Production getDefaultProduction();
 Production getDailyDefaultProduction();
@@ -386,6 +388,7 @@ struct ProductionCalculator{
         int deutLevel, ItemRarity deutItem,
         int solarplantLevel,
         int fusionLevel,int etechLevel,
+        ItemRarity energyItem,
         int temperature, int sats,
         int planetPosition,
         int crawler,
@@ -399,7 +402,7 @@ struct ProductionCalculator{
     etechLevel(etechLevel), sats(sats), temperature(temperature),
     crawler(crawler),plasmaLevel(plasmaLevel),engineer(engineer),geologist(geologist),
     staff(staff),cclass(cclass), metItem(metItem),
-    crysItem(crysItem),deutItem(deutItem),planetPosition(planetPosition),
+    crysItem(crysItem),deutItem(deutItem), energyItem(energyItem), planetPosition(planetPosition),
     defaultProduction(getDefaultProduction()){
 
         geologistpercent = geologist ? 10 : 0;
@@ -459,6 +462,7 @@ struct ProductionCalculator{
         const std::int64_t totalenergy = getTotalEnergy(solarplantLevel, solarplantPercent,
                                                         fusionLevel, fusionPercent, etechLevel,
                                                         sats, satsPercent, temperature,
+                                                        energyItem, 
                                                         engineer, staff,
                                                         cclass);
 
@@ -601,6 +605,7 @@ struct ProductionCalculator{
     ItemRarity metItem;
     ItemRarity crysItem;
     ItemRarity deutItem;
+    ItemRarity energyItem;
     int planetPosition;
     int geologistpercent;
     int staffpercent;
@@ -617,27 +622,6 @@ struct ProductionCalculator{
 
 };
 
-double getMineProductionFactor(int metLevel, int metPercent,
-                               int crysLevel, int crysPercent,
-                               int deutLevel, int deutPercent,
-                               int solarplantLevel, int solarplantPercent,
-                               int fusionLevel, int fusionPercent, int etechLevel,
-                               int sats, int satsPercent, int temperature,
-                               int crawler, int crawlerPercent,
-                               bool engineer, bool staff,
-                               CharacterClass cclass);
-
-Production getDailyProduction(int metLevel, ItemRarity metItem, int metPercent,
-                              int crysLevel, ItemRarity crysItem, int crysPercent,
-                              int deutLevel, ItemRarity deutItem, int deutPercent,
-                              int solarLevel, int solarplantPercent,
-                              int fusionLevel, int fusionPercent, int etechLevel,
-                              int temperature, int sats, int satsPercent,
-                              int planetPosition,
-                              int crawler, int crawlerPercent,
-                              int plasmaLevel, int speedfactor,
-                              bool engineer, bool geologist, bool staff,
-                              CharacterClass cclass);
 
 std::chrono::seconds get_save_duration_symmetrictrade(const Resources& have, /*have*/
                                        const Resources& want,  /*want*/
