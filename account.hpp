@@ -67,9 +67,11 @@ struct PlanetState {
     ogamehelpers::ItemRarity metItem = ogamehelpers::ItemRarity::None;
     ogamehelpers::ItemRarity crysItem = ogamehelpers::ItemRarity::None;
     ogamehelpers::ItemRarity deutItem = ogamehelpers::ItemRarity::None;
+    ogamehelpers::ItemRarity energyItem = ogamehelpers::ItemRarity::None;
     std::chrono::seconds metItemDuration{0};
     std::chrono::seconds crysItemDuration{0};
     std::chrono::seconds deutItemDuration{0};
+    std::chrono::seconds energyItemDuration{0};
     int sats = 0;
     int crawler = 0;
 
@@ -89,6 +91,7 @@ struct PlanetState {
     ogamehelpers::ItemRarity getMetItem() const;
     ogamehelpers::ItemRarity getCrysItem() const;
     ogamehelpers::ItemRarity getDeutItem() const;
+    ogamehelpers::ItemRarity getEnergyItem() const;
 
     void advanceTime(std::chrono::seconds days);
 

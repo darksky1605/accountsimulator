@@ -41,6 +41,14 @@ ogh::ItemRarity PlanetState::getDeutItem() const {
     return ogh::ItemRarity::None;
 }
 
+ogh::ItemRarity PlanetState::getEnergyItem() const {
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    if (energyItemDuration > zero)
+        return energyItem;
+    return ogh::ItemRarity::None;
+}
+
 void PlanetState::advanceTime(std::chrono::seconds timestep) {
     constexpr auto zero = std::chrono::seconds::zero();
 
@@ -49,6 +57,7 @@ void PlanetState::advanceTime(std::chrono::seconds timestep) {
     metItemDuration = std::max(zero, metItemDuration - timestep);
     crysItemDuration = std::max(zero, crysItemDuration - timestep);
     deutItemDuration = std::max(zero, deutItemDuration - timestep);
+    energyItemDuration = std::max(zero, energyItemDuration - timestep);    
 
     if (constructionInProgress()) {
         buildingQueue = std::max(zero, buildingQueue - timestep);
@@ -881,6 +890,10 @@ void Account::initEventTimes() {
         if (planet.getDeutItem() != ogh::ItemRarity::None) {
             eventTimes.emplace_back(planet.deutItemDuration);
         }
+
+        if (planet.getEnergyItem() != ogh::ItemRarity::None) {
+            eventTimes.emplace_back(planet.energyItemDuration);
+        }
     }
 
     if (researches.researchInProgress()) {
@@ -971,6 +984,11 @@ std::chrono::seconds Account::getTimeUntilNextFinishedEvent() const {
 
         if (planet.getDeutItem() != ogh::ItemRarity::None) {
             time2 = std::min(time2, planet.deutItemDuration);
+            any = true;
+        }
+
+        if (planet.getEnergyItem() != ogh::ItemRarity::None) {
+            time2 = std::min(time2, planet.energyItemDuration);
             any = true;
         }
     }

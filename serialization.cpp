@@ -71,9 +71,11 @@ void to_json(json& j, const PlanetState& p) {
              {"metItem", ogh::itemRarityToName(p.metItem)},
              {"crysItem", ogh::itemRarityToName(p.crysItem)},
              {"deutItem", ogh::itemRarityToName(p.deutItem)},
+             {"energyItem", ogh::itemRarityToName(p.energyItem)},
              {"metItemDuration", secondsToDHM(p.metItemDuration)},
              {"crysItemDuration", secondsToDHM(p.crysItemDuration)},
              {"deutItemDuration", secondsToDHM(p.deutItemDuration)},
+             {"energyItemDuration", secondsToDHM(p.energyItemDuration)},
              {"sats", p.sats},
              {"crawler", p.crawler},
              {"crawlerPercent", p.crawlerPercent},
@@ -106,9 +108,11 @@ void from_json(const json& j, PlanetState& p) {
     p.metItem = ogh::parseItemRarityName(j.at("metItem"));
     p.crysItem = ogh::parseItemRarityName(j.at("crysItem"));
     p.deutItem = ogh::parseItemRarityName(j.at("deutItem"));
+    p.energyItem = ogh::parseItemRarityName(j.at("energyItem"));
     p.metItemDuration = secondsFromDHM(j.at("metItemDuration"));
     p.crysItemDuration = secondsFromDHM(j.at("crysItemDuration"));
     p.deutItemDuration = secondsFromDHM(j.at("deutItemDuration"));
+    p.energyItemDuration = secondsFromDHM(j.at("energyItemDuration"));
     p.buildingQueue = secondsFromDHM(j.at("buildingQueueDuration"));
     j.at("sats").get_to(p.sats);
     j.at("crawler").get_to(p.crawler);
