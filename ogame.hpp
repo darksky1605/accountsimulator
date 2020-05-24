@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
-
+#include <cmath>
 #include <cassert>
 #include <functional>
 #include <iomanip>
@@ -365,10 +365,257 @@ std::int64_t applyEnergyFactor(std::int64_t energy, float productionfactor,
                                 bool hasEngineer, bool hasStaff, 
                                 CharacterClass cclass);
 
+std::int64_t getTotalEnergy(int solarplantLevel, int solarplantPercent,
+                            int fusionLevel, int fusionPercent, int etechLevel,
+                            int sats, int satsPercent, int temperature,
+                            bool engineer, bool staff,
+                            CharacterClass cclass);                                
+
 int getItemProductionPercent(ItemRarity item);
 
 Production getDefaultProduction();
 Production getDailyDefaultProduction();
+
+struct ProductionCalculator{
+
+    
+
+    ProductionCalculator(
+        int metLevel, ItemRarity metItem, 
+        int crysLevel, ItemRarity crysItem,
+        int deutLevel, ItemRarity deutItem,
+        int solarplantLevel,
+        int fusionLevel,int etechLevel,
+        int temperature, int sats,
+        int planetPosition,
+        int crawler,
+        int plasmaLevel,
+        bool engineer, bool geologist, bool staff,
+        CharacterClass cclass
+    )
+    : metLevel(metLevel), crysLevel(crysLevel),
+    deutLevel(deutLevel),
+    solarplantLevel(solarplantLevel), fusionLevel(fusionLevel),
+    etechLevel(etechLevel), sats(sats), temperature(temperature),
+    crawler(crawler),plasmaLevel(plasmaLevel),engineer(engineer),geologist(geologist),
+    staff(staff),cclass(cclass), metItem(metItem),
+    crysItem(crysItem),deutItem(deutItem),planetPosition(planetPosition),
+    defaultProduction(getDefaultProduction()){
+
+        geologistpercent = geologist ? 10 : 0;
+        staffpercent = staff ? 2 : 0;
+        officerfactor = (geologistpercent + staffpercent) / 100.;
+
+        classPercent = cclass == CharacterClass::Collector ? 25 : 0;
+        classFactor = (classPercent) / 100.;
+
+        constexpr double crawler_boost_factor = 0.0002;
+        constexpr int crawler_y_factor = 8;
+        constexpr double crawler_maxTotalBoost = 0.5;        
+
+        const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;    
+        crawlerFactor = crawler_boost_factor * crawlerClassFactor;
+        const int maxCrawlersByProduction = std::ceil(crawler_maxTotalBoost / (crawler_boost_factor * crawlerClassFactor));
+        const int totalMineLevel = metLevel + crysLevel + deutLevel;
+        usablecrawler = std::min(crawler, totalMineLevel * crawler_y_factor);
+        usablecrawler = std::min(usablecrawler, maxCrawlersByProduction);
+
+        metBaseProd = 30 * metLevel * std::pow(1.1, metLevel);
+        crysBaseProd = 20 * crysLevel * std::pow(1.1, crysLevel);
+        deutBaseProd = 10 * deutLevel * std::pow(1.1, deutLevel) * (1.44 - 0.004 * temperature);
+
+    }
+
+    double getMineProductionFactor(
+        int metPercent,
+        int crysPercent,
+        int deutPercent,
+        int solarplantPercent,
+        int fusionPercent,
+        int satsPercent,
+        int crawlerPercent
+    ) const {
+        assert(metPercent >= 0);
+        assert(crysPercent >= 0);
+        assert(deutPercent >= 0);
+        assert(solarplantPercent >= 0);
+        assert(fusionPercent >= 0);
+        assert(satsPercent >= 0);
+        assert(metPercent <= 100);
+        assert(crysPercent <= 100);
+        assert(deutPercent <= 100);
+        assert(solarplantPercent <= 100);
+        assert(fusionPercent <= 100);
+        assert(satsPercent <= 100);
+
+        const std::int64_t requiredenergy = getEnergyConsumption(
+            metLevel, metPercent, 
+            crysLevel, crysPercent, 
+            deutLevel, deutPercent,
+            usablecrawler, crawlerPercent,
+            cclass
+        );
+
+        const std::int64_t totalenergy = getTotalEnergy(solarplantLevel, solarplantPercent,
+                                                        fusionLevel, fusionPercent, etechLevel,
+                                                        sats, satsPercent, temperature,
+                                                        engineer, staff,
+                                                        cclass);
+
+        const double mineproductionfactor = totalenergy == 0 ? 0.0f : std::min(1.0, double(totalenergy) / double(requiredenergy));
+        return mineproductionfactor;
+    }
+
+
+
+    Production getDailyProduction(
+        int metPercent,
+        int crysPercent,
+        int deutPercent,
+        int solarplantPercent,
+        int fusionPercent,
+        int satsPercent,
+        int crawlerPercent,
+        int speedfactor
+    ) const {
+
+        assert(metLevel >= 0);
+        assert(crysLevel >= 0);
+        assert(deutLevel >= 0);
+        assert(metPercent >= 0);
+        assert(crysPercent >= 0);
+        assert(deutPercent >= 0);
+        assert(plasmaLevel >= 0);
+        assert(speedfactor >= 1);
+        assert(planetPosition >= 1);
+        assert(planetPosition <= 15);
+
+        constexpr std::array<double, 15> crysBoostByPosition{0.3, 0.225, 0.15, 0,0,0,0,0,0,0,0,0,0,0,0};
+
+        double simpleProduction_met = metBaseProd * metPercent / 100.;
+        double simpleProduction_crystal = crysBaseProd * crysPercent / 100.;
+        double simpleProduction_deut = deutBaseProd * deutPercent / 100.;
+
+        const double mineproductionfactor = getMineProductionFactor(
+            metPercent,
+            crysPercent,
+            deutPercent,
+            solarplantPercent,
+            fusionPercent,
+            satsPercent,
+            crawlerPercent
+        );
+        simpleProduction_met *= mineproductionfactor;
+        simpleProduction_crystal *= mineproductionfactor;
+        simpleProduction_deut *= mineproductionfactor;
+
+        const double itemProduction_met = simpleProduction_met * getItemProductionPercent(metItem) / 100.;
+        const double itemProduction_crystal = simpleProduction_crystal * getItemProductionPercent(crysItem) / 100.;
+        const double itemProduction_deut = simpleProduction_deut * getItemProductionPercent(deutItem) / 100.;
+
+        const double plasmaProduction_met = simpleProduction_met / 100. * plasma_factor_met * plasmaLevel;
+        const double plasmaProduction_crystal = simpleProduction_crystal / 100. * plasma_factor_crys * plasmaLevel;
+        const double plasmaProduction_deut = simpleProduction_deut / 100. * plasma_factor_deut * plasmaLevel;
+
+        const double extraOfficerProduction_met = simpleProduction_met * officerfactor;
+        const double extraOfficerProduction_crystal = simpleProduction_crystal * officerfactor;
+        const double extraOfficerProduction_deut = simpleProduction_deut * officerfactor;
+
+        const double classProduction_met = simpleProduction_met * classFactor;
+        const double classProduction_crystal = simpleProduction_crystal * classFactor;
+        const double classProduction_deut = simpleProduction_deut * classFactor;
+
+        const double crawlerProduction_met = (simpleProduction_met * crawlerFactor * usablecrawler);
+        const double crawlerProduction_crystal = (simpleProduction_crystal * crawlerFactor * usablecrawler);
+        const double crawlerProduction_deut = (simpleProduction_deut * crawlerFactor * usablecrawler);
+
+        const double positionBonus_met = 0;
+        const double positionBonus_crystal = simpleProduction_crystal * crysBoostByPosition[planetPosition-1];
+        const double positionBonus_deut = 0;
+
+        double result_met = (simpleProduction_met 
+                            + itemProduction_met 
+                            + plasmaProduction_met 
+                            + extraOfficerProduction_met
+                            + classProduction_met
+                            + crawlerProduction_met
+                            + positionBonus_met);
+        double result_crystal = (simpleProduction_crystal 
+                            + itemProduction_crystal 
+                            + plasmaProduction_crystal 
+                            + extraOfficerProduction_crystal
+                            + classProduction_crystal
+                            + crawlerProduction_crystal
+                            + positionBonus_crystal);
+        double result_deut = (simpleProduction_deut 
+                            + itemProduction_deut 
+                            + plasmaProduction_deut 
+                            + extraOfficerProduction_deut
+                            + classProduction_deut
+                            + crawlerProduction_deut
+                            + positionBonus_deut);
+
+        result_met += defaultProduction.metal();
+        result_crystal += defaultProduction.crystal();
+        result_deut += defaultProduction.deuterium();
+
+        const std::int64_t fkwdeutconsumption = getFKWConsumption(fusionLevel, fusionPercent);
+        result_deut -= fkwdeutconsumption;
+
+        result_met *= speedfactor;
+        result_crystal *= speedfactor;
+        result_deut *= speedfactor;
+
+        Production result = Production::makeProductionPerDay(round(result_met), round(result_crystal), round(result_deut));
+        
+        if (result.metal() < 0){
+            std::cerr << "Error, met production is negative\n";
+            assert(false);
+            return result;
+        }
+        if (result.crystal() < 0){
+            std::cerr << "Error, crys production is negative\n";
+            assert(false);
+            return result;
+        }
+
+        result *= 24;
+
+        return result;
+    }
+
+    int metLevel;
+    int crysLevel;
+    int deutLevel;
+    int solarplantLevel;
+    int fusionLevel;
+    int etechLevel;
+    int sats;
+    int temperature;
+    int crawler;
+    int plasmaLevel;
+    bool engineer;
+    bool geologist;
+    bool staff;
+    CharacterClass cclass;
+    ItemRarity metItem;
+    ItemRarity crysItem;
+    ItemRarity deutItem;
+    int planetPosition;
+    int geologistpercent;
+    int staffpercent;
+    double officerfactor;
+    int classPercent;
+    double classFactor;
+    int usablecrawler;
+    double metBaseProd;
+    double crysBaseProd;
+    double deutBaseProd;
+    double crawlerFactor;
+
+    Production defaultProduction;
+
+};
 
 double getMineProductionFactor(int metLevel, int metPercent,
                                int crysLevel, int crysPercent,
