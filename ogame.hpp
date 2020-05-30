@@ -414,14 +414,14 @@ struct ProductionCalculator{
 
         constexpr double crawler_boost_factor = 0.0002;
         constexpr int crawler_y_factor = 8;
-        constexpr double crawler_maxTotalBoost = 0.5;        
+        //constexpr double crawler_maxTotalBoost = 0.5;        
 
         const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;    
         crawlerFactor = crawler_boost_factor * crawlerClassFactor;
-        const int maxCrawlersByProduction = std::ceil(crawler_maxTotalBoost / (crawler_boost_factor * crawlerClassFactor));
+        //const int maxCrawlersByProduction = std::ceil(crawler_maxTotalBoost / (crawler_boost_factor * crawlerClassFactor));
         const int totalMineLevel = metLevel + crysLevel + deutLevel;
         usablecrawler = std::min(crawler, totalMineLevel * crawler_y_factor);
-        usablecrawler = std::min(usablecrawler, maxCrawlersByProduction);
+        //usablecrawler = std::min(usablecrawler, maxCrawlersByProduction);
 
         metBaseProd = 30 * metLevel * std::pow(1.1, metLevel);
         crysBaseProd = 20 * crysLevel * std::pow(1.1, crysLevel);
