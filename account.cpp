@@ -653,16 +653,32 @@ void ResearchState::startResearch(std::chrono::seconds constructionDuration, con
     entityInQueue = entity;
 }
 
-void OfficerState::advanceTime(std::chrono::seconds timestep) {
+bool OfficerState::advanceTime(std::chrono::seconds timestep) {
     constexpr auto zero = std::chrono::seconds::zero();
 
     assert(timestep >= zero);    
+    bool result = false;
 
-    commanderDuration = std::max(zero, commanderDuration - timestep);
-    engineerDuration = std::max(zero, engineerDuration - timestep);
-    technocratDuration = std::max(zero, technocratDuration - timestep);
-    geologistDuration = std::max(zero, geologistDuration - timestep);
-    admiralDuration = std::max(zero, admiralDuration - timestep);
+    auto updateDuration = [&](auto& duration){
+        if(duration > timestep){
+            duration -= timestep;
+        }else{
+            if(duration != zero){
+                duration = zero;
+                result = true;
+            }else{
+                ; //nothing to do
+            }
+        }
+    };
+
+    updateDuration(commanderDuration);
+    updateDuration(engineerDuration);
+    updateDuration(technocratDuration);
+    updateDuration(geologistDuration);
+    updateDuration(admiralDuration);
+
+    return result;
 }
 
 Account::Account() : Account(1, std::chrono::seconds::zero()) {}
@@ -944,8 +960,8 @@ void Account::registerNewEvent(std::chrono::seconds when){
    // std::cerr << '\n';
 }
 
-//must not advance further than next finished event
-void Account::advanceTime(std::chrono::seconds timestep) {
+
+void Account::advanceTimeNoFurtherThanNextEvent(std::chrono::seconds timestep) {
     constexpr auto zero = std::chrono::seconds::zero();
 
     assert(timestep >= zero);
@@ -959,7 +975,16 @@ void Account::advanceTime(std::chrono::seconds timestep) {
     for (auto& planet : planets)
         planet.advanceTime(timestep);
     researches.advanceTime(timestep);
-    officers.advanceTime(timestep);
+
+    const bool anyOfficerFinished = officers.advanceTime(timestep);
+    if(anyOfficerFinished){
+        for(auto& planet : planets){
+            planet.calculateDailyProduction();
+        }
+        calculateDailyProduction();
+    }
+
+
 
 
     //TODO instead of loop, find range to erase, then erase it
@@ -969,6 +994,19 @@ void Account::advanceTime(std::chrono::seconds timestep) {
     //std::cerr << "after advance " << days << " account time " << time << '\n';
    // std::copy(eventTimes.begin(), eventTimes.end(), std::ostream_iterator<float>(std::cerr, " "));
     //std::cerr << '\n';
+}
+
+void Account::advanceTimeUnlimited(std::chrono::seconds timestep) {
+    constexpr auto zero = std::chrono::seconds::zero();
+
+    assert(timestep >= zero);
+
+    auto nextEventIn = getTimeUntilNextFinishedEvent();
+    while(nextEventIn < timestep){
+        advanceTimeNoFurtherThanNextEvent(nextEventIn);
+        timestep -= nextEventIn;
+    }
+    advanceTimeNoFurtherThanNextEvent(timestep);
 }
 
 std::chrono::seconds Account::getTimeUntilNextFinishedEvent() const {
@@ -1316,7 +1354,7 @@ void Account::waitForAllConstructions() {
 
         std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
 
-        advanceTime(timeToSkip);
+        advanceTimeNoFurtherThanNextEvent(timeToSkip);
         b = hasUnfinishedConstructionEvent();
     }
 
@@ -1372,7 +1410,7 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
 
         saveTimeDaysForJob += timeToSkip;
 
-        advanceTime(timeToSkip);
+        advanceTimeNoFurtherThanNextEvent(timeToSkip);
         currentProduction = getCurrentDailyProduction();
 
         nextEventFinishedInDays = getTimeUntilNextFinishedEvent();
@@ -1389,7 +1427,7 @@ std::chrono::seconds Account::waitUntilCostsAreAvailable(const ogamehelpers::Res
 
     saveTimeDaysForJob += saveTimeDays;
 
-    advanceTime(saveTimeDays);
+    advanceTimeNoFurtherThanNextEvent(saveTimeDays);
 
     return saveTimeDaysForJob;
 }
@@ -1495,7 +1533,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
         log("Waiting for finished construction of research labs. This does not count as saving time\n");
 
         std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
-        advanceTime(timeToSkip);
+        advanceTimeNoFurtherThanNextEvent(timeToSkip);
 
         printQueues(sstream);
     }
@@ -1506,7 +1544,7 @@ Account::UpgradeStats Account::processResearchJob(ogh::Entity entity) {
 
         //wait for the next event to complete, this may change the production
         std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
-        advanceTime(timeToSkip);
+        advanceTimeNoFurtherThanNextEvent(timeToSkip);
 
         printQueues(sstream);
         log(sstream.str());
@@ -1616,7 +1654,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetNumber, ogh::Entity 
             log("Waiting for finished research before building research lab. This does not count as saving time\n");
 
             const std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
-            advanceTime(timeToSkip);
+            advanceTimeNoFurtherThanNextEvent(timeToSkip);
 
             printQueues(sstream);
         }
@@ -1635,7 +1673,7 @@ Account::UpgradeStats Account::processBuildingJob(int planetNumber, ogh::Entity 
 
         //wait for the next event to complete, this may change the production
         const std::chrono::seconds timeToSkip = getTimeUntilNextFinishedEvent();
-        advanceTime(timeToSkip);
+        advanceTimeNoFurtherThanNextEvent(timeToSkip);
 
         printQueues(sstream);
         log(sstream.str());

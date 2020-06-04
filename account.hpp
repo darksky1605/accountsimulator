@@ -171,7 +171,7 @@ struct OfficerState {
     OfficerState(const OfficerState&) = default;
     OfficerState& operator=(const OfficerState&) = default;
 
-    void advanceTime(std::chrono::seconds days);
+    bool advanceTime(std::chrono::seconds days);
 };
 
 struct Account {
@@ -276,7 +276,9 @@ struct Account {
     void registerNewEvent(std::chrono::seconds when);
 
     //must not advance further than next finished event
-    void advanceTime(std::chrono::seconds days);
+    void advanceTimeNoFurtherThanNextEvent(std::chrono::seconds timestep);
+
+    void advanceTimeUnlimited(std::chrono::seconds timestep);
 
     std::chrono::seconds getTimeUntilNextFinishedEvent() const;
 
