@@ -587,7 +587,7 @@ std::int64_t getEnergyConsumption(int metlvl, int metPercent,
 
     //constexpr double crawler_maxTotalBoost = 0.5;
     //constexpr double crawler_boost_factor = 0.0002;
-    const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;
+    //const double crawlerClassFactor = cclass == CharacterClass::Collector ? 1.5 : 1.0;
     //const int maxCrawlersByProduction = std::ceil(crawler_maxTotalBoost / (crawler_boost_factor * crawlerClassFactor));
 
     constexpr int crawler_y_factor = 8;
