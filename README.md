@@ -1,5 +1,5 @@
-# accountsimulator
-WORK IN PROGRESS
+# Accountsimulator
+WORK IN PROGRESS / NO SUPPORT
 
 The account simulator is capable of iteratively simulating a given upgrade plan for a given account while correctly accounting for save time (how long until enough resources are available for build),
 blocked time (wait for blocked build queue / research queue), and construction time. 
@@ -43,9 +43,11 @@ If planetType is "individual", the number of planet entries in planets must equa
 
 Production booster are identified by their rarity. 
 
+Times can be specified in seconds. Alternatively, the format days:hours:minutes:seconds can be used.
+
 ##### Valid item rarity values 
 ```
-"bronze", "silver", "gold", "none".
+"bronze", "silver", "gold", "platinum", "none".
 ```
 
 Fleet income is specified by entries saveslots, dailyExpeditionIncomePerSlot, and dailyFarmIncomePerSlot.
@@ -88,14 +90,20 @@ For example,
 whereas
 `( 1 2 3 met 1 2 3 deut )` is equivalent to `1 met 1 deut 2 met 2 deut 3 met 3 deut`.
 
-When calculating the optimal permutation, only permutations of lines are regarded.
+Important: When calculating the optimal permutation, only permutations of lines are considered!
 
-Here is another example which uses multiple lines, interleaved upgrades and multiple upgrades per line
+Here is another example which uses multiple lines, interleaved upgrades and multiple upgrades per line. 
 
 ```
 met
 ( crys fusionplant ) plasma
 1 robo 1 nani 1 2 met
+```
+
+For an account with two planets, this would be equivalent to 
+
+```
+1 met 2 met 1 crys 1 fusionplant 2 crys 2 fusionplant plasma 1 robo 1 nani 1 met 2 met
 ```
 
 
