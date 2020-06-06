@@ -580,6 +580,8 @@ int detailedmultiupgrade(int argc, char** argv) {
                         << prodPerHour.crystal() << " " << prodPerHour.deuterium() << "\n";
         }
     }
+    
+   
         
     auto totimestring = [&](auto time){
         if(use_dhm_format){
@@ -665,12 +667,13 @@ int detailedmultiupgrade(int argc, char** argv) {
                     if(change.oldMetPercent != change.metPercent 
                             || change.oldCrysPercent != change.crysPercent 
                             || change.oldDeutPercent != change.deutPercent 
-                            || change.oldFusionPercent != change.fusionPercent){
+                            || change.oldFusionPercent != change.fusionPercent
+                            || change.oldCrawlerPercent != change.crawlerPercent){
 
                         stream << "Changed percents from m " << change.oldMetPercent << ", c " << change.oldCrysPercent
-                            << ", d " << change.oldDeutPercent << ", f " << change.oldFusionPercent
+                            << ", d " << change.oldDeutPercent << ", f " << change.oldFusionPercent << ", cr " << change.oldCrawlerPercent
                             << " to m " << change.metPercent << ", c " << change.crysPercent
-                            << ", d " << change.deutPercent << ", f " << change.fusionPercent;
+                            << ", d " << change.deutPercent << ", f " << change.fusionPercent << ", cr " << change.crawlerPercent;
 
                     }else{
                         stream << "Production factor changed";

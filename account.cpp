@@ -350,6 +350,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
                         );
 
                         const double newDSE = newProd.produce(std::chrono::hours{24}).dse(accountPtr->traderate);
+
                         if (newDSE > bestDSE) {
                             bestDSE = newDSE;
                             bestProd = newProd;
@@ -364,6 +365,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
             }
         }
     }
+    
 
     metPercent = bestMetPercent;
     crysPercent = bestCrysPercent;
@@ -465,7 +467,7 @@ PlanetState::SetPercentsResult PlanetState::setPercentToMaxProduction(const ogh:
             result.changedPercents = false;
             return result;
         }                                                                         
-    }else if (metPercent != oldMetPercent || crysPercent != oldCrysPercent || deutPercent != oldDeutPercent || fusionPercent != oldFusionPercent || ressOldProd.dse(accountPtr->traderate) > ressBestProd.dse(accountPtr->traderate)) {
+    }else if (metPercent != oldMetPercent || crysPercent != oldCrysPercent || deutPercent != oldDeutPercent || fusionPercent != oldFusionPercent || crawlerPercent != oldCrawlerPercent || ressOldProd.dse(accountPtr->traderate) > ressBestProd.dse(accountPtr->traderate)) {
 
         const double newmineproductionfactor = prodCalc.getMineProductionFactor(
             metPercent,
