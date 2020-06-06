@@ -234,6 +234,9 @@ void from_json(const nlohmann::json& j, Account& a) {
 
     std::for_each(a.planets.begin(), a.planets.end(), fixPointers);
 
+    a.dailyFarmIncomePerSlot *= 1.0f/24.0f;
+    a.dailyExpeditionIncomePerSlot *= 1.0f/24.0f;
+
     a.updateDailyFarmIncome();
     a.updateDailyExpeditionIncome();
 }
