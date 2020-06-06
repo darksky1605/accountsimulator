@@ -18,6 +18,8 @@
 #include <string>
 #include <vector>
 
+//#define MONEYMONEYMONEY
+
 namespace ogamehelpers {
 
 /*const EntityInfo Metalmine = EntityInfo(60,15,0,0,10,1.5, EntityType::Building, Entity::Metalmine, "Metal Mine");
@@ -503,6 +505,12 @@ std::chrono::seconds getConstructionTime(const EntityInfo& info, int level, int 
     }
 
     duration = std::ceil(duration);
+
+#ifdef MONEYMONEYMONEY
+    //assume everything gets halved and finished with dm if it has a construction time larger than durationWithMoney
+    const double durationWithMoney = 4.0;
+    duration = std::min(duration, durationWithMoney);
+#endif 
 
     if (duration < 0) //overflow
         return std::chrono::seconds::max();
