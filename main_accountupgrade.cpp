@@ -344,7 +344,8 @@ std::string convert_time(float daysfloat) {
 
 
 void printLogRecord(std::ostream& os, const Account::LogRecord& record) {
-    os << secondsToDHM(record.time) << ": " << record.msg << '\n';
+    //os << secondsToDHM(record.time) << " : " << record.msg << '\n';
+	os << record.time.count() << " : " << record.msg << '\n';
 }
 
 void createAccountFile(const std::string& filename) {
@@ -616,6 +617,28 @@ int detailedmultiupgrade(int argc, char** argv) {
 
             std::cout << '\n';
 
+#if 1            
+            std::chrono::seconds limit{60*60*24*365};
+            std::chrono::seconds timeToAdvance = std::max(std::chrono::seconds::zero(), limit - account.accountTime);
+
+            std::int64_t currentResourcesDSE = account.resources.dse(account.traderate);
+            auto currentProduction = account.getCurrentDailyProduction();
+            std::int64_t currentProductionDSE = currentProduction.produce(std::chrono::hours{1}).dse(account.traderate);
+
+            std::cout << "Account after " << totimestring(account.accountTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionDSE << " DSE/h.\n";
+            
+
+            account.advanceTimeUnlimited(timeToAdvance);
+
+            currentResourcesDSE = account.resources.dse(account.traderate);
+            currentProduction = account.getCurrentDailyProduction();
+            currentProductionDSE = currentProduction.produce(std::chrono::hours{1}).dse(account.traderate);
+
+            std::cout << "Account after " << totimestring(limit) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionDSE << " DSE/h.\n";
+
+            std::cout << '\n';
+
+#endif
             if (printList) {
                 std::cout << "Detailed statistics:\n";
 
@@ -800,7 +823,7 @@ int detailedmultiupgrade(int argc, char** argv) {
             std::cout << "Account after " << totimestring(bestAccount.accountTime) << ": Resources: " << currentResourcesDSE << " DSE, Production: " << currentProductionDSE << " DSE/h.\n";
             
 
-            bestAccount.advanceTime(timeToAdvance);
+            bestAccount.advanceTimeUnlimited(timeToAdvance);
 
             std::cout << "The selected upgrades take " << totimestring(bestResult.constructionFinishedInDays) << " days.\n";
             std::cout << "Last upgrade started after " << totimestring(bestResult.lastConstructionStartedAfterDays) << " days.\n";

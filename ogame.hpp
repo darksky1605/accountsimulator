@@ -529,9 +529,11 @@ struct ProductionCalculator{
         const double classProduction_crystal = simpleProduction_crystal * classFactor;
         const double classProduction_deut = simpleProduction_deut * classFactor;
 
-        const double crawlerProduction_met = (simpleProduction_met * crawlerFactor * usablecrawler);
-        const double crawlerProduction_crystal = (simpleProduction_crystal * crawlerFactor * usablecrawler);
-        const double crawlerProduction_deut = (simpleProduction_deut * crawlerFactor * usablecrawler);
+        const double crawlerPercentFactor = crawlerPercent / 100.0;
+
+        const double crawlerProduction_met = (simpleProduction_met * crawlerFactor * usablecrawler) * crawlerPercentFactor;
+        const double crawlerProduction_crystal = (simpleProduction_crystal * crawlerFactor * usablecrawler) * crawlerPercentFactor;
+        const double crawlerProduction_deut = (simpleProduction_deut * crawlerFactor * usablecrawler) * crawlerPercentFactor;
 
         const double positionBonus_met = 0;
         const double positionBonus_crystal = simpleProduction_crystal * crysBoostByPosition[planetPosition-1];
