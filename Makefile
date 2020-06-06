@@ -4,9 +4,8 @@ WARNING_FLAG = -Wall -Wextra -Wpedantic
 
 CFLAGS = $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) -fopenmp
 
-formulartests: dirs formulartests.cpp ogame.hpp build/ogame.o
-	g++ -std=c++14 $(DEBUG_FLAG) $(WARNING_FLAG) formulartests.cpp build/ogame.o -o formulartests
-	
+all: accountupgrade
+
 dplistcalculator: dplistcalculator.cpp ogame.hpp build/ogame.o util.hpp
 	g++ -std=c++14 $(DEBUG_FLAG) $(OPTIMIZATION_FLAG) $(WARNING_FLAG) -fopenmp dplistcalculator.cpp build/ogame.o -o dplistcalculator
 
@@ -29,7 +28,7 @@ build/io.o: io.hpp io.cpp account.hpp ogame.hpp
 	g++ -c -std=c++14 $(CFLAGS) io.cpp -o build/io.o
 
 clean:
-	rm -rf dplistcalculator accountupgrade build/ formulartest
+	rm -rf dplistcalculator accountupgrade build/
 	
 dirs:
 	mkdir -p build
