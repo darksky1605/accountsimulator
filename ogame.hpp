@@ -496,9 +496,13 @@ struct ProductionCalculator{
 
         constexpr std::array<double, 15> crysBoostByPosition{0.3, 0.225, 0.15, 0,0,0,0,0,0,0,0,0,0,0,0};
 
-        double simpleProduction_met = metBaseProd * metPercent / 100.;
-        double simpleProduction_crystal = crysBaseProd * crysPercent / 100.;
-        double simpleProduction_deut = deutBaseProd * deutPercent / 100.;
+        const double positionBonus_met = 0;
+        const double positionBonus_crystal = crysBaseProd * crysBoostByPosition[planetPosition-1];
+        const double positionBonus_deut = 0;
+
+        double simpleProduction_met = (metBaseProd + positionBonus_met) * metPercent / 100.;
+        double simpleProduction_crystal = (crysBaseProd + positionBonus_crystal) * crysPercent / 100.;
+        double simpleProduction_deut = (deutBaseProd + positionBonus_deut) * deutPercent / 100.;
 
         const double mineproductionfactor = getMineProductionFactor(
             metPercent,
@@ -535,31 +539,26 @@ struct ProductionCalculator{
         const double crawlerProduction_crystal = (simpleProduction_crystal * crawlerFactor * usablecrawler) * crawlerPercentFactor;
         const double crawlerProduction_deut = (simpleProduction_deut * crawlerFactor * usablecrawler) * crawlerPercentFactor;
 
-        const double positionBonus_met = 0;
-        const double positionBonus_crystal = simpleProduction_crystal * crysBoostByPosition[planetPosition-1];
-        const double positionBonus_deut = 0;
+
 
         double result_met = (simpleProduction_met 
                             + itemProduction_met 
                             + plasmaProduction_met 
                             + extraOfficerProduction_met
                             + classProduction_met
-                            + crawlerProduction_met
-                            + positionBonus_met);
+                            + crawlerProduction_met);
         double result_crystal = (simpleProduction_crystal 
                             + itemProduction_crystal 
                             + plasmaProduction_crystal 
                             + extraOfficerProduction_crystal
                             + classProduction_crystal
-                            + crawlerProduction_crystal
-                            + positionBonus_crystal);
+                            + crawlerProduction_crystal);
         double result_deut = (simpleProduction_deut 
                             + itemProduction_deut 
                             + plasmaProduction_deut 
                             + extraOfficerProduction_deut
                             + classProduction_deut
-                            + crawlerProduction_deut
-                            + positionBonus_deut);
+                            + crawlerProduction_deut);
 
         result_met += defaultProduction.metal();
         result_crystal += defaultProduction.crystal();
